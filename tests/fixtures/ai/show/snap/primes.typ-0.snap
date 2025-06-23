@@ -1,0 +1,446 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/ai/show/primes.typ
+---
+#set document(
+  title: "Prime Numbers Table 1-100",
+)
+#set page(
+  margin: 1in,
+  numbering: "1",
+)
+#set text(
+  font: "New Computer Modern",
+  size: 10pt,
+)
+
+// Function to check if a number is prime
+#let is-prime(
+  n,
+) = {
+  if (
+    n
+      < 2
+  ) {
+    return false
+  }
+  if (
+    n
+      == 2
+  ) {
+    return true
+  }
+  if (
+    calc.rem(
+      n,
+      2,
+    )
+      == 0
+  ) {
+    return false
+  }
+
+  let limit = calc.floor(
+    calc.sqrt(
+      n,
+    ),
+  )
+  for i in range(
+    3,
+    limit
+      + 1,
+    step: 2,
+  ) {
+    if (
+      calc.rem(
+        n,
+        i,
+      )
+        == 0
+    ) {
+      return false
+    }
+  }
+  return true
+}
+
+// Function to generate all primes from 1 to n using Sieve of Eratosthenes
+#let sieve-of-eratosthenes(
+  n,
+) = {
+  let is-prime-array = range(
+    n
+      + 1,
+  ).map(
+    _ => {
+      true
+    },
+  )
+  is-prime-array.at(
+    0,
+  ) = false
+  if (
+    n
+      >= 1
+  ) {
+    is-prime-array.at(
+      1,
+    ) = false
+  }
+
+  for i in range(
+    2,
+    calc.floor(
+      calc.sqrt(
+        n,
+      ),
+    )
+      + 1,
+  ) {
+    if is-prime-array.at(
+      i,
+    ) {
+      for j in range(
+        i
+          * i,
+        n
+          + 1,
+        step: i,
+      ) {
+        is-prime-array.at(
+          j,
+        ) = false
+      }
+    }
+  }
+
+  return is-prime-array
+}
+
+// Generate prime flags for numbers 1-100
+#let prime-flags = sieve-of-eratosthenes(
+  100,
+)
+
+// Function to format a cell (highlight if prime)
+#let format-cell(
+  num,
+) = {
+  if prime-flags.at(
+    num,
+  ) {
+    // Prime number - highlighted cell
+    box(
+      fill: rgb(
+        "#ffeb3b",
+      ).lighten(
+        20%,
+      ),
+      stroke: rgb(
+        "#f57f17",
+      )
+        + 1pt,
+      inset: 4pt,
+      radius: 2pt,
+      // width: 100%,
+      // height: 100%
+    )[
+      #align(
+        center,
+      )[
+        #text(
+          weight: "bold",
+          fill: rgb(
+            "#e65100",
+          ),
+        )[#str(
+            num,
+          )]
+      ]
+    ]
+  } else {
+    // Composite number - regular cell
+    box(
+      inset: 4pt,
+      // width: 100%,
+      // height: 100%
+    )[
+      #align(
+        center,
+      )[#str(
+          num,
+        )]
+    ]
+  }
+}
+
+// Title and introduction
+#align(
+  center,
+)[
+  #text(
+    size: 20pt,
+    weight: "bold",
+  )[Prime Numbers Table (1-100)]
+
+  #v(
+    0.5em,
+  )
+  #text(
+    size: 12pt,
+  )[Generated on #datetime.today().display()]
+
+  #v(
+    0.5em,
+  )
+  #text(
+    size: 10pt,
+    style: "italic",
+  )[Prime numbers are highlighted in yellow]
+]
+
+#v(
+  1em,
+)
+
+// Create the 10x10 table
+#let table-content = ()
+
+// Add header row if desired (optional)
+// table-content.push([*1-10*], [*11-20*], [*21-30*], [*31-40*], [*41-50*], [*51-60*], [*61-70*], [*71-80*], [*81-90*], [*91-100*])
+
+// Generate table rows
+#for row in range(
+  10,
+) {
+  for col in range(
+    10,
+  ) {
+    let num = (
+      row
+        * 10
+        + col
+        + 1
+    )
+    table-content.push(
+      format-cell(
+        num,
+      ),
+    )
+  }
+}
+
+#figure(
+  table(
+    columns: 10,
+    stroke: 0.5pt
+      + gray,
+    align: center
+      + horizon,
+    inset: 0pt,
+    ..table-content
+  ),
+  caption: [Numbers 1-100 with prime numbers highlighted in yellow],
+)
+
+// Statistics section
+#v(
+  1em,
+)
+
+#let prime-count = (
+  prime-flags
+    .slice(
+      1,
+    )
+    .filter(
+      x => {
+        x
+      },
+    )
+    .len()
+)
+#let prime-list = range(
+  1,
+  101,
+).filter(
+  n => prime-flags.at(
+    n,
+  ),
+)
+
+#block(
+  fill: rgb(
+    "#e3f2fd",
+  ),
+  stroke: rgb(
+    "#1976d2",
+  )
+    + 1pt,
+  inset: 12pt,
+  radius: 6pt,
+  width: 100%,
+)[
+  #text(
+    size: 12pt,
+    weight: "bold",
+    fill: rgb(
+      "#1976d2",
+    ),
+  )[Statistics]
+
+  #v(
+    0.5em,
+  )
+
+  - *Total prime numbers from 1-100:* #prime-count
+  - *Percentage of primes:* #calc.round(prime-count / 100 * 100, digits: 1)%
+  - *Largest prime ≤ 100:* #prime-list.last()
+  - *Twin prime pairs:* (3,5), (5,7), (11,13), (17,19), (29,31), (41,43), (59,61), (71,73)
+]
+
+#v(
+  1em,
+)
+
+// List all prime numbers
+#block(
+  fill: rgb(
+    "#f3e5f5",
+  ),
+  stroke: rgb(
+    "#7b1fa2",
+  )
+    + 1pt,
+  inset: 12pt,
+  radius: 6pt,
+  width: 100%,
+)[
+  #text(
+    size: 12pt,
+    weight: "bold",
+    fill: rgb(
+      "#7b1fa2",
+    ),
+  )[All Prime Numbers (1-100)]
+
+  #v(
+    0.5em,
+  )
+
+  #let prime-rows = ()
+  #let current-row = ()
+
+  #for (
+    i,
+    prime,
+  ) in prime-list.enumerate() {
+    current-row.push(
+      str(
+        prime,
+      ),
+    )
+    if (
+      calc.rem(
+        i
+          + 1,
+        10,
+      )
+        == 0
+        or i
+          == prime-list.len()
+            - 1
+    ) {
+      prime-rows.push(
+        current-row.join(
+          ", ",
+        ),
+      )
+      current-row = ()
+    }
+  }
+
+  #for row in (
+    prime-rows
+  ) {
+    text(
+      font: "Fira Code",
+      size: 9pt,
+    )[#row]
+    linebreak()
+  }
+]
+
+// Mathematical note
+#v(
+  1em,
+)
+
+#block(
+  fill: rgb(
+    "#e8f5e8",
+  ),
+  stroke: rgb(
+    "#4caf50",
+  )
+    + 1pt,
+  inset: 12pt,
+  radius: 6pt,
+  width: 100%,
+)[
+  #text(
+    size: 12pt,
+    weight: "bold",
+    fill: rgb(
+      "#2e7d32",
+    ),
+  )[About Prime Numbers]
+
+  #v(
+    0.5em,
+  )
+
+  A prime number is a natural number greater than 1 that has no positive divisors other than 1 and itself. The algorithm used here implements the *Sieve of Eratosthenes*, an ancient and efficient method for finding all primes up to a given limit.
+
+  #v(
+    0.5em,
+  )
+
+  The time complexity is $O(n log log n)$ and space complexity is $O(n)$.
+]
+
+// Code explanation
+#pagebreak()
+
+#align(
+  center,
+)[
+  #text(
+    size: 16pt,
+    weight: "bold",
+  )[Implementation Details]
+]
+
+#v(
+  1em,
+)
+
+The prime detection algorithm used:
+
+```typst
+#let sieve-of-eratosthenes(n) = {
+  let is-prime-array = range(n + 1).map(_ => true)
+  is-prime-array.at(0) = false
+  if n >= 1 { is-prime-array.at(1) = false }
+
+  for i in range(2, calc.floor(calc.sqrt(n)) + 1) {
+    if is-prime-array.at(i) {
+      for j in range(i * i, n + 1, step: i) {
+        is-prime-array.at(j) = false
+      }
+    }
+  }
+
+  return is-prime-array
+}
+```

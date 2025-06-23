@@ -1,0 +1,112 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/ai/feat-ugly/data-structures-simple.typ
+---
+= Data Structure Disasters
+== Simple Arrays Mess
+Arrays with terrible spacing and formatting:
+#let numbers = (1, 2, 3, 4, 5)
+#let names = ("Alice", "Bob", "Charlie")
+#let mixed = (1, "two", 3.0, true)
+#let cramped = (
+  1,
+  2,
+  3,
+  4,
+  5,
+  6,
+  7,
+  8,
+  9,
+  10,
+  11,
+  12,
+  13,
+  14,
+  15,
+  16,
+  17,
+  18,
+  19,
+  20,
+)
+
+== Multi-line Arrays
+Longer arrays break across multiple lines:
+#let long-array = (
+  "first item",
+  "second item",
+  "third item with a longer description",
+  "fourth item",
+  "final item",
+)
+
+== Nested Arrays
+Complex nested structures are formatted with proper indentation:
+#let matrix = (
+  (1, 2, 3),
+  (4, 5, 6),
+  (7, 8, 9),
+)
+#let hierarchical = (
+  level1: (
+    level2a: ("alpha", "beta", "gamma"),
+    level2b: ("one", "two", "three"),
+  ),
+  config: ("setting1", "setting2"),
+)
+
+== Dictionary Formatting
+Dictionaries with short values stay compact:
+#let person = (
+  name: "Alice",
+  age: 30,
+  city: "Boston",
+)
+
+== Multi-line Dictionaries
+Complex dictionaries break across lines:
+#let config = (
+  database: (
+    host: "localhost",
+    port: 5432,
+    name: "mydb",
+  ),
+  api: (
+    version: "v1",
+    timeout: 30,
+    retries: 3,
+  ),
+)
+
+== Mixed Structures
+Arrays of dictionaries are formatted intelligently:
+#let users = (
+  (id: 1, name: "Alice", active: true),
+  (id: 2, name: "Bob", active: false),
+  (
+    id: 3,
+    name: "Charlie",
+    active: true,
+  ),
+)
+
+== Complex Real-world Example
+#let app-settings = (
+  environment: "production",
+  features: (
+    authentication: true,
+    logging: true,
+    caching: false,
+  ),
+  endpoints: (
+    users: "/api/v1/users",
+    data: "/api/v1/data",
+    health: "/health",
+  ),
+  limits: (
+    requests-per-minute: 100,
+    max-file-size: "10MB",
+    timeout: 30,
+  ),
+)

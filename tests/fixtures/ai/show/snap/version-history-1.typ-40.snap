@@ -1,0 +1,268 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/ai/show/version-history-1.typ
+---
+#set page(paper: "a4", margin: 2cm)
+#set text(font: "Inter", size: 11pt)
+#set heading(numbering: none)
+
+#let version-data = (
+  ("v0.13.1", "Mar 7", "8ace67d"),
+  ("v0.13.0", "Feb 19", "8dce676"),
+  ("v0.13.0-rc1", "Feb 5", "56d8188"),
+  (
+    "v0.12.0",
+    "Oct 18, 2024",
+    "737895d",
+  ),
+  (
+    "v0.12.0-rc2",
+    "Oct 15, 2024",
+    "ef309ca",
+  ),
+  (
+    "v0.12.0-rc1",
+    "Oct 4, 2024",
+    "d5b1f4a",
+  ),
+  (
+    "v0.11.1",
+    "May 17, 2024",
+    "5011510",
+  ),
+  (
+    "v0.11.0",
+    "Mar 15, 2024",
+    "2bf9f95",
+  ),
+  (
+    "v0.11.0-rc1",
+    "Mar 10, 2024",
+    "fe94bd8",
+  ),
+  ("v0.10.0", "Dec 4, 2023", "70ca0d2"),
+  ("v0.9.0", "Oct 31, 2023", "7bb4f6d"),
+  ("v0.8.0", "Sep 13, 2023", "360cc9b"),
+  ("v0.7.0", "Aug 7, 2023", "da8367e"),
+  ("v0.6.0", "Jun 30, 2023", "2dfd44f"),
+  ("v0.5.0", "Jun 9, 2023", "3a8b9cc"),
+  ("v0.4.0", "May 21, 2023", "f692a5e"),
+  ("v0.3.0", "Apr 26, 2023", "b1e0de0"),
+  ("v0.2.0", "Apr 12, 2023", "fe2640c"),
+  ("v0.1.0", "Apr 5, 2023", "b3faef4"),
+)
+
+#let get-version-type(version) = {
+  if version.contains("rc") {
+    "rc"
+  } else if (
+    version.match(
+      regex("v\d+\.\d+\.0$"),
+    )
+      != none
+  ) {
+    "minor"
+  } else {
+    "patch"
+  }
+}
+
+#let version-colors = (
+  minor: rgb("#2563eb"), // Blue
+  patch: rgb("#059669"), // Green
+  rc: rgb("#dc2626"), // Red
+)
+
+#let version-icons = (
+  minor: "🚀",
+  patch: "🔧",
+  rc: "🧪",
+)
+
+#align(center)[
+  #text(
+    size: 24pt,
+    weight: "bold",
+    fill: rgb("#1f2937"),
+  )[
+    Typst Version Timeline
+  ]
+  #v(0.3cm)
+  #text(
+    size: 12pt,
+    fill: rgb("#6b7280"),
+  )[
+    Release History & Development Milestones
+  ]
+]
+
+#v(1.5cm)
+
+// Legend
+#grid(
+  columns: 3,
+  column-gutter: 2cm,
+  align: left,
+  [
+    #text(
+      fill: version-colors.minor,
+      weight: "bold",
+    )[🚀 Major/Minor Releases]
+    #linebreak()
+    #text(
+      size: 9pt,
+      fill: rgb("#6b7280"),
+    )[New features & breaking changes]
+  ],
+  [
+    #text(
+      fill: version-colors.patch,
+      weight: "bold",
+    )[🔧 Patch Releases]
+    #linebreak()
+    #text(
+      size: 9pt,
+      fill: rgb("#6b7280"),
+    )[Bug fixes & improvements]
+  ],
+  [
+    #text(
+      fill: version-colors.rc,
+      weight: "bold",
+    )[🧪 Release Candidates]
+    #linebreak()
+    #text(
+      size: 9pt,
+      fill: rgb("#6b7280"),
+    )[Pre-release testing versions]
+  ],
+)
+
+#v(1cm)
+#line(
+  length: 100%,
+  stroke: 1pt + rgb("#e5e7eb"),
+)
+#v(0.5cm)
+
+// Timeline
+#for (
+  i,
+  (version, date, commit),
+) in version-data.enumerate() {
+  let version-type = get-version-type(
+    version,
+  )
+  let color = version-colors.at(
+    version-type,
+  )
+  let icon = version-icons.at(
+    version-type,
+  )
+
+  // Timeline entry
+  grid(
+    columns: (auto, 1fr, auto),
+    column-gutter: 1cm,
+    align: (left, left, right),
+
+    // Version badge
+    [
+      #box(
+        fill: color,
+        radius: 4pt,
+        inset: (x: 8pt, y: 4pt),
+      )[
+        #text(
+          fill: white,
+          weight: "bold",
+          size: 10pt,
+        )[#version]
+      ]
+    ],
+
+    // Version info
+    [
+      #text(
+        size: 14pt,
+        weight: "bold",
+        fill: rgb("#1f2937"),
+      )[
+        #icon #version
+      ]
+      #linebreak()
+      #text(
+        size: 10pt,
+        fill: rgb("#6b7280"),
+      )[
+        Released on #date
+      ]
+      #if version-type == "minor" [
+        #linebreak()
+        #text(
+          size: 9pt,
+          fill: color,
+          style: "italic",
+        )[
+          Major feature release
+        ]
+      ] else if version-type == "rc" [
+        #linebreak()
+        #text(
+          size: 9pt,
+          fill: color,
+          style: "italic",
+        )[
+          Release candidate
+        ]
+      ]
+    ],
+
+    // Commit hash
+    [
+      #box(
+        fill: rgb("#f3f4f6"),
+        radius: 3pt,
+        inset: (x: 6pt, y: 3pt),
+      )[
+        #text(
+          size: 9pt,
+          font: "JetBrains Mono",
+          fill: rgb("#374151"),
+        )[
+          #commit
+        ]
+      ]
+    ],
+  )
+
+  // Connecting line (except for last item)
+  if i < version-data.len() - 1 [
+    #v(0.3cm)
+    #pad(left: 2.5cm)[
+      #line(
+        angle: 90deg,
+        length: 0.8cm,
+        stroke: 2pt + rgb("#e5e7eb"),
+      )
+    ]
+    #v(0.3cm)
+  ]
+}
+
+#v(1.5cm)
+#line(
+  length: 100%,
+  stroke: 1pt + rgb("#e5e7eb"),
+)
+
+#align(center)[
+  #v(0.5cm)
+  #text(
+    size: 10pt,
+    fill: rgb("#6b7280"),
+    style: "italic",
+  )[
+    Development started in April 2023 • Latest stable: v0.13.1
+  ]
+]
