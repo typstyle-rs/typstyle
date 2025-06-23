@@ -30,6 +30,10 @@ const TEST_ASSETS: &[(&str, &str)] = &[
     ("packages/touying/core", "touying-core"),
     ("packages/touying/utils", "touying-utils"),
     ("unit/code/perf-nest", "deep-nested-args"),
+    (
+        "ai/feat/comprehensive-showcase",
+        "ai-comprehensive-showcase",
+    ),
 ];
 
 fn benchmark_pretty(c: &mut Criterion) {

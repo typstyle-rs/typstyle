@@ -1,0 +1,112 @@
+
+#let random(seed: 0) = 0
+
+= Data Processing Showcase
+
+== Data Generation
+
+#let generate-dataset(n: 20, seed: 42) = {
+  range(n).map(i => (
+    id: i + 1,
+    value: 50 + calc.sin(i * 0.3) * 20 + (random(seed: seed + i) - 0.5) * 10,
+    category: if calc.rem(i, 3) == 0 { "A" } else if calc.rem(i, 3) == 1 { "B" } else { "C" },
+    timestamp: datetime(year: 2024, month: 6, day: i + 1)
+  ))
+}
+
+== Statistical Functions
+
+#let statistics = (
+  mean: values => values.fold(0, (s, v) => s + v) / values.len(),
+
+  median: values => {
+    let sorted = values.sorted()
+    let n = sorted.len()
+    if calc.rem(n, 2) == 0 {
+      (sorted.at(int(n / 2) - 1) + sorted.at(int(n / 2))) / 2
+    } else {
+      sorted.at(int(n / 2))
+    }
+  },
+
+  std: values => {
+    let mean = values.fold(0, (s, v) => s + v) / values.len()
+    let variance = values.fold(0, (s, v) => s + calc.pow(v - mean, 2)) / values.len()
+    calc.sqrt(variance)
+  }
+)
+
+== Data Processing Pipeline
+
+#let process-data(raw-data) = {
+  // Group by category
+  let groups = (:)
+  for item in raw-data {
+    let cat = item.category
+    if cat not in groups {
+      groups.insert(cat, ())
+    }
+    groups.at(cat).push(item)
+  }
+
+  // Calculate statistics for each group
+  let results = (:)
+  for (category, items) in groups {
+    let values = items.map(item => item.value)
+    results.insert(category, (
+      count: items.len(),
+      mean: (statistics.mean)(values),
+      median: (statistics.median)(values),
+      std: (statistics.std)(values),
+      min: values.fold(values.first(), calc.min),
+      max: values.fold(values.first(), calc.max)
+    ))
+  }
+
+  results
+}
+
+== Analysis Results
+
+#{
+  let data = generate-dataset(n: 15)
+  let analysis = process-data(data)
+
+  [
+    === Dataset Summary
+    - Total records: #data.len()
+    - Categories: #analysis.keys().len()
+    - Date range: #data.first().timestamp.display() to #data.last().timestamp.display()
+
+    === Category Analysis
+  ]
+
+  for (category, stats) in analysis [
+    - *Category #category:*
+      - Count: #stats.count items
+      - Mean: #calc.round(stats.mean, digits: 2)
+      - Range: #calc.round(stats.min, digits: 1) – #calc.round(stats.max, digits: 1)
+      - Std Dev: #calc.round(stats.std, digits: 2)
+  ]
+}
+
+== Data Visualization Table
+
+#{
+  let data = generate-dataset(n: 12)
+
+  table(
+    columns: (auto, auto, auto, auto),
+    stroke: 0.5pt,
+    fill: (col, row) => if row == 0 { rgb("#e8f4fd") },
+
+    [*ID*], [*Value*], [*Category*], [*Date*],
+
+    ..data.map(item => (
+      str(item.id),
+      str(calc.round(item.value, digits: 1)),
+      item.category,
+      item.timestamp.display("[month]/[day]")
+    )).flatten()
+  )
+}

@@ -1,0 +1,686 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
+---
+// DUMMY
+
+#set page(margin: 0.75in, numbering: "1")
+#set text(font: "Libertinus Serif", size: 10pt)
+#set heading(numbering: "1.1")
+#set math.equation(numbering: "(1)")
+
+#let random(seed: 0) = 1
+
+// Complex function with diverse argument patterns
+#let create-advanced-document(
+  // Document metadata with complex defaults
+  title: "Typstyle Formatting Showcase",
+  authors: (
+    (name: "Dr. Sarah Chen", affiliation: "Institute of Technology"),
+    (name: "Prof. Michael Rodriguez", affiliation: "University of Science"),
+    (name: "Alice Johnson", affiliation: "Research Laboratory"),
+  ),
+  // Layout configuration with nested structures
+  layout: (
+    columns: 1,
+    spacing: (
+      sections: 1.5em,
+      paragraphs: 0.65em,
+      lists: 0.35em,
+    ),
+    typography: (
+      fonts: (
+        body: "Libertinus Serif",
+        headings: "Libertinus Serif",
+        code: "Fira Code",
+      ),
+      sizes: (
+        body: 10pt,
+        headings: (h1: 16pt, h2: 14pt, h3: 12pt),
+        captions: 9pt,
+      ),
+    ),
+  ),
+  // Processing options with complex logic
+  options: (
+    show-toc: true,
+    equation-numbering: true,
+    figure-placement: auto,
+    citation-style: "ieee",
+    code-highlighting: true,
+  ),
+  // Main content parameter
+  content,
+) = {
+  // Advanced page setup with conditional headers
+  set page(
+    columns: layout.columns,
+    header: context {
+      let page-num = counter(page).get().first()
+      if page-num > 1 {
+        grid(
+          columns: (1fr, auto, 1fr),
+          align: (left, center, right),
+          [#authors.first().name _et al._], [#title], [Page #page-num],
+        )
+      }
+    },
+    footer: align(center)[
+      #context {
+        let total = counter(page).final().first()
+        [Document compiled on #datetime.today().display() • #total pages total]
+      }
+    ],
+  )
+
+  // Typography configuration
+  set text(
+    font: layout.typography.fonts.body,
+    size: layout.typography.sizes.body,
+  )
+
+  // Heading styling with advanced formatting
+  show heading: it => {
+    let sizes = layout.typography.sizes.headings
+    let size = if it.level == 1 { sizes.h1 } else if it.level == 2 {
+      sizes.h2
+    } else { sizes.h3 }
+
+    (
+      v(layout.spacing.sections)
+        + block[
+          #text(
+            size: size,
+            weight: "bold",
+            font: layout.typography.fonts.headings,
+          )[
+            #if it.numbering != none [#counter(heading).display(it.numbering) ]
+            #it.body
+          ]
+        ]
+        + v(layout.spacing.paragraphs)
+    )
+  }
+
+  // Math equation formatting
+  if options.equation-numbering {
+    set math.equation(numbering: "(1)", supplement: [Eq.])
+  }
+
+  // Figure configuration
+  show figure: it => {
+    align(center)[
+      #it.body
+      #v(0.3em)
+      #text(
+        size: layout.typography.sizes.captions,
+        style: "italic",
+      )[
+        #it.supplement #context it.counter.display(it.numbering): #it.caption
+      ]
+    ]
+    v(layout.spacing.sections)
+  }
+
+  // Title page generation with complex author handling
+  if title != "" or authors.len() > 0 {
+    align(center)[
+      #v(2em)
+      #text(size: 20pt, weight: "bold")[#title]
+      #v(1.5em)
+
+      // Advanced author formatting
+      #if authors.len() > 0 {
+        grid(
+          columns: 1,
+          row-gutter: 0.5em,
+          ..authors.map(author => [
+            #text(size: 12pt)[#author.name] \
+            #text(size: 10pt, style: "italic")[#author.affiliation]
+          ])
+        )
+      }
+
+      #v(1em)
+      #text(size: 11pt)[
+        #datetime.today().display("[month repr:long] [day], [year]")
+      ]
+    ]
+    pagebreak()
+  }
+
+  // Table of contents
+  if options.show-toc {
+    outline(title: "Contents", depth: 3, indent: 2em)
+    pagebreak()
+  }
+
+  // Main content
+  content
+}
+
+// Complex data processing with nested functions
+#let statistical-toolkit = (
+  // Advanced statistical functions
+  descriptive: (
+    mean: values => values.fold(0, (s, v) => s + v) / values.len(),
+    median: values => {
+      let sorted = values.sorted()
+      let n = sorted.len()
+      if calc.rem(n, 2) == 0 {
+        (sorted.at(int(n / 2) - 1) + sorted.at(int(n / 2))) / 2
+      } else {
+        sorted.at(int(n / 2))
+      }
+    },
+    std: values => {
+      let mean = values.fold(0, (s, v) => s + v) / values.len()
+      let variance = (
+        values.fold(0, (s, v) => s + calc.pow(v - mean, 2)) / values.len()
+      )
+      calc.sqrt(variance)
+    },
+    quartiles: values => {
+      let sorted = values.sorted()
+      let n = sorted.len()
+      (
+        q1: sorted.at(calc.floor(n * 0.25)),
+        q2: sorted.at(calc.floor(n * 0.5)), // median
+        q3: sorted.at(calc.floor(n * 0.75)),
+      )
+    },
+  ),
+  // Data generation utilities
+  generators: (
+    normal: (n: 100, mean: 0, std: 1, seed: 42) => {
+      range(n).map(i => {
+        // Box-Muller transformation for normal distribution
+        let u1 = random(seed: seed + i * 2)
+        let u2 = random(seed: seed + i * 2 + 1)
+        mean + std * calc.sqrt(-2 * calc.ln(u1)) * calc.cos(2 * calc.pi * u2)
+      })
+    },
+    exponential: (n: 100, lambda: 1, seed: 42) => {
+      range(n).map(i => {
+        let u = random(seed: seed + i)
+        -calc.ln(u) / lambda
+      })
+    },
+  ),
+)
+
+// Begin the main document
+#create-advanced-document[
+
+  = Introduction to Advanced Typst Formatting
+
+  This comprehensive document demonstrates the sophisticated formatting capabilities of *Typstyle*, showcasing how it handles complex documents with mixed content, advanced data structures, mathematical expressions, and intricate code patterns.
+
+  The document structure includes #context { counter(heading).final().first() } main sections, #context { table.cell.colspan } different types of content blocks, and over #{ 1000 } lines of carefully formatted code and markup.
+
+  == Data Analysis and Visualization
+
+  === Statistical Dataset Generation
+
+  #{
+    let sample-data = (
+      normal: (statistical-toolkit.generators.normal)(
+        n: 50,
+        mean: 100,
+        std: 15,
+      ),
+      exponential: (statistical-toolkit.generators.exponential)(
+        n: 50,
+        lambda: 0.1,
+      ),
+      uniform: range(50).map(i => random(seed: 200 + i) * 50 + 25),
+    )
+
+    // Process each dataset
+    let results = (:)
+    for (name, data) in sample-data {
+      results.insert(name, (
+        mean: (statistical-toolkit.descriptive.mean)(data),
+        median: (statistical-toolkit.descriptive.median)(data),
+        std: (statistical-toolkit.descriptive.std)(data),
+        quartiles: (statistical-toolkit.descriptive.quartiles)(data),
+        min: data.fold(data.first(), calc.min),
+        max: data.fold(data.first(), calc.max),
+      ))
+    }
+
+    [
+      We generated three distinct datasets using different probability distributions:
+
+      #for (dist-name, stats) in results [
+        - *#dist-name.replace("-", " ").split(" ").map(s => upper(s.first()) + s.slice(1)).join(" ") Distribution:*
+          Mean = #calc.round(stats.mean, digits: 2),
+          Median = #calc.round(stats.median, digits: 2),
+          SD = #calc.round(stats.std, digits: 2)
+      ]
+    ]
+  }
+
+  === Advanced Table Formatting
+
+  #figure(
+    table(
+      columns: (auto, auto, auto, auto, auto, auto),
+      stroke: (x, y) => {
+        if y == 0 { (bottom: 2pt + rgb("#333")) } else if y <= 3 {
+          (bottom: 0.5pt + rgb("#ddd"))
+        } else { (top: 2pt + rgb("#333")) }
+      },
+      fill: (col, row) => {
+        if row == 0 { rgb("#e3f2fd") } else if row == 4 {
+          rgb("#f3e5f5")
+        } else if calc.rem(row, 2) == 0 { rgb("#f8f9fa") }
+      },
+
+      // Header
+      table.cell(colspan: 6, fill: rgb("#1565c0"), text(white, weight: "bold")[
+        *Comparative Statistical Analysis*
+      ]),
+
+      [*Distribution*], [*Mean*], [*Median*], [*Std Dev*], [*IQR*], [*Range*],
+
+      // Data rows with dynamic content
+      ..(
+        ("normal", "exponential", "uniform")
+          .map(dist => {
+            let data = if dist == "normal" {
+              (statistical-toolkit.generators.normal)(n: 50, mean: 100, std: 15)
+            } else if dist == "exponential" {
+              (statistical-toolkit.generators.exponential)(n: 50, lambda: 0.1)
+            } else {
+              range(50).map(i => random(seed: 200 + i) * 50 + 25)
+            }
+
+            let stats = (
+              mean: (statistical-toolkit.descriptive.mean)(data),
+              median: (statistical-toolkit.descriptive.median)(data),
+              std: (statistical-toolkit.descriptive.std)(data),
+              quartiles: (statistical-toolkit.descriptive.quartiles)(data),
+              min: data.fold(data.first(), calc.min),
+              max: data.fold(data.first(), calc.max),
+            )
+
+            (
+              upper(dist.first()) + dist.slice(1),
+              str(calc.round(stats.mean, digits: 2)),
+              str(calc.round(stats.median, digits: 2)),
+              str(calc.round(stats.std, digits: 2)),
+              str(calc.round(
+                stats.quartiles.q3 - stats.quartiles.q1,
+                digits: 2,
+              )),
+              str(calc.round(stats.max - stats.min, digits: 2)),
+            )
+          })
+          .flatten()
+      ),
+
+      // Footer
+      table.cell(colspan: 6, fill: rgb("#7b1fa2"), text(white, size: 9pt)[
+        *Summary:* All distributions show distinct characteristics suitable for different modeling scenarios
+      ]),
+    ),
+    caption: [Statistical comparison across three probability distributions with automatically calculated metrics],
+  )
+
+  == Mathematical Formulations
+
+  === Probability Theory Applications
+
+  The mathematical foundations underlying our analysis include several key distributions:
+
+  *Normal Distribution:*
+  $
+    f(x) = frac(1, sigma sqrt(2 pi)) exp(- frac((x - mu)^2, 2 sigma^2))
+  $ <normal-pdf>
+
+  *Exponential Distribution:*
+  $ f(x) = lambda e^(-lambda x) quad "for" x >= 0 $ <exp-pdf>
+
+  *Uniform Distribution:*
+  $
+    f(x) = cases(
+      frac(1, b - a) quad "if" a <= x <= b,
+      0 quad "otherwise"
+    )
+  $ <uniform-pdf>
+
+  === Advanced Calculations
+
+  The relationship between these distributions can be explored through moment-generating functions. For the normal distribution in @normal-pdf:
+
+  $ M_X(t) = exp(mu t + frac(sigma^2 t^2, 2)) $ <normal-mgf>
+
+  While the exponential distribution from @exp-pdf has:
+
+  $ M_X(t) = frac(lambda, lambda - t) quad "for" t < lambda $ <exp-mgf>
+
+  These moment-generating functions enable us to derive important properties:
+
+  #{
+    let normal-moments = (
+      mean: "μ",
+      variance: "σ²",
+      skewness: "0",
+      kurtosis: "3",
+    )
+
+    let exp-moments = (
+      mean: "1/λ",
+      variance: "1/λ²",
+      skewness: "2",
+      kurtosis: "9",
+    )
+
+    grid(
+      columns: (1fr, 1fr),
+      stroke: 0.5pt,
+      fill: (col, row) => if row == 0 { rgb("#f0f0f0") },
+
+      [*Normal Distribution Moments*], [*Exponential Distribution Moments*],
+
+      table(
+        columns: (auto, auto),
+        stroke: none,
+        [Mean:], [#normal-moments.mean],
+        [Variance:], [#normal-moments.variance],
+        [Skewness:], [#normal-moments.skewness],
+        [Kurtosis:], [#normal-moments.kurtosis],
+      ),
+
+      table(
+        columns: (auto, auto),
+        stroke: none,
+        [Mean:], [#exp-moments.mean],
+        [Variance:], [#exp-moments.variance],
+        [Skewness:], [#exp-moments.skewness],
+        [Kurtosis:], [#exp-moments.kurtosis],
+      ),
+    )
+  }
+
+  == Complex Code Structures
+
+  === Nested Function Definitions with Comments
+
+  #{
+    /* Advanced data processing pipeline
+    Demonstrates complex nested structures and formatting */
+    let data-processor = (
+      // Input validation and preprocessing
+      validate: data => {
+        // Check for required fields
+        let required-fields = ("id", "value", "timestamp")
+        data.filter(item => {
+          required-fields.all(field => field in item and item.at(field) != none)
+        })
+      },
+      // Statistical transformations
+      transform: (
+        data,
+        operations: (
+          standardize: true, /* Z-score normalization:
+                             (x - μ) / σ */
+          remove-outliers: true, // Remove values beyond 2.5 SD
+          impute-missing: "mean", /* Strategy for missing values:
+                                  "mean", "median", "mode" */
+        ),
+      ) => {
+        let values = data.map(item => item.value)
+        let mean = values.fold(0, (s, v) => s + v) / values.len()
+        let std = {
+          let variance = (
+            values.fold(0, (s, v) => s + calc.pow(v - mean, 2)) / values.len()
+          )
+          calc.sqrt(variance)
+        }
+
+        // Apply transformations based on operations
+        let processed = data.map(item => {
+          let value = item.value
+
+          // Standardization
+          if operations.standardize {
+            value = (value - mean) / std
+          }
+
+          // Outlier removal
+          if operations.remove-outliers and calc.abs(value) > 2.5 {
+            value = none // Mark for removal/imputation
+          }
+
+          (..item, transformed-value: value)
+        })
+
+        // Handle missing values
+        if operations.impute-missing == "mean" {
+          let valid-values = processed.filter(item => (
+            item.transformed-value != none
+          ))
+          let impute-mean = (
+            valid-values.fold(0, (s, item) => s + item.transformed-value)
+              / valid-values.len()
+          )
+
+          processed.map(item => {
+            if item.transformed-value == none {
+              (..item, transformed-value: impute-mean)
+            } else {
+              item
+            }
+          })
+        } else {
+          processed.filter(item => item.transformed-value != none)
+        }
+      },
+      // Analysis functions
+      analyze: (
+        data,
+        methods: (
+          correlation: true,
+          regression: "linear", /* Type of regression:
+                                "linear", "polynomial", "logistic" */
+          time-series: false,
+          clustering: none, /* Clustering method:
+                            "kmeans", "hierarchical", none */
+        ),
+      ) => {
+        // Correlation analysis
+        let correlation-results = if methods.correlation {
+          // Simplified correlation calculation
+          let x-vals = data.map(item => item.transformed-value)
+          let y-vals = data.map(item => item.at(
+            "secondary-value",
+            default: random(),
+          ))
+
+          let n = x-vals.len()
+          let sum-x = x-vals.fold(0, (s, v) => s + v)
+          let sum-y = y-vals.fold(0, (s, v) => s + v)
+          let sum-xy = range(n).fold(0, (s, i) => (
+            s + x-vals.at(i) * y-vals.at(i)
+          ))
+          let sum-x2 = x-vals.fold(0, (s, v) => s + v * v)
+          let sum-y2 = y-vals.fold(0, (s, v) => s + v * v)
+
+          (
+            (n * sum-xy - sum-x * sum-y)
+              / (
+                calc.sqrt(
+                  (n * sum-x2 - sum-x * sum-x) * (n * sum-y2 - sum-y * sum-y),
+                )
+                  + 1e-9
+              )
+          )
+        } else { none }
+
+        (
+          correlation: correlation-results,
+          sample-size: data.len(),
+          method: methods.regression,
+          timestamp: datetime.today(),
+        )
+      },
+    )
+
+    // @typstyle off - preserve specific formatting for demonstration
+    let   demonstration_of_escape_hatch    =    "This stays unformatted"
+    let normal_formatting = "This gets cleaned up automatically"
+
+    // Example usage of the data processor
+    let sample-dataset = range(30).map(i => (
+      id: i + 1,
+      value: 50 + calc.sin(i * 0.5) * 20 + (random(seed: i) - 0.5) * 10,
+      timestamp: datetime(year: 2024, month: 6, day: i + 1),
+      category: if calc.rem(i, 3) == 0 { "A" } else if calc.rem(i, 3) == 1 {
+        "B"
+      } else { "C" },
+    ))
+
+    let processed = (data-processor.transform)(
+      (data-processor.validate)(sample-dataset),
+      operations: (
+        standardize: true,
+        remove-outliers: true,
+        impute-missing: "mean",
+      ),
+    )
+
+    let analysis = (data-processor.analyze)(
+      processed,
+      methods: (
+        correlation: true,
+        regression: "linear",
+        time-series: false,
+        clustering: none,
+      ),
+    )
+
+    [
+      === Processing Results
+
+      - Original dataset: #sample-dataset.len() records
+      - After validation: #(data-processor.validate)(sample-dataset).len() records
+      - After transformation: #processed.len() records
+      - Correlation coefficient: #if analysis.correlation != none [#calc.round(analysis.correlation, digits: 4)] else [Not calculated]
+      - Analysis method: #analysis.method
+      - Processing completed: #analysis.timestamp.display()
+    ]
+  }
+
+  == Advanced Layout Demonstrations
+
+  === Multi-column Content with Complex Grids
+
+  #grid(
+    columns: (1fr, 1fr, 1fr),
+    column-gutter: 1em,
+    stroke: (x, y) => (
+      left: if x > 0 { 0.5pt + rgb("#ddd") },
+      bottom: 0.5pt + rgb("#ddd"),
+    ),
+    fill: (col, row) => {
+      let colors = (rgb("#fff3e0"), rgb("#e8f5e8"), rgb("#e3f2fd"))
+      colors.at(col)
+    },
+
+    // Column 1: Algorithm Description
+    [
+      *Algorithm Overview*
+
+      Our processing pipeline implements a three-stage approach:
+
+      1. *Data Ingestion*
+        - Validate input format
+        - Check data integrity
+        - Handle missing values
+
+      2. *Transformation*
+        - Apply statistical normalization
+        - Remove outliers using IQR method
+        - Impute missing values
+
+      3. *Analysis*
+        - Calculate descriptive statistics
+        - Perform correlation analysis
+        - Generate visualizations
+    ],
+
+    // Column 2: Implementation Details
+    [
+      *Implementation Notes*
+
+      The system uses functional programming principles with immutable data structures:
+
+      ```python
+      def process_pipeline(data):
+          validated = validate_data(data)
+          transformed = apply_transforms(
+              validated,
+              standardize=True,
+              remove_outliers=True
+          )
+          results = analyze_data(
+              transformed,
+              methods=['correlation', 'regression']
+          )
+          return results
+      ```
+
+      Performance characteristics:
+      - Time complexity: O(n log n)
+      - Space complexity: O(n)
+      - Memory efficient processing
+    ],
+
+    // Column 3: Results Summary
+    [
+      *Key Findings*
+
+      #let findings = (
+        ("Efficiency", "98.5%", "↗️"),
+        ("Accuracy", "94.2%", "✓"),
+        ("Coverage", "100%", "✓"),
+        ("Speed", "2.3s", "↗️"),
+      )
+
+      #table(
+        columns: (auto, auto, auto),
+        stroke: none,
+        ..findings
+          .map(((metric, value, status)) => (metric, value, status))
+          .flatten()
+      )
+
+      The automated processing achieved excellent results across all metrics, with particular strength in data coverage and processing speed.
+
+      *Recommendations:*
+      - Deploy to production environment
+      - Monitor performance metrics
+      - Schedule weekly data quality checks
+    ],
+  )
+
+  == Conclusion
+
+  This comprehensive showcase demonstrates Typstyle's exceptional ability to format complex documents containing:
+
+  - #{ ("Functions", "Tables", "Mathematical expressions", "Code blocks", "Comments", "Mixed content").len() } major content types
+  - Advanced data structures with #{ range(5).map(i => calc.pow(2, i)).fold(0, (s, v) => s + v) } nested elements
+  - Statistical calculations processing #{ 30 } data points
+  - Dynamic content generation with #{ datetime.today().weekday() } formatting rules
+
+  Typstyle successfully maintains code readability while preserving semantic meaning across all these diverse content types, making it an invaluable tool for creating professional, maintainable Typst documents.
+
+  #align(center)[
+    #text(style: "italic")[
+      _Document automatically formatted with Typstyle • #{ datetime.today().display() }_
+    ]
+  ]
+
+]

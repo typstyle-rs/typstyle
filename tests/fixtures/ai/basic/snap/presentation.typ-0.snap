@@ -1,0 +1,234 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/ai/basic/presentation.typ
+---
+/// typstyle: wrap_text
+
+#set page(
+  width: 16cm,
+  height: 9cm,
+  margin: 1cm,
+)
+#set text(
+  size: 20pt,
+)
+
+#align(
+  center,
+)[
+  #text(
+    size: 32pt,
+    weight: "bold",
+  )[
+    Modern
+    Typography
+    with
+    Typst
+  ]
+
+  #v(
+    1cm,
+  )
+
+  #text(
+    size: 18pt,
+  )[
+    A
+    Comprehensive
+    Overview
+  ]
+
+  #v(
+    0.5cm,
+  )
+
+  _Presenter
+  Name
+  •
+  Conference
+  2024_
+]
+
+#pagebreak()
+
+= Agenda
+
+#set enum(
+  numbering: "1.",
+  tight: false,
+)
+
++ Introduction
+  to
+  Typst
++ Key
+  Features
+  and
+  Benefits
++ Live
+  Demonstration
++ Comparison
+  with
+  Alternatives
++ Q&A
+  Session
+
+#align(
+  bottom
+    + right,
+)[
+  #text(
+    size: 14pt,
+    fill: gray,
+  )[Slide
+    2]
+]
+
+#pagebreak()
+
+= What is Typst?
+
+#grid(
+  columns: (
+    1fr,
+    1fr,
+  ),
+  gutter: 1cm,
+  [
+    == Key Characteristics
+
+    - Modern
+      markup
+      language
+    - Fast
+      compilation
+    - Programming
+      capabilities
+    - Beautiful
+      output
+
+    == Use Cases
+
+    - Academic
+      papers
+    - Reports
+      and
+      documentation
+    - Books
+      and
+      articles
+    - Presentations
+      like
+      this
+      one
+  ],
+  [
+    #rect(
+      width: 100%,
+      height: 6cm,
+      fill: gradient.linear(
+        (
+          red.lighten(
+            60%,
+          ),
+          0%,
+        ),
+        (
+          blue.lighten(
+            60%,
+          ),
+          100%,
+        ),
+      ),
+      stroke: 2pt
+        + gray,
+    )[
+      #align(
+        center
+          + horizon,
+      )[
+        #text(
+          size: 24pt,
+          weight: "bold",
+          fill: white,
+        )[
+          Visual
+          Element
+        ]
+      ]
+    ]
+  ],
+)
+
+#pagebreak()
+
+= Code Example
+
+Here's
+how
+easy
+it
+is
+to
+create
+formatted
+content:
+
+```typst
+#let highlight(content) = {
+  rect(
+    fill: yellow.lighten(80%),
+    inset: 8pt,
+    radius: 4pt,
+    content
+  )
+}
+
+#highlight[This text is highlighted!]
+```
+
+#v(
+  0.5cm,
+)
+
+Result:
+#rect(
+  fill: yellow.lighten(
+    80%,
+  ),
+  inset: 8pt,
+  radius: 4pt,
+)[This
+  text
+  is
+  highlighted!]
+
+#pagebreak()
+
+= Thank You!
+
+#align(
+  center
+    + horizon,
+)[
+  #text(
+    size: 28pt,
+    weight: "bold",
+  )[
+    Questions?
+  ]
+
+  #v(
+    1cm,
+  )
+
+  #text(
+    size: 16pt,
+  )[
+    Contact:
+    presenter
+
+    Repository:
+    github.com/example/typst-demo
+  ]
+]

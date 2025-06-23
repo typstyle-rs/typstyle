@@ -1,0 +1,333 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/ai/show/version-history-3.typ
+---
+#let version-data = (
+  ("v0.13.1", "Mar 7", "8ace67d"),
+  ("v0.13.0", "Feb 19", "8dce676"),
+  ("v0.13.0-rc1", "Feb 5", "56d8188"),
+  ("v0.12.0", "Oct 18, 2024", "737895d"),
+  ("v0.12.0-rc2", "Oct 15, 2024", "ef309ca"),
+  ("v0.12.0-rc1", "Oct 4, 2024", "d5b1f4a"),
+  ("v0.11.1", "May 17, 2024", "5011510"),
+  ("v0.11.0", "Mar 15, 2024", "2bf9f95"),
+  ("v0.11.0-rc1", "Mar 10, 2024", "fe94bd8"),
+  ("v0.10.0", "Dec 4, 2023", "70ca0d2"),
+  ("v0.9.0", "Oct 31, 2023", "7bb4f6d"),
+  ("v0.8.0", "Sep 13, 2023", "360cc9b"),
+  ("v0.7.0", "Aug 7, 2023", "da8367e"),
+  ("v0.6.0", "Jun 30, 2023", "2dfd44f"),
+  ("v0.5.0", "Jun 9, 2023", "3a8b9cc"),
+  ("v0.4.0", "May 21, 2023", "f692a5e"),
+  ("v0.3.0", "Apr 26, 2023", "b1e0de0"),
+  ("v0.2.0", "Apr 12, 2023", "fe2640c"),
+  ("v0.1.0", "Apr 5, 2023", "b3faef4"),
+)
+
+#set page(width: auto, height: auto, margin: 1.5cm)
+#set text(font: "Noto Sans SC", size: 10pt)
+
+#let parse-date(date-str) = {
+  let months = (
+    "Jan": 1,
+    "Feb": 2,
+    "Mar": 3,
+    "Apr": 4,
+    "May": 5,
+    "Jun": 6,
+    "Jul": 7,
+    "Aug": 8,
+    "Sep": 9,
+    "Oct": 10,
+    "Nov": 11,
+    "Dec": 12,
+  )
+
+  let parts = date-str.split(" ")
+  let month = parts.at(0)
+  let day = int(parts.at(1).replace(",", ""))
+  let year = if parts.len() > 2 { int(parts.at(2)) } else { 2025 }
+
+  (year - 2023) * 12 + months.at(month) + day / 30.0
+}
+
+#let get-version-type(version) = {
+  if version.contains("rc") { "rc" } else if version.match(regex("v\d+\.\d+\.0$")) != none { "minor" } else { "patch" }
+}
+
+#let version-colors = (
+  minor: rgb("#2563eb"),
+  patch: rgb("#059669"),
+  rc: rgb("#dc2626"),
+)
+
+#let bar-heights = (
+  minor: 20pt,
+  patch: 16pt,
+  rc: 12pt,
+)
+
+#align(center)[
+  #text(size: 20pt, weight: "bold")[Typst Release Gantt Chart]
+  #v(0.3cm)
+  #text(size: 12pt, fill: rgb("#6b7280"))[Version Timeline (April 2023 - March 2025)]
+]
+
+#v(1cm)
+
+// Parse dates and find range
+#let dates = version-data.map(item => parse-date(item.at(1)))
+#let min-date = calc.min(..dates)
+#let max-date = calc.max(..dates)
+#let date-range = max-date - min-date
+
+// Group versions by minor version
+#let grouped-versions = (:)
+#for (version, date, commit) in version-data {
+  let minor-key = version.split(".").slice(0, 2).join(".")
+  if minor-key not in grouped-versions {
+    grouped-versions.insert(minor-key, ())
+  }
+  grouped-versions.at(minor-key).push((version, date, commit, parse-date(date)))
+}
+
+// Sort each group by date (newest first) and calculate timespans
+#let version-rows = ()
+#for (i, (minor-ver, versions)) in grouped-versions.pairs().enumerate() {
+  let sorted-versions = versions.sorted(key: v => v.at(3))
+  let start-date = sorted-versions.first().at(3) // First release (possibly RC)
+
+  // Find next minor version's start date
+  let next-minor-start = if i < grouped-versions.len() - 1 {
+    let next-versions = grouped-versions.pairs().at(i + 1).at(1)
+    next-versions.sorted(key: v => v.at(3)).first().at(3)
+  } else {
+    max-date + 1 // For the latest version, extend to chart end
+  }
+
+  let end-date = next-minor-start
+  let final-version = sorted-versions.last().at(0)
+  let timespan-days = (end-date - start-date) * 30
+
+  version-rows.push((
+    minor-ver,
+    final-version,
+    sorted-versions,
+    start-date,
+    end-date,
+    timespan-days,
+  ))
+}
+
+// Sort rows by start date (newest first)
+#let version-rows = version-rows.sorted(key: row => row.at(3)).rev()
+
+// Chart dimensions
+#let chart-width = 20cm
+#let chart-height = (version-rows.len() * 1.2cm)
+#let row-height = 1cm
+
+// Time axis labels
+#let time-labels = ()
+#for month in range(int(min-date), int(max-date) + 2) {
+  let year = 2023 + calc.floor((month - 1) / 12)
+  let month-num = calc.rem(month - 1, 12) + 1
+  let month-names = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+  time-labels.push((month, month-names.at(month-num - 1) + " " + str(year)))
+}
+
+// Draw chart
+#box(width: chart-width + 4cm, height: chart-height + 2cm, stroke: 1pt + rgb("#e5e7eb"))[
+  #place(
+    dx: 0cm,
+    dy: 0cm,
+
+    // Background grid
+    stack(
+      dir: ttb,
+      spacing: 0pt,
+
+      // Time axis
+      box(height: 1.5cm)[
+        #for (time-val, label) in time-labels {
+          let x-pos = (time-val - min-date) / date-range * chart-width
+          place(
+            dx: 3cm + x-pos,
+            dy: 0.2cm,
+            rotate(45deg)[
+              #text(size: 8pt, fill: rgb("#6b7280"))[#label]
+            ],
+          )
+          place(
+            dx: 3cm + x-pos,
+            dy: 1cm,
+            line(
+              angle: 90deg,
+              length: chart-height + 0.5cm,
+              stroke: 0.5pt + rgb("#f3f4f6"),
+            ),
+          )
+        }
+      ],
+
+      // Version bars
+      box(height: chart-height)[
+        #for (i, (minor-ver, final-version, versions, start-date, end-date, timespan)) in version-rows.enumerate() {
+          let y-pos = i * 1.2cm + 0.5cm
+          let start-x = (start-date - min-date) / date-range * chart-width
+          let end-x = (end-date - min-date) / date-range * chart-width
+          let bar-width = calc.max(0.3cm, end-x - start-x)
+
+          // Version label
+          place(
+            dx: 0cm,
+            dy: y-pos,
+            box(width: 2.8cm, height: row-height)[
+              #align(right + horizon)[
+                #text(size: 10pt, weight: "bold")[#minor-ver]
+                #linebreak()
+                #text(size: 8pt, fill: rgb("#6b7280"))[#final-version]
+              ]
+            ],
+          )
+
+          // Development timespan bar
+          place(
+            dx: 3cm + start-x,
+            dy: y-pos + 0.2cm,
+            {
+              // Main bar background (full minor version period)
+              box(
+                width: bar-width,
+                height: 0.6cm,
+                fill: rgb("#f3f4f6"),
+                stroke: 1pt + rgb("#d1d5db"),
+                radius: 3pt,
+              )
+
+              // Overlay segments for each version
+              for (
+                j,
+                (version, date, commit, version-date),
+              ) in versions.enumerate() {
+                let segment-x = if end-date == start-date {
+                  j * 0.2cm
+                } else {
+                  (
+                    (version-date - start-date) / (end-date - start-date) * bar-width
+                  )
+                }
+                let version-type = get-version-type(version)
+                let color = version-colors.at(version-type)
+
+                // Different markers for different version types
+                if version-type == "minor" {
+                  place(
+                    dx: segment-x - 0.1cm,
+                    dy: 0.1cm,
+                    circle(radius: 4pt, fill: color, stroke: 2pt + white),
+                  )
+                } else if version-type == "patch" {
+                  place(
+                    dx: segment-x,
+                    dy: 0cm,
+                    line(angle: 90deg, length: 0.6cm, stroke: 2pt + color),
+                  )
+                } else {
+                  // RC
+                  place(
+                    dx: segment-x - 0.05cm,
+                    dy: 0.15cm,
+                    rect(
+                      width: 0.1cm,
+                      height: 0.3cm,
+                      fill: color,
+                      stroke: 1pt + white,
+                    ),
+                  )
+                }
+
+                // Version label
+                place(
+                  dx: segment-x - 0.5cm,
+                  dy: -0.8cm,
+                  box(
+                    fill: color.lighten(90%),
+                    radius: 2pt,
+                    inset: (x: 3pt, y: 1pt),
+                    stroke: 0.5pt + color,
+                  )[
+                    #text(size: 6pt, fill: color.darken(30%))[#version]
+                  ],
+                )
+              }
+
+              // Timespan label
+              place(
+                dx: bar-width + 0.2cm,
+                dy: 0.15cm,
+                text(size: 8pt, fill: rgb("#6b7280"), style: "italic")[
+                  #if timespan < 7 {
+                    str(int(timespan)) + " days"
+                  } else if timespan < 30 {
+                    str(int(timespan / 7)) + " weeks"
+                  } else {
+                    str(calc.round(timespan / 30, digits: 1)) + " months"
+                  }
+                ],
+              )
+            },
+          )
+        }
+      ],
+    ),
+  )
+]
+
+#v(1cm)
+
+// Legend
+#grid(
+  columns: 4,
+  column-gutter: 2cm,
+  align: left,
+
+  [
+    #circle(radius: 4pt, fill: version-colors.minor, stroke: 2pt + white)
+    #h(0.3cm)
+    #text(weight: "bold")[Minor Release]
+    #linebreak()
+    #text(size: 8pt, fill: rgb("#6b7280"))[Major version milestone]
+  ],
+
+  [
+    #line(angle: 90deg, length: 0.6cm, stroke: 2pt + version-colors.patch)
+    #h(0.3cm)
+    #text(weight: "bold")[Patch Release]
+    #linebreak()
+    #text(size: 8pt, fill: rgb("#6b7280"))[Bug fixes & improvements]
+  ],
+
+  [
+    #rect(width: 0.1cm, height: 0.3cm, fill: version-colors.rc, stroke: 1pt + white)
+    #h(0.3cm)
+    #text(weight: "bold")[Release Candidate]
+    #linebreak()
+    #text(size: 8pt, fill: rgb("#6b7280"))[Pre-release testing]
+  ],
+
+  [
+    #box(width: 1cm, height: 0.6cm, fill: rgb("#f3f4f6"), stroke: 1pt + rgb("#d1d5db"), radius: 3pt)
+    #linebreak()
+    #text(weight: "bold")[Minor Version Lifecycle]
+    #linebreak()
+    #text(size: 8pt, fill: rgb("#6b7280"))[Until next minor release]
+  ],
+)
+
+#align(center)[
+  #v(0.5cm)
+  #text(size: 9pt, fill: rgb("#6b7280"), style: "italic")[
+    Bars span full minor version lifecycle • Ticks mark patch releases
+  ]
+]
