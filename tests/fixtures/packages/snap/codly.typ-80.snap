@@ -957,7 +957,10 @@ input_file: tests/fixtures/packages/codly.typ
   }
 
   let annot-width = (
-    annot-bodies-width.fold(0pt, (a, b) => calc.max(a, b))
+    annot-bodies-width.fold(
+      0pt,
+      (a, b) => calc.max(a, b),
+    )
       + padding.left
       + padding.right
       + lr-width
@@ -1180,11 +1183,14 @@ input_file: tests/fixtures/packages/codly.typ
       ).get()
     })
     (
-      grid.header(repeat: header-repeat, grid.cell(
-        transform(header) + language-block-final,
-        colspan: 2,
-        ..header-args,
-      )),
+      grid.header(
+        repeat: header-repeat,
+        grid.cell(
+          transform(header) + language-block-final,
+          colspan: 2,
+          ..header-args,
+        ),
+      ),
     )
   } else {
     none
@@ -1342,11 +1348,10 @@ input_file: tests/fixtures/packages/codly.typ
       ).get()
     })
     (
-      grid.footer(repeat: footer-repeat, grid.cell(
-        transform(footer),
-        colspan: 2,
-        ..footer-args,
-      )),
+      grid.footer(
+        repeat: footer-repeat,
+        grid.cell(transform(footer), colspan: 2, ..footer-args),
+      ),
     )
   } else {
     ()
@@ -1487,11 +1492,14 @@ input_file: tests/fixtures/packages/codly.typ
       state("codly-reference-sep", __codly-args.reference-sep.default).get()
     })
     let (tag, label) = __codly-get-parts(it.element)
-    link(it.target, (
-      ref(label),
-      sep,
-      tag,
-    ).join())
+    link(
+      it.target,
+      (
+        ref(label),
+        sep,
+        tag,
+      ).join(),
+    )
   } else if (
     it.element != none
       and it.element.func() == figure
@@ -1505,11 +1513,14 @@ input_file: tests/fixtures/packages/codly.typ
       state("codly-reference-sep", __codly-args.reference-sep.default).get()
     })
     let (num, label) = __codly-get-parts(it.element)
-    link(it.target, (
-      ref(label),
-      sep,
-      num,
-    ).join())
+    link(
+      it.target,
+      (
+        ref(label),
+        sep,
+        num,
+      ).join(),
+    )
   } else if (
     it.element != none
       and it.element.func() == raw.line
@@ -1538,11 +1549,14 @@ input_file: tests/fixtures/packages/codly.typ
       ).get()
     })
 
-    link(it.target, (
-      ref(lab),
-      sep,
-      reference-number-format(it.element.number),
-    ).join())
+    link(
+      it.target,
+      (
+        ref(lab),
+        sep,
+        reference-number-format(it.element.number),
+      ).join(),
+    )
   } else {
     it
   }

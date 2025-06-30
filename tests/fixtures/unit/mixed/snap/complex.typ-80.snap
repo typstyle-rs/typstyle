@@ -64,17 +64,26 @@ $
     A figure with
     * badly * formatted
     _caption_
-    #highlight(fill: yellow.lighten(
-      50%,
-    ))[
+    #highlight(
+      fill: yellow.lighten(
+        50%,
+      ),
+    )[
       highlighted text]
   ],
   supplement: none,
 )[
-  #rect(width: 100pt, height: 50pt, fill: blue.lighten(30%))
-  #circle(radius: 15pt, fill: red.darken(
-    20%,
-  ))
+  #rect(
+    width: 100pt,
+    height: 50pt,
+    fill: blue.lighten(30%),
+  )
+  #circle(
+    radius: 15pt,
+    fill: red.darken(
+      20%,
+    ),
+  )
 ]
 
 / Term: Definition with
@@ -83,10 +92,13 @@ $
     1em,
   ) #strike[struck text]
 / Another term: Definition with extra spaces
-  #block(width: 50%, inset: (
-    left: 2em,
-    top: 5pt,
-  ))[indented definition]
+  #block(
+    width: 50%,
+    inset: (
+      left: 2em,
+      top: 5pt,
+    ),
+  )[indented definition]
 
 #table(
   columns: (1fr, 2fr),

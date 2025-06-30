@@ -2927,13 +2927,17 @@ input_file: tests/fixtures/packages/codly.typ
   ) {
     state(
       "codly-skips",
-    ).update(())
+    ).update(
+      (),
+    )
   }
 
   if has-annotations {
     state(
       "codly-annotations",
-    ).update(())
+    ).update(
+      (),
+    )
   }
 
   if (
@@ -2969,7 +2973,9 @@ input_file: tests/fixtures/packages/codly.typ
   ) {
     state(
       "codly-highlights",
-    ).update(())
+    ).update(
+      (),
+    )
   }
 }
 
@@ -3341,7 +3347,9 @@ input_file: tests/fixtures/packages/codly.typ
     body
     state(
       "codly-extra-args",
-    ).update((:))
+    ).update(
+      (:),
+    )
   }
 }
 

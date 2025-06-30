@@ -88,26 +88,22 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
   )
 }
 
-#assert.eq(parse-argument-list("text)"), (
-  args: (("text",),),
-  brace-level: -1,
-  processed-chars: 5,
-))
-#assert.eq(parse-argument-list("pos,"), (
-  args: (("pos",),),
-  brace-level: 0,
-  processed-chars: 4,
-))
-#assert.eq(parse-argument-list("12, 13, a)"), (
-  args: (("12",), ("13",), ("a",)),
-  brace-level: -1,
-  processed-chars: 10,
-))
-#assert.eq(parse-argument-list("a: 2, b: 3)"), (
-  args: (("a", "2"), ("b", "3")),
-  brace-level: -1,
-  processed-chars: 11,
-))
+#assert.eq(
+  parse-argument-list("text)"),
+  (args: (("text",),), brace-level: -1, processed-chars: 5),
+)
+#assert.eq(
+  parse-argument-list("pos,"),
+  (args: (("pos",),), brace-level: 0, processed-chars: 4),
+)
+#assert.eq(
+  parse-argument-list("12, 13, a)"),
+  (args: (("12",), ("13",), ("a",)), brace-level: -1, processed-chars: 10),
+)
+#assert.eq(
+  parse-argument-list("a: 2, b: 3)"),
+  (args: (("a", "2"), ("b", "3")), brace-level: -1, processed-chars: 11),
+)
 
 
 #let eval-doc-comment-test((line-number, line), label-prefix: "") = {
@@ -151,26 +147,26 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
   )
 }
 
-#assert.eq(parse-description-and-types(("asd",)), (
-  description: "asd",
-  types: none,
-))
-#assert.eq(parse-description-and-types(("->int",)), (
-  description: "",
-  types: ("int",),
-))
-#assert.eq(parse-description-and-types((" -> int",)), (
-  description: "",
-  types: ("int",),
-))
-#assert.eq(parse-description-and-types(("abcdefg -> int",)), (
-  description: "abcdefg",
-  types: ("int",),
-))
-#assert.eq(parse-description-and-types(("abcdefg", "-> int")), (
-  description: "abcdefg",
-  types: ("int",),
-))
+#assert.eq(
+  parse-description-and-types(("asd",)),
+  (description: "asd", types: none),
+)
+#assert.eq(
+  parse-description-and-types(("->int",)),
+  (description: "", types: ("int",)),
+)
+#assert.eq(
+  parse-description-and-types((" -> int",)),
+  (description: "", types: ("int",)),
+)
+#assert.eq(
+  parse-description-and-types(("abcdefg -> int",)),
+  (description: "abcdefg", types: ("int",)),
+)
+#assert.eq(
+  parse-description-and-types(("abcdefg", "-> int")),
+  (description: "abcdefg", types: ("int",)),
+)
 
 
 
@@ -424,15 +420,18 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
   )
   ```.text
 
-  assert.eq(parse(src).functions, (
+  assert.eq(
+    parse(src).functions,
     (
-      name: "func",
-      description: "Description",
-      args: (
-        pos: (description: ""),
-        named: (description: "", default: "2"),
+      (
+        name: "func",
+        description: "Description",
+        args: (
+          pos: (description: ""),
+          named: (description: "", default: "2"),
+        ),
+        return-types: none,
       ),
-      return-types: none,
     ),
-  ))
+  )
 }

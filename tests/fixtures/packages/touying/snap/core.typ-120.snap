@@ -379,13 +379,16 @@ input_file: tests/fixtures/packages/touying/core.typ
         )
         result.push(cont)
       }
-      result.push(utils.reconstruct-styled(child, split-content-into-slides(
-        self: self,
-        recaller-map: recaller-map,
-        new-start: true,
-        is-first-slide: is-first-slide,
-        child.child,
-      )))
+      result.push(utils.reconstruct-styled(
+        child,
+        split-content-into-slides(
+          self: self,
+          recaller-map: recaller-map,
+          new-start: true,
+          is-first-slide: is-first-slide,
+          child.child,
+        ),
+      ))
     } else {
       let child = if utils.is-styled(child) {
         // Split the content into slides recursively for styled content
@@ -876,18 +879,23 @@ input_file: tests/fixtures/packages/touying/core.typ
     result.push("cover(" + cover-arr.sum() + ")")
     cover-arr = ()
   }
-  let equation = math.equation(block: eqt.block, numbering: eqt.numbering, supplement: eqt.supplement, eval(
-    "$" + result.sum(default: "") + "$",
-    scope: eqt.scope
-      + (
-        cover: (..args) => {
-          let cover = eqt.scope.at("cover", default: cover)
-          if args.pos().len() != 0 {
-            cover(args.pos().first())
-          }
-        },
-      ),
-  ))
+  let equation = math.equation(
+    block: eqt.block,
+    numbering: eqt.numbering,
+    supplement: eqt.supplement,
+    eval(
+      "$" + result.sum(default: "") + "$",
+      scope: eqt.scope
+        + (
+          cover: (..args) => {
+            let cover = eqt.scope.at("cover", default: cover)
+            if args.pos().len() != 0 {
+              cover(args.pos().first())
+            }
+          },
+        ),
+    ),
+  )
   if eqt-metadata.has("label") and eqt-metadata.label != <touying-temporary-mark> {
     equation = utils.label-it(equation, eqt-metadata.label)
   }
@@ -954,9 +962,12 @@ input_file: tests/fixtures/packages/touying/core.typ
     result.push("\\phantom{" + cover-arr.sum() + "}")
     cover-arr = ()
   }
-  let equation = (eqt.mitex)(block: eqt.block, numbering: eqt.numbering, supplement: eqt.supplement, result.sum(
-    default: "",
-  ))
+  let equation = (eqt.mitex)(
+    block: eqt.block,
+    numbering: eqt.numbering,
+    supplement: eqt.supplement,
+    result.sum(default: ""),
+  )
   if eqt-metadata.has("label") and eqt-metadata.label != <touying-temporary-mark> {
     equation = utils.label-it(equation, eqt-metadata.label)
   }

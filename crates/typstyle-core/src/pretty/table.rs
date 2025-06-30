@@ -1,13 +1,9 @@
 use typst_syntax::{ast::*, SyntaxKind};
 
-use super::{
-    prelude::*,
-    util::{func_name, get_parenthesized_args_untyped},
-    Context,
-};
+use super::{prelude::*, util::func_name, Context};
 use crate::{
     ext::StrExt,
-    pretty::{layout::table::TableCollector, util::get_parenthesized_args, Mode},
+    pretty::{args, layout::table::TableCollector, Mode},
     PrettyPrinter,
 };
 
@@ -42,7 +38,7 @@ impl<'a> PrettyPrinter<'a> {
         let mut collector =
             TableCollector::new(&self.arena, if can_reflow_cells { 0 } else { columns });
 
-        for node in get_parenthesized_args_untyped(table.args()) {
+        for node in args::get_parenthesized_args_untyped(table.args()) {
             if let Some(arg) = node.cast::<Arg>() {
                 match arg {
                     Arg::Pos(Expr::FuncCall(func_call)) if is_header_footer(func_call) => {
@@ -89,7 +85,7 @@ fn is_table_formattable(func_call: FuncCall<'_>) -> bool {
     {
         return false;
     }
-    get_parenthesized_args(func_call.args()).any(|it| matches!(it, Arg::Pos(_)))
+    args::get_parenthesized_args(func_call.args()).any(|it| matches!(it, Arg::Pos(_)))
 }
 
 fn get_table_columns(func_call: FuncCall<'_>) -> Option<usize> {

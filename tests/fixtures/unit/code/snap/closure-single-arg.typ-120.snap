@@ -1,7 +1,6 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/code/closure-single-arg.typ
-snapshot_kind: text
 ---
 #{
   let row_len = 10

@@ -523,9 +523,9 @@ input_file: tests/fixtures/packages/codly.typ
           assert("tag" in hl, message: "codly: tag is required for item reference")
           hl.tag
         }
-        place(hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(str(
-              block-label,
-            ))]#hl.label])
+        place(hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(
+              str(block-label),
+            )]#hl.label])
       } else {
         none
       }
@@ -621,7 +621,11 @@ input_file: tests/fixtures/packages/codly.typ
   block-label: none,
   extra: (:),
 ) = context {
-  show raw.line.where(label: <codly-highlighted>): it => codly-line(it, block-label: block-label, extra: (:))
+  show raw.line.where(label: <codly-highlighted>): it => codly-line(
+    it,
+    block-label: block-label,
+    extra: (:),
+  )
 
   if type(it) != content or it.func() != raw {
     panic("codly-raw: body must be a raw content")
@@ -924,7 +928,15 @@ input_file: tests/fixtures/packages/codly.typ
     0pt
   }
 
-  let annot-width = annot-bodies-width.fold(0pt, (a, b) => calc.max(a, b)) + padding.left + padding.right + lr-width
+  let annot-width = (
+    annot-bodies-width.fold(
+      0pt,
+      (a, b) => calc.max(a, b),
+    )
+      + padding.left
+      + padding.right
+      + lr-width
+  )
 
   // Get the height of an individual line.
   let line-height = measure(raw.line(1, 1, "Hello, World!", [Hello, World!])).height + padding.top + padding.bottom
@@ -1121,11 +1133,14 @@ input_file: tests/fixtures/packages/codly.typ
       state("codly-header-transform", __codly-args.header-transform.default).get()
     })
     (
-      grid.header(repeat: header-repeat, grid.cell(
-        transform(header) + language-block-final,
-        colspan: 2,
-        ..header-args,
-      )),
+      grid.header(
+        repeat: header-repeat,
+        grid.cell(
+          transform(header) + language-block-final,
+          colspan: 2,
+          ..header-args,
+        ),
+      ),
     )
   } else {
     none
@@ -1158,9 +1173,9 @@ input_file: tests/fixtures/packages/codly.typ
         } else {
           num
         }
-        place(hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(str(
-              block-label,
-            ))]#current-annot.label])
+        place(hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(
+              str(block-label),
+            )]#current-annot.label])
       } else {
         none
       }
@@ -1277,7 +1292,10 @@ input_file: tests/fixtures/packages/codly.typ
       state("codly-footer-transform", __codly-args.footer-transform.default).get()
     })
     (
-      grid.footer(repeat: footer-repeat, grid.cell(transform(footer), colspan: 2, ..footer-args)),
+      grid.footer(
+        repeat: footer-repeat,
+        grid.cell(transform(footer), colspan: 2, ..footer-args),
+      ),
     )
   } else {
     ()
@@ -1291,71 +1309,78 @@ input_file: tests/fixtures/packages/codly.typ
       )
   )
 
-  block(breakable: breakable, clip: true, width: 100%, radius: radius, stroke: stroke, {
-    if is-complex-fill {
-      // We use place to draw the fill on a separate layer.
-      place(grid(
-        columns: if has-annotations {
-          (1fr, annot-width)
-        } else {
-          (1fr,)
-        },
-        stroke: none,
-        inset: padding.pairs().map(((k, x)) => (k, x * 1.5)).to-dict(),
-        fill: (x, y) => if zebra-color != none and calc.rem(y, 2) == 0 {
-          zebra-color
-        } else {
-          fill
-        },
-        ..header,
-        ..it.lines.map(line => hide(line)),
-        ..footer,
-      ))
-    }
-    if numbers-format != none {
-      grid(
-        columns: if has-annotations {
-          (auto, 1fr, annot-width)
-        } else {
-          (auto, 1fr)
-        },
-        inset: padding.pairs().map(((k, x)) => (k, x * 1.5)).to-dict(),
-        stroke: none,
-        align: (numbers-alignment, left + horizon),
-        fill: if is-complex-fill {
-          none
-        } else {
-          (x, y) => if zebra-color != none and calc.rem(y, 2) == 0 {
+  block(
+    breakable: breakable,
+    clip: true,
+    width: 100%,
+    radius: radius,
+    stroke: stroke,
+    {
+      if is-complex-fill {
+        // We use place to draw the fill on a separate layer.
+        place(grid(
+          columns: if has-annotations {
+            (1fr, annot-width)
+          } else {
+            (1fr,)
+          },
+          stroke: none,
+          inset: padding.pairs().map(((k, x)) => (k, x * 1.5)).to-dict(),
+          fill: (x, y) => if zebra-color != none and calc.rem(y, 2) == 0 {
             zebra-color
           } else {
             fill
-          }
-        },
-        ..header,
-        ..items,
-        ..footer,
-      )
-    } else {
-      grid(
-        columns: if has-annotations {
-          (1fr, annot-width)
-        } else {
-          1fr
-        },
-        inset: padding.pairs().map(((k, x)) => (k, x * 1.5)).to-dict(),
-        stroke: none,
-        align: (numbers-alignment, left + horizon),
-        fill: (x, y) => if zebra-color != none and calc.rem(y, 2) == 0 {
-          zebra-color
-        } else {
-          fill
-        },
-        ..header,
-        ..items,
-        ..footer,
-      )
-    }
-  })
+          },
+          ..header,
+          ..it.lines.map(line => hide(line)),
+          ..footer,
+        ))
+      }
+      if numbers-format != none {
+        grid(
+          columns: if has-annotations {
+            (auto, 1fr, annot-width)
+          } else {
+            (auto, 1fr)
+          },
+          inset: padding.pairs().map(((k, x)) => (k, x * 1.5)).to-dict(),
+          stroke: none,
+          align: (numbers-alignment, left + horizon),
+          fill: if is-complex-fill {
+            none
+          } else {
+            (x, y) => if zebra-color != none and calc.rem(y, 2) == 0 {
+              zebra-color
+            } else {
+              fill
+            }
+          },
+          ..header,
+          ..items,
+          ..footer,
+        )
+      } else {
+        grid(
+          columns: if has-annotations {
+            (1fr, annot-width)
+          } else {
+            1fr
+          },
+          inset: padding.pairs().map(((k, x)) => (k, x * 1.5)).to-dict(),
+          stroke: none,
+          align: (numbers-alignment, left + horizon),
+          fill: (x, y) => if zebra-color != none and calc.rem(y, 2) == 0 {
+            zebra-color
+          } else {
+            fill
+          },
+          ..header,
+          ..items,
+          ..footer,
+        )
+      }
+    },
+  )
 
   if offset != 0 {
     state("codly-offset").update(0)
@@ -1407,11 +1432,14 @@ input_file: tests/fixtures/packages/codly.typ
       state("codly-reference-sep", __codly-args.reference-sep.default).get()
     })
     let (tag, label) = __codly-get-parts(it.element)
-    link(it.target, (
-      ref(label),
-      sep,
-      tag,
-    ).join())
+    link(
+      it.target,
+      (
+        ref(label),
+        sep,
+        tag,
+      ).join(),
+    )
   } else if it.element != none and it.element.func() == figure and it.element.kind == "codly-referencer" {
     let sep = (
       __codly-args.reference-sep.type_check
@@ -1421,11 +1449,14 @@ input_file: tests/fixtures/packages/codly.typ
       state("codly-reference-sep", __codly-args.reference-sep.default).get()
     })
     let (num, label) = __codly-get-parts(it.element)
-    link(it.target, (
-      ref(label),
-      sep,
-      num,
-    ).join())
+    link(
+      it.target,
+      (
+        ref(label),
+        sep,
+        num,
+      ).join(),
+    )
   } else if it.element != none and it.element.func() == raw.line and type(it.target) == "label" {
     let segments = str(it.target).split(":")
     assert(segments.len() > 1, message: "codly: invalid label")
@@ -1447,11 +1478,14 @@ input_file: tests/fixtures/packages/codly.typ
       state("codly-reference-number-format", __codly-args.reference-number-format.default).get()
     })
 
-    link(it.target, (
-      ref(lab),
-      sep,
-      reference-number-format(it.element.number),
-    ).join())
+    link(
+      it.target,
+      (
+        ref(lab),
+        sep,
+        reference-number-format(it.element.number),
+      ).join(),
+    )
   } else {
     it
   }

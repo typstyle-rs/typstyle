@@ -16,7 +16,9 @@ input_file: tests/fixtures/packages/tablex.typ
 
 // get the types of things so we can compare with them
 // (0.2.0-0.7.0: they're strings; 0.8.0+: they're proper types)
-#let _array-type = type(())
+#let _array-type = type(
+  (),
+)
 #let _dict-type = type((
   a: 5,
 ))
@@ -55,7 +57,9 @@ input_file: tests/fixtures/packages/tablex.typ
 #let _function-type = type(x => {
   x
 })
-#let _content-type = type([])
+#let _content-type = type(
+  [],
+)
 // note: since 0.8.0, alignment and 2d alignment are the same
 // but keep it like this for pre-0.8.0
 #let _align-type = type(
@@ -5624,7 +5628,9 @@ input_file: tests/fixtures/packages/tablex.typ
     } else {
       this_row_group
         .rows
-        .push(())
+        .push(
+          (),
+        )
       this_row_group
         .y_span
         .at(

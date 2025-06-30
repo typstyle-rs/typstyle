@@ -3082,7 +3082,9 @@ input_file: tests/fixtures/packages/touying/core.typ
       cover-arr = ()
     }
     result-arr.push(
-      result.sum(default: []),
+      result.sum(
+        default: [],
+      ),
     )
   }
   max-repetitions = calc.max(

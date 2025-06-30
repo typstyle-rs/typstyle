@@ -189,7 +189,10 @@ input_file: tests/fixtures/packages/codly.typ
   position,
   length,
 ) = {
-  state("codly-skips", ()).update(skips => {
+  state(
+    "codly-skips",
+    (),
+  ).update(skips => {
     if skips == none {
       skips = ()
     }
@@ -723,9 +726,9 @@ input_file: tests/fixtures/packages/codly.typ
         place(hide[#figure(
             kind: "codly-referencer",
             supplement: none,
-          )[#box(referenced)#box(str(
-              block-label,
-            ))]#hl.label])
+          )[#box(referenced)#box(
+              str(block-label),
+            )]#hl.label])
       } else {
         none
       }
@@ -1320,10 +1323,10 @@ input_file: tests/fixtures/packages/codly.typ
   }
 
   let annot-width = (
-    annot-bodies-width.fold(0pt, (
-      a,
-      b,
-    ) => calc.max(a, b))
+    annot-bodies-width.fold(
+      0pt,
+      (a, b) => calc.max(a, b),
+    )
       + padding.left
       + padding.right
       + lr-width
@@ -1747,9 +1750,9 @@ input_file: tests/fixtures/packages/codly.typ
         place(hide[#figure(
             kind: "codly-referencer",
             supplement: none,
-          )[#box(referenced)#box(str(
-              block-label,
-            ))]#current-annot.label])
+          )[#box(referenced)#box(
+              str(block-label),
+            )]#current-annot.label])
       } else {
         none
       }
@@ -2068,9 +2071,9 @@ input_file: tests/fixtures/packages/codly.typ
   }
 
   if has-annotations {
-    state(
-      "codly-annotations",
-    ).update(())
+    state("codly-annotations").update(
+      (),
+    )
   }
 
   if header != () {
@@ -2126,11 +2129,14 @@ input_file: tests/fixtures/packages/codly.typ
       tag,
       label,
     ) = __codly-get-parts(it.element)
-    link(it.target, (
-      ref(label),
-      sep,
-      tag,
-    ).join())
+    link(
+      it.target,
+      (
+        ref(label),
+        sep,
+        tag,
+      ).join(),
+    )
   } else if (
     it.element != none
       and it.element.func() == figure
@@ -2155,11 +2161,14 @@ input_file: tests/fixtures/packages/codly.typ
       num,
       label,
     ) = __codly-get-parts(it.element)
-    link(it.target, (
-      ref(label),
-      sep,
-      num,
-    ).join())
+    link(
+      it.target,
+      (
+        ref(label),
+        sep,
+        num,
+      ).join(),
+    )
   } else if (
     it.element != none
       and it.element.func() == raw.line
@@ -2172,9 +2181,9 @@ input_file: tests/fixtures/packages/codly.typ
       segments.len() > 1,
       message: "codly: invalid label",
     )
-    let lab = label(segments
-      .slice(0, -1)
-      .join(":"))
+    let lab = label(
+      segments.slice(0, -1).join(":"),
+    )
 
     let sep = (
       __codly-args
@@ -2207,13 +2216,16 @@ input_file: tests/fixtures/packages/codly.typ
       ).get()
     })
 
-    link(it.target, (
-      ref(lab),
-      sep,
-      reference-number-format(
-        it.element.number,
-      ),
-    ).join())
+    link(
+      it.target,
+      (
+        ref(lab),
+        sep,
+        reference-number-format(
+          it.element.number,
+        ),
+      ).join(),
+    )
   } else {
     it
   }
@@ -2286,7 +2298,10 @@ input_file: tests/fixtures/packages/codly.typ
         "codly-extra-args",
         (:),
       ).get()
-      state("codly-extra-args", (:)).update(old => {
+      state(
+        "codly-extra-args",
+        (:),
+      ).update(old => {
         old + extra
       })
 
@@ -2355,9 +2370,9 @@ input_file: tests/fixtures/packages/codly.typ
       }
     }
     body
-    state(
-      "codly-extra-args",
-    ).update((:))
+    state("codly-extra-args").update(
+      (:),
+    )
   }
 }
 

@@ -39,10 +39,14 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 )
 
 // Function calls with only named arguments
-#f(last: "z", first: "a", middle: {
-  let x = 1
-  x + 1
-})
+#f(
+  last: "z",
+  first: "a",
+  middle: {
+    let x = 1
+    x + 1
+  },
+)
 
 // Nested function calls with named arguments
 #f(
@@ -155,10 +159,20 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 )
 
 // Similar markup structures
-#f(text(red)[colored], text(blue)[colored], text(green)[colored], text(purple)[colored])
+#f(
+  text(red)[colored],
+  text(blue)[colored],
+  text(green)[colored],
+  text(purple)[colored],
+)
 
 // Similar nested function patterns
-#f(f(1, [nested], { 0 + 1 }), f(2, [nested], { 0 + 2 }), f(3, [nested], { 0 + 3 }), f(4, [nested], { 0 + 4 }))
+#f(
+  f(1, [nested], { 0 + 1 }),
+  f(2, [nested], { 0 + 2 }),
+  f(3, [nested], { 0 + 3 }),
+  f(4, [nested], { 0 + 4 }),
+)
 
 // Similar tuple structures with content blocks
 #f(
@@ -273,10 +287,16 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
   (x: 1),
   block[
     Deep nesting example with
-    #stack(dir: ttb, spacing: 2em, [First layer], [Second with #emph[markup]], box(width: 80%)[
-      Constrained box content
-      spanning multiple lines
-    ])
+    #stack(
+      dir: ttb,
+      spacing: 2em,
+      [First layer],
+      [Second with #emph[markup]],
+      box(width: 80%)[
+        Constrained box content
+        spanning multiple lines
+      ],
+    )
   ],
   "last",
 )
@@ -307,11 +327,16 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 )
 
 // Increasing complexity pattern
-#f("simple", [slightly more complex], block(width: 80%)[even more complex], grid(
-  columns: 3,
-  [A], [B], [C],
-  [D], [E], [F],
-))
+#f(
+  "simple",
+  [slightly more complex],
+  block(width: 80%)[even more complex],
+  grid(
+    columns: 3,
+    [A], [B], [C],
+    [D], [E], [F],
+  ),
+)
 
 // Heavy arguments with similar structures
 #f(
@@ -331,16 +356,21 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 //==================================================
 
 // Complex function calls with nested structures
-#f(f([A], (x: 1), [B]), block[Content #f((width: 2cm))], f((dir: ltr), [1], [2]), grid(
-  columns: (1fr, 2fr),
-  rows: (auto, auto),
-  [Cell 1], block[Cell 2],
-  box(width: 100%)[Cell 3],
-  stack[
-    Stacked
-    Content
-  ],
-))
+#f(
+  f([A], (x: 1), [B]),
+  block[Content #f((width: 2cm))],
+  f((dir: ltr), [1], [2]),
+  grid(
+    columns: (1fr, 2fr),
+    rows: (auto, auto),
+    [Cell 1], block[Cell 2],
+    box(width: 100%)[Cell 3],
+    stack[
+      Stacked
+      Content
+    ],
+  ),
+)
 
 // Complex layout with shapes and grids
 #f(rect(width: 2cm), circle(radius: 1cm), square(size: 1cm), [
@@ -353,8 +383,13 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 ])
 
 // Nested function calls
-#f(1, f(2, 3), f(4, 5), f("nested", "function", "calls", [with multiple
-  lines of content]))
+#f(1, f(2, 3), f(4, 5), f(
+  "nested",
+  "function",
+  "calls",
+  [with multiple
+    lines of content],
+))
 
 // Mixed code and content structures
 #f(

@@ -180,9 +180,9 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
       } else { rect.size.at(1 - axis) }
       cell-sizes
         .at(axis)
-        .at(indices.at(
-          axis,
-        )) = calc.max(
+        .at(
+          indices.at(axis),
+        ) = calc.max(
         cell-sizes
           .at(axis)
           .at(indices.at(axis)),
@@ -266,9 +266,9 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
     .zip(options.cell-size)
     .map((
       (sizes, min-size),
-    ) => sizes.map(calc.max.with(
-      min-size,
-    )))
+    ) => sizes.map(
+      calc.max.with(min-size),
+    ))
 
   grid += compute-cell-centers(grid)
 
@@ -620,9 +620,9 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
   box(context {
     let options = options
 
-    options.em-size = measure(h(
-      1em,
-    )).width
+    options.em-size = measure(
+      h(1em),
+    ).width
     let to-pt(len) = to-abs-length(
       len,
       options.em-size,

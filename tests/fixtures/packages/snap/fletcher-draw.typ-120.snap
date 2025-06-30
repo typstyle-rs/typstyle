@@ -551,7 +551,10 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     cetz.draw.translate(node.pos.xyz)
     (node.shape)(node, node.outset)
   })
-  let dummy-line = cetz.draw.line(node.pos.xyz, (rel: (θ, 10 * node.radius)))
+  let dummy-line = cetz.draw.line(
+    node.pos.xyz,
+    (rel: (θ, 10 * node.radius)),
+  )
 
   find-farthest-intersection(outline + dummy-line, node.pos.xyz, callback)
 }
@@ -742,7 +745,10 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
       let (min, max) = (y-lims, x-lims).at(axis)
       for (i, x) in x-range.enumerate() {
         // coordinate line
-        draw.line(swap(grid.centers.at(axis).at(i), min), swap(grid.centers.at(axis).at(i), max))
+        draw.line(
+          swap(grid.centers.at(axis).at(i), min),
+          swap(grid.centers.at(axis).at(i), max),
+        )
         // size bracket
         let size = grid.cell-sizes.at(axis).at(i)
         draw.rect(

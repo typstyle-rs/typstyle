@@ -26,9 +26,9 @@ input_file: tests/fixtures/unit/code/chain/call.typ
 }
 
 #{
-  let (title, _) = query(heading.where(
-    level: 1,
-  ))
+  let (title, _) = query(
+    heading.where(level: 1),
+  )
     .map(e => (
       e.body,
       e.location().page(),

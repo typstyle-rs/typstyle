@@ -522,13 +522,16 @@ input_file: tests/fixtures/packages/touying/core.typ
         )
         result.push(cont)
       }
-      result.push(utils.reconstruct-styled(child, split-content-into-slides(
-        self: self,
-        recaller-map: recaller-map,
-        new-start: true,
-        is-first-slide: is-first-slide,
-        child.child,
-      )))
+      result.push(utils.reconstruct-styled(
+        child,
+        split-content-into-slides(
+          self: self,
+          recaller-map: recaller-map,
+          new-start: true,
+          is-first-slide: is-first-slide,
+          child.child,
+        ),
+      ))
     } else {
       let child = if utils.is-styled(child) {
         // Split the content into slides recursively for styled content
@@ -1032,9 +1035,7 @@ input_file: tests/fixtures/packages/touying/core.typ
   let children = it
     .split(regex("(#meanwhile;?)|(meanwhile)"))
     .intersperse("touying-meanwhile")
-    .map(s => s
-      .split(regex("(#pause;?)|(pause)"))
-      .intersperse("touying-pause"))
+    .map(s => s.split(regex("(#pause;?)|(pause)")).intersperse("touying-pause"))
     .flatten()
     .map(s => s.split(regex("(\\\\\\s)|(\\\\\\n)")).intersperse("\\\n"))
     .flatten()
@@ -1127,9 +1128,7 @@ input_file: tests/fixtures/packages/touying/core.typ
     .intersperse("touying-meanwhile")
     .map(s => s.split(regex("\\\\pause")).intersperse("touying-pause"))
     .flatten()
-    .map(s => s
-      .split(regex("(\\\\\\\\\s)|(\\\\\\\\\n)"))
-      .intersperse("\\\\\n"))
+    .map(s => s.split(regex("(\\\\\\\\\s)|(\\\\\\\\\n)")).intersperse("\\\\\n"))
     .flatten()
     .map(s => s.split(regex("&")).intersperse("&"))
     .flatten()
