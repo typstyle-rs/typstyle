@@ -24,6 +24,7 @@ serde.workspace = true
 toml.workspace = true
 typst-syntax.workspace = true
 
+console.workspace = true
 insta.workspace = true
 libtest-mimic.workspace = true
-pretty_assertions.workspace = true
+similar-asserts.workspace = true

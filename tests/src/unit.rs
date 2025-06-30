@@ -10,6 +10,10 @@ use crate::common::{fixtures_dir, read_source_with_options};
 /// Creates one test for each `.typ` file in the current directory or
 /// sub-directories of the current directory.
 pub fn collect_tests() -> Result<Vec<Trial>, Box<dyn Error>> {
+    // always use colors in the console output
+    console::set_colors_enabled(true);
+    console::set_colors_enabled_stderr(true);
+
     fn make_snapshot_test(path: &Path, name: &str, width: usize) -> Trial {
         let path = path.to_path_buf();
         Trial::test(format!("{name} - {width}char"), move || {
@@ -151,7 +155,7 @@ fn check_convergence(path: &Path, width: usize) -> Result<(), Failed> {
             return Ok(());
         }
         if i == opt.relax_convergence {
-            pretty_assertions::assert_str_eq!(
+            similar_asserts::assert_eq!(
                 first_pass,
                 second_pass,
                 "formatting does not converge in {} iterations!",
@@ -200,8 +204,6 @@ fn check_output_consistency(path: &Path, width: usize) -> Result<(), Failed> {
     if err_sink.is_ok() {
         Ok(())
     } else {
-        // ensure output is colored
-        eprintln!("{}", err_sink);
-        Err(Failed::without_message())
+        Err(err_sink.into())
     }
 }

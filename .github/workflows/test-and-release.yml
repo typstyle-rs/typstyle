@@ -84,7 +84,7 @@ jobs:
         name: Run Unit tests
         env:
           TYPSTYLE_SAVE_DIFF: out
-        run: cargo nextest run --workspace -E '!test([e2e])' --no-fail-fast
+        run: cargo nextest run --workspace -E '!test([e2e])' --no-fail-fast --status-level=fail
       - id: e2e_tests
         name: Run E2E tests
         if: ${{ success() || steps.unit_tests.outcome == 'failure' }}

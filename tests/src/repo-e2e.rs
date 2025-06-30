@@ -175,9 +175,7 @@ fn check_testcase(
     if err_sink.is_ok() {
         Ok(())
     } else {
-        // ensure output is colored
-        eprintln!("{}", err_sink);
-        Err(anyhow!(""))
+        (&err_sink).into()
     }
 }
 
@@ -192,7 +190,12 @@ fn make_formatter(config: Config) -> impl Fn(Source) -> anyhow::Result<String> {
         if first_pass != second_pass {
             bail!(
                 "the formatting does not converge:\n{}",
-                pretty_assertions::StrComparison::new(&first_pass, &second_pass)
+                similar_asserts::SimpleDiff::from_str(
+                    &first_pass,
+                    &second_pass,
+                    "first_pass",
+                    "second_pass"
+                )
             )
         }
         Ok(first_pass)

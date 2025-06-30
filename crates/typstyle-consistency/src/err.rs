@@ -71,7 +71,12 @@ macro_rules! sink_assert_eq {
                         \n\
                         \n{}\
                         \n",
-                        pretty_assertions::Comparison::new(left_val, right_val),
+                        similar_asserts::SimpleDiff::from_str(
+                            &format!("{:?}", left_val),
+                            &format!("{:?}", right_val),
+                            "left",
+                            "right"
+                        ),
                     ))
                 }
             }
@@ -87,7 +92,12 @@ macro_rules! sink_assert_eq {
                         \n{}\
                         \n",
                         ::std::format_args!($($arg)*),
-                        pretty_assertions::Comparison::new(left_val, right_val),
+                        similar_asserts::SimpleDiff::from_str(
+                            &format!("{:?}", left_val),
+                            &format!("{:?}", right_val),
+                            "left",
+                            "right"
+                        ),
                     ))
                 }
             }
@@ -106,7 +116,7 @@ macro_rules! sink_assert_str_eq {
                         \n\
                         \n{}\
                         \n",
-                        pretty_assertions::StrComparison::new(left_val, right_val),
+                        similar_asserts::SimpleDiff::from_str(left_val, right_val, "left", "right"),
                     ))
                 }
             }
@@ -122,7 +132,7 @@ macro_rules! sink_assert_str_eq {
                         \n{}\
                         \n",
                         ::std::format_args!($($arg)*),
-                        pretty_assertions::StrComparison::new(left_val, right_val),
+                        similar_asserts::SimpleDiff::from_str(left_val, right_val, "left", "right"),
                     ))
                 }
             }
