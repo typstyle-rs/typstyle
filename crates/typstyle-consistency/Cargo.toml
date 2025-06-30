@@ -16,7 +16,7 @@ doc = false
 [dependencies]
 anyhow.workspace = true
 walkdir.workspace = true
-pretty_assertions.workspace = true
+similar-asserts.workspace = true
 rustc-hash.workspace = true
 
 tinymist-world.workspace = true

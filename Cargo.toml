@@ -51,10 +51,11 @@ anstream = "0.6"
 colored = "3.0"
 
 # Used in tests
-insta = "1.42"
+console = { version = "*", default-features = false }
+insta = "1.43"
 insta-cmd = "0.6"
 libtest-mimic = "0.8.1"
-pretty_assertions = "1.4.1"
+similar-asserts = "1.7"
 tempfile = "3"
 toml = "0.8"
 
