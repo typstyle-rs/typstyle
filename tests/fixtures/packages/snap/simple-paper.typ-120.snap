@@ -59,11 +59,16 @@ input_file: tests/fixtures/packages/simple-paper.typ
   ]
 
   // Author information.
-  pad(top: 0.5em, bottom: 0.5em, x: 2em, grid(
-    columns: (1fr,) * calc.min(3, authors.len()),
-    gutter: 1em,
-    ..authors.map(author => align(center, text(font: author-font, author))),
-  ))
+  pad(
+    top: 0.5em,
+    bottom: 0.5em,
+    x: 2em,
+    grid(
+      columns: (1fr,) * calc.min(3, authors.len()),
+      gutter: 1em,
+      ..authors.map(author => align(center, text(font: author-font, author))),
+    ),
+  )
 
   // Main body
   set par(first-line-indent: 2em)

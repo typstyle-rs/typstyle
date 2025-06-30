@@ -1,6 +1,4 @@
-#align(
-  center,
-  table(
+#align(center, table(
     columns: 4,
     align: (right, left, right, left),
     column-gutter: (1em, 1.5em, 1em),

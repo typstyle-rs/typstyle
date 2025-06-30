@@ -441,10 +441,12 @@ input_file: tests/fixtures/packages/touying/utils.typ
       .methods
       .convert-label-to-short-heading
   } else {
-    (self: none, lbl) => titlecase(lbl
-      .replace(regex("^[^:]*:"), "")
-      .replace("_", " ")
-      .replace("-", " "))
+    (self: none, lbl) => titlecase(
+      lbl
+        .replace(regex("^[^:]*:"), "")
+        .replace("_", " ")
+        .replace("-", " "),
+    )
   }
   convert-label-to-short-heading = convert-label-to-short-heading.with(
     self: self,
@@ -933,16 +935,20 @@ input_file: tests/fixtures/packages/touying/utils.typ
   ]
 
   context {
-    let before = query(selector(
-      before-label,
-    ).before(here()))
+    let before = query(
+      selector(before-label).before(
+        here(),
+      ),
+    )
     let before-pos = before
       .last()
       .location()
       .position()
-    let after = query(selector(
-      after-label,
-    ).before(here()))
+    let after = query(
+      selector(after-label).before(
+        here(),
+      ),
+    )
     let after-pos = after
       .last()
       .location()
@@ -1251,37 +1257,41 @@ input_file: tests/fixtures/packages/touying/utils.typ
     .split(",")
     .map(p => p.trim())
   let parse-part(part) = {
-    let match-until = part.match(regex(
-      "^-([[:digit:]]+)$",
-    ))
+    let match-until = part.match(
+      regex("^-([[:digit:]]+)$"),
+    )
     let match-beginning = part.match(
       regex("^([[:digit:]]+)-$"),
     )
-    let match-range = part.match(regex(
-      "^([[:digit:]]+)-([[:digit:]]+)$",
-    ))
-    let match-single = part.match(regex(
-      "^([[:digit:]]+)$",
-    ))
+    let match-range = part.match(
+      regex(
+        "^([[:digit:]]+)-([[:digit:]]+)$",
+      ),
+    )
+    let match-single = part.match(
+      regex("^([[:digit:]]+)$"),
+    )
     if match-until != none {
-      let parsed = int(match-until
-        .captures
-        .first())
+      let parsed = int(
+        match-until.captures.first(),
+      )
       // assert(parsed > 0, "parsed idx is non-positive")
       (until: parsed)
     } else if match-beginning != none {
-      let parsed = int(match-beginning
-        .captures
-        .first())
+      let parsed = int(
+        match-beginning
+          .captures
+          .first(),
+      )
       // assert(parsed > 0, "parsed idx is non-positive")
       (beginning: parsed)
     } else if match-range != none {
-      let parsed-first = int(match-range
-        .captures
-        .first())
-      let parsed-last = int(match-range
-        .captures
-        .last())
+      let parsed-first = int(
+        match-range.captures.first(),
+      )
+      let parsed-last = int(
+        match-range.captures.last(),
+      )
       // assert(parsed-first > 0, "parsed idx is non-positive")
       // assert(parsed-last > 0, "parsed idx is non-positive")
       (
@@ -1289,9 +1299,9 @@ input_file: tests/fixtures/packages/touying/utils.typ
         until: parsed-last,
       )
     } else if match-single != none {
-      let parsed = int(match-single
-        .captures
-        .first())
+      let parsed = int(
+        match-single.captures.first(),
+      )
       // assert(parsed > 0, "parsed idx is non-positive")
       parsed
     } else {
@@ -1539,11 +1549,15 @@ input_file: tests/fixtures/packages/touying/utils.typ
       for (subslides, content) in (
         subslides-contents
       ) {
-        only(self: self, subslides, box(
-          width: max-width,
-          height: max-height,
-          align(position, content),
-        ))
+        only(
+          self: self,
+          subslides,
+          box(
+            width: max-width,
+            height: max-height,
+            align(position, content),
+          ),
+        )
       }
     }
   } else {
@@ -1723,9 +1737,9 @@ input_file: tests/fixtures/packages/touying/utils.typ
   if (
     show-notes-on-second-screen != none
   ) {
-    slide-note-state.update(setting(
-      note,
-    ))
+    slide-note-state.update(
+      setting(note),
+    )
   }
 }
 

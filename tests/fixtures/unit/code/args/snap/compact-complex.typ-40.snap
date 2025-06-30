@@ -44,10 +44,14 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 )
 
 // Function calls with only named arguments
-#f(last: "z", first: "a", middle: {
-  let x = 1
-  x + 1
-})
+#f(
+  last: "z",
+  first: "a",
+  middle: {
+    let x = 1
+    x + 1
+  },
+)
 
 // Nested function calls with named arguments
 #f(

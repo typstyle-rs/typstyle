@@ -2,7 +2,10 @@
 source: tests/src/unit.rs
 input_file: tests/fixtures/typstfmt/80-func-call-with-label.typ
 ---
-#figure(image("glacier.jpg", width: 70%), caption: [
-  _Glaciers_ form an important part of the earth's
-  climate system.
-])<glaciers>
+#figure(
+  image("glacier.jpg", width: 70%),
+  caption: [
+    _Glaciers_ form an important part of the earth's
+    climate system.
+  ],
+)<glaciers>

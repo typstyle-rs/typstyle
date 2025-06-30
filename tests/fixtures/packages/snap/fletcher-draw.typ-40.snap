@@ -534,9 +534,10 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
 
   let rounded-corners
   if edge.corner-radius != none {
-    rounded-corners = range(1, θs.len()).map(
-      calculate-rounded-corner,
-    )
+    rounded-corners = range(
+      1,
+      θs.len(),
+    ).map(calculate-rounded-corner)
   }
 
   let lerp-scale(t, i) = {
@@ -764,7 +765,9 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
       .nodes
       .at(node-name)
       .anchors
-    let anchor-names = calculate-anchors(())
+    let anchor-names = calculate-anchors(
+      (),
+    )
     let anchor-points = anchor-names
       .map(calculate-anchors)
       .map(point => {

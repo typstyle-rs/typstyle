@@ -229,7 +229,11 @@ input_file: tests/fixtures/packages/tablex.typ
   if is-tablex-cell(content) {
     (..content, rowspan: length, ..cell_options.named())
   } else {
-    cellx(content, rowspan: length, ..cell_options.named())
+    cellx(
+      content,
+      rowspan: length,
+      ..cell_options.named(),
+    )
   }
 }
 
@@ -237,7 +241,11 @@ input_file: tests/fixtures/packages/tablex.typ
   if is-tablex-cell(content) {
     (..content, colspan: length, ..cell_options.named())
   } else {
-    cellx(content, colspan: length, ..cell_options.named())
+    cellx(
+      content,
+      colspan: length,
+      ..cell_options.named(),
+    )
   }
 }
 
@@ -2329,193 +2337,199 @@ input_file: tests/fixtures/packages/tablex.typ
     let page_turned = page not in header_pages
 
     // draw row group
-    block(breakable: false, fill: none, radius: 0pt, stroke: none, {
-      let added_header_height = 0pt // if we added a header, move down
+    block(
+      breakable: false,
+      fill: none,
+      radius: 0pt,
+      stroke: none,
+      {
+        let added_header_height = 0pt // if we added a header, move down
 
-      // page turned => add header
-      if page_turned and at_top and not is-header {
-        if repeat-header != false {
-          header-pages-state.update(l => l + (page,))
-          if (
-            (repeat-header == true)
-              or (type(repeat-header) == _int-type and rel_page <= repeat-header)
-              or (type(repeat-header) == _array-type and rel_page in repeat-header)
-          ) {
-            let measures = measure(first-row-group.content, styles)
-            place(top + left, first-row-group.content) // add header
-            added_header_height = measures.height
+        // page turned => add header
+        if page_turned and at_top and not is-header {
+          if repeat-header != false {
+            header-pages-state.update(l => l + (page,))
+            if (
+              (repeat-header == true)
+                or (type(repeat-header) == _int-type and rel_page <= repeat-header)
+                or (type(repeat-header) == _array-type and rel_page in repeat-header)
+            ) {
+              let measures = measure(first-row-group.content, styles)
+              place(top + left, first-row-group.content) // add header
+              added_header_height = measures.height
+            }
           }
         }
-      }
 
-      let row_gutter_dy = default-if-none(gutter.row, 0pt)
+        let row_gutter_dy = default-if-none(gutter.row, 0pt)
 
-      let first_x = none
-      let first_y = none
-      let rightmost_x = none
+        let first_x = none
+        let first_y = none
+        let rightmost_x = none
 
-      let row_heights = array-sum(rows.slice(start-y, end-y + 1), zero: 0pt)
+        let row_heights = array-sum(rows.slice(start-y, end-y + 1), zero: 0pt)
 
-      let first_row = true
-      for row in group-rows {
-        for cell_box in row {
-          let x = cell_box.cell.x
-          let y = cell_box.cell.y
-          first_x = default-if-none(first_x, x)
-          first_y = default-if-none(first_y, y)
-          rightmost_x = default-if-none(rightmost_x, width-between(start: first_x, end: none))
+        let first_row = true
+        for row in group-rows {
+          for cell_box in row {
+            let x = cell_box.cell.x
+            let y = cell_box.cell.y
+            first_x = default-if-none(first_x, x)
+            first_y = default-if-none(first_y, y)
+            rightmost_x = default-if-none(rightmost_x, width-between(start: first_x, end: none))
 
-          // where to place the cell (horizontally)
-          let dx = width-between(start: first_x, end: x)
+            // where to place the cell (horizontally)
+            let dx = width-between(start: first_x, end: x)
 
-          // TODO: consider implementing RTL before the rendering
-          // stage (perhaps by inverting 'x' positions on cells
-          // and lines beforehand).
-          if rtl {
-            // invert cell's x position (start from the right)
-            dx = rightmost_x - dx
-            // assume the cell doesn't start at the very end
-            // (that would be weird)
-            // Here we have to move dx back a bit as, after
-            // inverting it, it'd be the right edge of the cell;
-            // we need to keep it as the left edge's x position,
-            // as #place works with the cell's left edge.
-            // To do that, we subtract the cell's width from dx.
-            dx -= width-between(start: x, end: x + cell_box.cell.colspan)
+            // TODO: consider implementing RTL before the rendering
+            // stage (perhaps by inverting 'x' positions on cells
+            // and lines beforehand).
+            if rtl {
+              // invert cell's x position (start from the right)
+              dx = rightmost_x - dx
+              // assume the cell doesn't start at the very end
+              // (that would be weird)
+              // Here we have to move dx back a bit as, after
+              // inverting it, it'd be the right edge of the cell;
+              // we need to keep it as the left edge's x position,
+              // as #place works with the cell's left edge.
+              // To do that, we subtract the cell's width from dx.
+              dx -= width-between(start: x, end: x + cell_box.cell.colspan)
+            }
+
+            // place the cell!
+            place(
+              top + left,
+              dx: dx,
+              dy: height-between(start: first_y, end: y) + added_header_height,
+              cell_box.box,
+            )
+
+            // let box_h = measure(cell_box.box, styles).height
+            // tallest_box_h = calc.max(tallest_box_h, box_h)
           }
-
-          // place the cell!
-          place(
-            top + left,
-            dx: dx,
-            dy: height-between(start: first_y, end: y) + added_header_height,
-            cell_box.box,
-          )
-
-          // let box_h = measure(cell_box.box, styles).height
-          // tallest_box_h = calc.max(tallest_box_h, box_h)
+          first_row = false
         }
-        first_row = false
-      }
 
-      let row_group_height = row_heights + added_header_height + (row_gutter_dy * group-rows.len())
+        let row_group_height = row_heights + added_header_height + (row_gutter_dy * group-rows.len())
 
-      let is_last_row = not is-infinite-len(max-pos.y) and pos.y + row_group_height + row_gutter_dy >= max-pos.y
+        let is_last_row = not is-infinite-len(max-pos.y) and pos.y + row_group_height + row_gutter_dy >= max-pos.y
 
-      if is_last_row {
-        row_group_height -= row_gutter_dy
-        // one less gutter at the end
-      }
+        if is_last_row {
+          row_group_height -= row_gutter_dy
+          // one less gutter at the end
+        }
 
-      hide(rect(width: total-width, height: row_group_height))
+        hide(rect(width: total-width, height: row_group_height))
 
-      let draw-hline = draw-hline.with(initial_x: first_x, initial_y: first_y, rightmost_x: rightmost_x, rtl: rtl)
-      let draw-vline = draw-vline.with(initial_x: first_x, initial_y: first_y, rightmost_x: rightmost_x, rtl: rtl)
+        let draw-hline = draw-hline.with(initial_x: first_x, initial_y: first_y, rightmost_x: rightmost_x, rtl: rtl)
+        let draw-vline = draw-vline.with(initial_x: first_x, initial_y: first_y, rightmost_x: rightmost_x, rtl: rtl)
 
-      // ensure the lines are drawn absolutely, after the header
-      let draw-hline = (..args) => place(top + left, dy: added_header_height, draw-hline(..args))
-      let draw-vline = (..args) => place(top + left, dy: added_header_height, draw-vline(..args))
+        // ensure the lines are drawn absolutely, after the header
+        let draw-hline = (..args) => place(top + left, dy: added_header_height, draw-hline(..args))
+        let draw-vline = (..args) => place(top + left, dy: added_header_height, draw-vline(..args))
 
-      let header_last_y = if first-row-group != none {
-        first-row-group.row_group.y_span.at(1)
-      } else {
-        none
-      }
-      // if this is the second row, and the header's hlines
-      // do not have priority (thus are not drawn by them,
-      // otherwise they'd repeat on every page), then
-      // we draw its hlines for the header, below it.
-      let hlines = if not header-hlines-have-priority and not is-header and start-y == header_last_y + 1 {
-        let hlines_below_header = first-row-group.row_group.hlines.filter(h => h.y == header_last_y + 1)
-
-        hlines + hlines_below_header
-      } else {
-        hlines
-      }
-
-      for hline in hlines {
-        // only draw the top hline
-        // if header's wasn't already drawn
-        if hline.y == start-y {
-          let header_last_y = if first-row-group != none {
-            first-row-group.row_group.y_span.at(1)
-          } else {
-            none
-          }
-          // pre-gutter is always false here, as we assume
-          // hlines at the top of this row are handled
-          // at pre-gutter by the preceding row,
-          // and at post-gutter by this (the following) row.
-          // these if's are to check if we should indeed
-          // draw this hline, or if the previous row /
-          // the header should take care of it.
-          if not header-hlines-have-priority and not is-header and start-y == header_last_y + 1 {
-            // second row (after header, and it has no hline priority).
-            draw-hline(hline, pre-gutter: false)
-          } else if hline.y == 0 {
-            // hline at the very top of the table.
-            draw-hline(hline, pre-gutter: false)
-          } else if not page_turned and gutter.row != none and hline.gutter-restrict != top {
-            // this hline, at the top of this row group,
-            // isn't restricted to a pre-gutter position,
-            // so let's draw it right above us.
-            // The page turn check is important:
-            // the hline should not be drawn if the header
-            // was repeated and its own hlines have
-            // priority.
-            draw-hline(hline, pre-gutter: false)
-          } else if page_turned and (added_header_height == 0pt or not header-hlines-have-priority) {
-            draw-hline(hline, pre-gutter: false)
-            // no header repeated, but still at the top of the current page
-          }
+        let header_last_y = if first-row-group != none {
+          first-row-group.row_group.y_span.at(1)
         } else {
-          if (
-            hline.y == end-y + 1
-              and (
-                (is-header and not header-hlines-have-priority)
-                  or (gutter.row != none and hline.gutter-restrict == bottom)
-              )
-          ) {
-            // this hline is after all cells
-            // in the row group, and either
-            // this is the header and its hlines
-            // don't have priority (=> the row
-            // groups below it - if repeated -
-            // should draw the hlines above them),
-            // or the hline is restricted to
-            // post-gutter => let the next
-            // row group draw it.
-            continue
-          }
+          none
+        }
+        // if this is the second row, and the header's hlines
+        // do not have priority (thus are not drawn by them,
+        // otherwise they'd repeat on every page), then
+        // we draw its hlines for the header, below it.
+        let hlines = if not header-hlines-have-priority and not is-header and start-y == header_last_y + 1 {
+          let hlines_below_header = first-row-group.row_group.hlines.filter(h => h.y == header_last_y + 1)
 
-          // normally, only draw the bottom hlines
-          // (and both their pre-gutter and
-          // post-gutter variations)
-          draw-hline(hline, pre-gutter: true)
+          hlines + hlines_below_header
+        } else {
+          hlines
+        }
 
-          // don't draw the post-row gutter hline
-          // if this is the last row in the page,
-          // the last row in the row group
-          // (=> the next row group will
-          // place the hline above it, so that
-          // lines break properly between pages),
-          // or the last row in the whole table.
-          if gutter.row != none and hline.y < rows.len() and hline.y < end-y + 1 and not is_last_row {
-            draw-hline(hline, pre-gutter: false)
+        for hline in hlines {
+          // only draw the top hline
+          // if header's wasn't already drawn
+          if hline.y == start-y {
+            let header_last_y = if first-row-group != none {
+              first-row-group.row_group.y_span.at(1)
+            } else {
+              none
+            }
+            // pre-gutter is always false here, as we assume
+            // hlines at the top of this row are handled
+            // at pre-gutter by the preceding row,
+            // and at post-gutter by this (the following) row.
+            // these if's are to check if we should indeed
+            // draw this hline, or if the previous row /
+            // the header should take care of it.
+            if not header-hlines-have-priority and not is-header and start-y == header_last_y + 1 {
+              // second row (after header, and it has no hline priority).
+              draw-hline(hline, pre-gutter: false)
+            } else if hline.y == 0 {
+              // hline at the very top of the table.
+              draw-hline(hline, pre-gutter: false)
+            } else if not page_turned and gutter.row != none and hline.gutter-restrict != top {
+              // this hline, at the top of this row group,
+              // isn't restricted to a pre-gutter position,
+              // so let's draw it right above us.
+              // The page turn check is important:
+              // the hline should not be drawn if the header
+              // was repeated and its own hlines have
+              // priority.
+              draw-hline(hline, pre-gutter: false)
+            } else if page_turned and (added_header_height == 0pt or not header-hlines-have-priority) {
+              draw-hline(hline, pre-gutter: false)
+              // no header repeated, but still at the top of the current page
+            }
+          } else {
+            if (
+              hline.y == end-y + 1
+                and (
+                  (is-header and not header-hlines-have-priority)
+                    or (gutter.row != none and hline.gutter-restrict == bottom)
+                )
+            ) {
+              // this hline is after all cells
+              // in the row group, and either
+              // this is the header and its hlines
+              // don't have priority (=> the row
+              // groups below it - if repeated -
+              // should draw the hlines above them),
+              // or the hline is restricted to
+              // post-gutter => let the next
+              // row group draw it.
+              continue
+            }
+
+            // normally, only draw the bottom hlines
+            // (and both their pre-gutter and
+            // post-gutter variations)
+            draw-hline(hline, pre-gutter: true)
+
+            // don't draw the post-row gutter hline
+            // if this is the last row in the page,
+            // the last row in the row group
+            // (=> the next row group will
+            // place the hline above it, so that
+            // lines break properly between pages),
+            // or the last row in the whole table.
+            if gutter.row != none and hline.y < rows.len() and hline.y < end-y + 1 and not is_last_row {
+              draw-hline(hline, pre-gutter: false)
+            }
           }
         }
-      }
 
-      for vline in vlines {
-        draw-vline(vline, pre-gutter: true, stop-before-row-gutter: is_last_row)
+        for vline in vlines {
+          draw-vline(vline, pre-gutter: true, stop-before-row-gutter: is_last_row)
 
-        // don't draw the post-col gutter vline
-        // if this is the last vline
-        if gutter.col != none and vline.x < columns.len() {
-          draw-vline(vline, pre-gutter: false, stop-before-row-gutter: is_last_row)
+          // don't draw the post-col gutter vline
+          // if this is the last vline
+          if gutter.col != none and vline.x < columns.len() {
+            draw-vline(vline, pre-gutter: false, stop-before-row-gutter: is_last_row)
+          }
         }
-      }
-    })
+      },
+    )
   })
 }
 
@@ -3138,7 +3152,11 @@ input_file: tests/fixtures/packages/tablex.typ
       page-height: page_height,
     )
 
-    let validated_cols_rows = validate-cols-rows(columns, rows, items: items.filter(is-tablex-cell))
+    let validated_cols_rows = validate-cols-rows(
+      columns,
+      rows,
+      items: items.filter(is-tablex-cell),
+    )
 
     let columns = validated_cols_rows.columns
     let rows = validated_cols_rows.rows

@@ -78,7 +78,10 @@ input_file: tests/fixtures/unit/table/complex.typ
     #table(
       columns: 2,
       [A1], [B1],
-      [A2], table.cell(fill: blue.lighten(80%))[B2],
+      [A2],
+      table.cell(
+        fill: blue.lighten(80%),
+      )[B2],
     )
   ],
   [Side],
@@ -92,7 +95,11 @@ input_file: tests/fixtures/unit/table/complex.typ
   rows: auto,
   gutter: 5pt,
   align(center + horizon)[First],
-  grid.cell(colspan: 2, fill: rgb("eee"), [Long content that spans two columns]),
+  grid.cell(
+    colspan: 2,
+    fill: rgb("eee"),
+    [Long content that spans two columns],
+  ),
   grid.cell(rowspan: 2)[
     #align(right)[Side content] \
     With multiple lines
@@ -200,10 +207,17 @@ input_file: tests/fixtures/unit/table/complex.typ
       [C], align(right)[D],
     )
   ],
-  table.cell(colspan: 2, fill: gradient.radial(blue, red))[
+  table.cell(
+    colspan: 2,
+    fill: gradient.radial(blue, red),
+  )[
     #align(center)[
       Fancy gradient cell with
-      #stack(spacing: 3pt, [Line 1], [Line 2])
+      #stack(
+        spacing: 3pt,
+        [Line 1],
+        [Line 2],
+      )
     ]
   ],
   table.cell(colspan: 2)[

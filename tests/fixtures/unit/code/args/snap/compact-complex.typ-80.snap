@@ -39,10 +39,14 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 )
 
 // Function calls with only named arguments
-#f(last: "z", first: "a", middle: {
-  let x = 1
-  x + 1
-})
+#f(
+  last: "z",
+  first: "a",
+  middle: {
+    let x = 1
+    x + 1
+  },
+)
 
 // Nested function calls with named arguments
 #f(
@@ -109,9 +113,12 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 #f([short content], [another content], [more content], [final content])
 
 // Similar function calls - keep consistent
-#f(circle(radius: 1cm), rect(width: 2cm), square(size: 1cm), circle(
-  radius: 2cm,
-))
+#f(
+  circle(radius: 1cm),
+  rect(width: 2cm),
+  square(size: 1cm),
+  circle(radius: 2cm),
+)
 
 // Similar dictionary structures
 #f((x: 1, y: 2), (a: 3, b: 4), (m: 5, n: 6), (p: 7, q: 8))
@@ -157,9 +164,12 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 )
 
 // Similar markup structures
-#f(text(red)[colored], text(blue)[colored], text(green)[colored], text(
-  purple,
-)[colored])
+#f(
+  text(red)[colored],
+  text(blue)[colored],
+  text(green)[colored],
+  text(purple)[colored],
+)
 
 // Similar nested function patterns
 #f(
@@ -378,8 +388,13 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 ])
 
 // Nested function calls
-#f(1, f(2, 3), f(4, 5), f("nested", "function", "calls", [with multiple
-  lines of content]))
+#f(1, f(2, 3), f(4, 5), f(
+  "nested",
+  "function",
+  "calls",
+  [with multiple
+    lines of content],
+))
 
 // Mixed code and content structures
 #f(

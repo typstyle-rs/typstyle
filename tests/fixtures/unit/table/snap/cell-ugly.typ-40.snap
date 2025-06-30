@@ -34,7 +34,8 @@ input_file: tests/fixtures/unit/table/cell-ugly.typ
   [Get in, folks!],
   [🚗], [Eat curbside hotdog],
   cell(align: left)[🌴🚗],
-  cell(inset: 0.06em, text(
-    1.62em,
-  )[🛖🌅🌊]),
+  cell(
+    inset: 0.06em,
+    text(1.62em)[🛖🌅🌊],
+  ),
 )

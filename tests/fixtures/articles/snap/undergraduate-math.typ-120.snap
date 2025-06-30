@@ -9,19 +9,24 @@ input_file: tests/fixtures/articles/undergraduate-math.typ
 #let headcolor = rgb("004225")
 
 // Margin and footer
-#set page(margin: 0.5in, footer: context {
-  if counter(page).display() == "2" {
-    grid(
-      columns: (1fr, 1fr),
-      [],
-      block(inset: 4pt, stroke: (top: headcolor), text(
-        headcolor,
-      )[johanvx (https://github.com/johanvx) #h(1fr) #datetime.today().display()]),
-    )
-  } else {
-    []
-  }
-})
+#set page(
+  margin: 0.5in,
+  footer: context {
+    if counter(page).display() == "2" {
+      grid(
+        columns: (1fr, 1fr),
+        [],
+        block(
+          inset: 4pt,
+          stroke: (top: headcolor),
+          text(headcolor)[johanvx (https://github.com/johanvx) #h(1fr) #datetime.today().display()],
+        ),
+      )
+    } else {
+      []
+    }
+  },
+)
 
 // Font size
 #let scriptsize = 7pt

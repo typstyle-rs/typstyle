@@ -312,10 +312,9 @@ input_file: tests/fixtures/packages/touying/utils.typ
   ) {
     self.methods.convert-label-to-short-heading
   } else {
-    (self: none, lbl) => titlecase(lbl
-      .replace(regex("^[^:]*:"), "")
-      .replace("_", " ")
-      .replace("-", " "))
+    (self: none, lbl) => titlecase(
+      lbl.replace(regex("^[^:]*:"), "").replace("_", " ").replace("-", " "),
+    )
   }
   convert-label-to-short-heading = convert-label-to-short-heading.with(
     self: self,
@@ -392,9 +391,10 @@ input_file: tests/fixtures/packages/touying/utils.typ
   style: (setting: body => body, numbered: true, current-heading) => setting({
     if numbered and current-heading.numbering != none {
       (
-        _typst-builtin-numbering(current-heading.numbering, ..counter(
-          heading,
-        ).at(current-heading.location()))
+        _typst-builtin-numbering(
+          current-heading.numbering,
+          ..counter(heading).at(current-heading.location()),
+        )
           + h(.3em)
       )
     }
@@ -445,13 +445,15 @@ input_file: tests/fixtures/packages/touying/utils.typ
         and numbering == auto
         and current-heading.numbering != none
     ) {
-      _typst-builtin-numbering(current-heading.numbering, ..counter(heading).at(
-        current-heading.location(),
-      ))
+      _typst-builtin-numbering(
+        current-heading.numbering,
+        ..counter(heading).at(current-heading.location()),
+      )
     } else if current-heading != none and numbering != auto {
-      _typst-builtin-numbering(numbering, ..counter(heading).at(
-        current-heading.location(),
-      ))
+      _typst-builtin-numbering(
+        numbering,
+        ..counter(heading).at(current-heading.location()),
+      )
     }
   }
 )
@@ -719,12 +721,11 @@ input_file: tests/fixtures/packages/touying/utils.typ
         // fit. This is because scale doesn't update the layout information.
         // Boxing in a container without clipping will inform typst that content
         // will indeed fit in the remaining space
-        box(width: new-width, height: available-height, scale(
-          x: ratio,
-          y: ratio,
-          origin: top + left,
-          boxed-content,
-        ))
+        box(
+          width: new-width,
+          height: available-height,
+          scale(x: ratio, y: ratio, origin: top + left, boxed-content),
+        )
       } else {
         body
       }
@@ -818,11 +819,11 @@ input_file: tests/fixtures/packages/touying/utils.typ
         // of a color change.
         named.insert("outset", (top: 0.15em, bottom: 0.25em))
       }
-      stack(spacing: -wrapped-body-size.height, body, rect(
-        fill: fill,
-        ..named,
-        ..cover-args.pos(),
-      ))
+      stack(
+        spacing: -wrapped-body-size.height,
+        body,
+        rect(fill: fill, ..named, ..cover-args.pos()),
+      )
     }
   })
   if inline {
@@ -1074,11 +1075,15 @@ input_file: tests/fixtures/packages/touying/utils.typ
       let max-width = calc.max(..sizes.map(sz => sz.width))
       let max-height = calc.max(..sizes.map(sz => sz.height))
       for (subslides, content) in subslides-contents {
-        only(self: self, subslides, box(
-          width: max-width,
-          height: max-height,
-          align(position, content),
-        ))
+        only(
+          self: self,
+          subslides,
+          box(
+            width: max-width,
+            height: max-height,
+            align(position, content),
+          ),
+        )
       }
     }
   } else {

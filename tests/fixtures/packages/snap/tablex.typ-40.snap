@@ -1161,9 +1161,9 @@ input_file: tests/fixtures/packages/tablex.typ
 
 // Fetches an entire column of cells (all positions with the given x).
 #let grid-get-column(grid, x) = {
-  range(grid-count-rows(
-    grid,
-  )).map(y => grid-at(grid, x, y))
+  range(
+    grid-count-rows(grid),
+  ).map(y => grid-at(grid, x, y))
 }
 
 // Expand grid to the given coords (add the missing cells)
@@ -1290,7 +1290,9 @@ input_file: tests/fixtures/packages/tablex.typ
   let first_cell_reached = false // if true, hline should always be placed after the current row
   let row_wrapped = false // if true, a vline should be added to the end of a row
 
-  let range_of_items = range(items.len())
+  let range_of_items = range(
+    items.len(),
+  )
 
   let new_empty_cell(
     grid,
@@ -1639,9 +1641,9 @@ input_file: tests/fixtures/packages/tablex.typ
     )
       != 0
   ) {
-    grid.items.push(new_empty_cell(
-      grid,
-    ))
+    grid.items.push(
+      new_empty_cell(grid),
+    )
   }
 
   (
@@ -4012,9 +4014,9 @@ input_file: tests/fixtures/packages/tablex.typ
         let hlines = hlines.filter(h => (
           this_row_group
             .hlines
-            .filter(is-same-hline.with(
-              h,
-            ))
+            .filter(
+              is-same-hline.with(h),
+            )
             .len()
             == 0
         ))
@@ -4172,12 +4174,16 @@ input_file: tests/fixtures/packages/tablex.typ
     line
   }
   (
-    hlines: hlines.map(parse-func.with(
-      page-size: page-width,
-    )),
-    vlines: vlines.map(parse-func.with(
-      page-size: page-height,
-    )),
+    hlines: hlines.map(
+      parse-func.with(
+        page-size: page-width,
+      ),
+    ),
+    vlines: vlines.map(
+      parse-func.with(
+        page-size: page-height,
+      ),
+    ),
   )
 }
 
