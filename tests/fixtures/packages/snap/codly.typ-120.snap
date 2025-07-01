@@ -523,9 +523,9 @@ input_file: tests/fixtures/packages/codly.typ
           assert("tag" in hl, message: "codly: tag is required for item reference")
           hl.tag
         }
-        place(hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(str(
-              block-label,
-            ))]#hl.label])
+        place(hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(
+              str(block-label),
+            )]#hl.label])
       } else {
         none
       }
@@ -621,7 +621,11 @@ input_file: tests/fixtures/packages/codly.typ
   block-label: none,
   extra: (:),
 ) = context {
-  show raw.line.where(label: <codly-highlighted>): it => codly-line(it, block-label: block-label, extra: (:))
+  show raw.line.where(label: <codly-highlighted>): it => codly-line(
+    it,
+    block-label: block-label,
+    extra: (:),
+  )
 
   if type(it) != content or it.func() != raw {
     panic("codly-raw: body must be a raw content")
@@ -1158,9 +1162,9 @@ input_file: tests/fixtures/packages/codly.typ
         } else {
           num
         }
-        place(hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(str(
-              block-label,
-            ))]#current-annot.label])
+        place(hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(
+              str(block-label),
+            )]#current-annot.label])
       } else {
         none
       }
@@ -1407,11 +1411,14 @@ input_file: tests/fixtures/packages/codly.typ
       state("codly-reference-sep", __codly-args.reference-sep.default).get()
     })
     let (tag, label) = __codly-get-parts(it.element)
-    link(it.target, (
-      ref(label),
-      sep,
-      tag,
-    ).join())
+    link(
+      it.target,
+      (
+        ref(label),
+        sep,
+        tag,
+      ).join(),
+    )
   } else if it.element != none and it.element.func() == figure and it.element.kind == "codly-referencer" {
     let sep = (
       __codly-args.reference-sep.type_check
@@ -1421,11 +1428,14 @@ input_file: tests/fixtures/packages/codly.typ
       state("codly-reference-sep", __codly-args.reference-sep.default).get()
     })
     let (num, label) = __codly-get-parts(it.element)
-    link(it.target, (
-      ref(label),
-      sep,
-      num,
-    ).join())
+    link(
+      it.target,
+      (
+        ref(label),
+        sep,
+        num,
+      ).join(),
+    )
   } else if it.element != none and it.element.func() == raw.line and type(it.target) == "label" {
     let segments = str(it.target).split(":")
     assert(segments.len() > 1, message: "codly: invalid label")
@@ -1447,11 +1457,14 @@ input_file: tests/fixtures/packages/codly.typ
       state("codly-reference-number-format", __codly-args.reference-number-format.default).get()
     })
 
-    link(it.target, (
-      ref(lab),
-      sep,
-      reference-number-format(it.element.number),
-    ).join())
+    link(
+      it.target,
+      (
+        ref(lab),
+        sep,
+        reference-number-format(it.element.number),
+      ).join(),
+    )
   } else {
     it
   }

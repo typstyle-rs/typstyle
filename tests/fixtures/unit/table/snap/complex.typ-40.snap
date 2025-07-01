@@ -105,9 +105,9 @@ input_file: tests/fixtures/unit/table/complex.typ
       columns: 2,
       [A1], [B1],
       [A2],
-      table.cell(fill: blue.lighten(
-        80%,
-      ))[B2],
+      table.cell(
+        fill: blue.lighten(80%),
+      )[B2],
     )
   ],
   [Side],
@@ -158,9 +158,9 @@ input_file: tests/fixtures/unit/table/complex.typ
     [1], [2],
   ),
   [3],
-  table.cell(fill: green.lighten(
-    90%,
-  ))[4],
+  table.cell(
+    fill: green.lighten(90%),
+  )[4],
   [5],
   table.footer([A], [B], [C], [D]),
 )
@@ -261,9 +261,9 @@ input_file: tests/fixtures/unit/table/complex.typ
       columns: 2,
       stroke: (thickness: 1pt),
       [Nested], [Table],
-      table.cell(fill: yellow.lighten(
-        80%,
-      ))[
+      table.cell(
+        fill: yellow.lighten(80%),
+      )[
         With
       ],
       [Styling],

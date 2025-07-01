@@ -694,12 +694,14 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
     let x = [content]
     x
   },
-  f({
-    let y = (
-      a: 1,
-    )
-    y
-  }),
+  f(
+    {
+      let y = (
+        a: 1,
+      )
+      y
+    },
+  ),
   f(
     (
       ax: 1,

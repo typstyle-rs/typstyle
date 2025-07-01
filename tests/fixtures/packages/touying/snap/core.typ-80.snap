@@ -1032,9 +1032,7 @@ input_file: tests/fixtures/packages/touying/core.typ
   let children = it
     .split(regex("(#meanwhile;?)|(meanwhile)"))
     .intersperse("touying-meanwhile")
-    .map(s => s
-      .split(regex("(#pause;?)|(pause)"))
-      .intersperse("touying-pause"))
+    .map(s => s.split(regex("(#pause;?)|(pause)")).intersperse("touying-pause"))
     .flatten()
     .map(s => s.split(regex("(\\\\\\s)|(\\\\\\n)")).intersperse("\\\n"))
     .flatten()
@@ -1127,9 +1125,7 @@ input_file: tests/fixtures/packages/touying/core.typ
     .intersperse("touying-meanwhile")
     .map(s => s.split(regex("\\\\pause")).intersperse("touying-pause"))
     .flatten()
-    .map(s => s
-      .split(regex("(\\\\\\\\\s)|(\\\\\\\\\n)"))
-      .intersperse("\\\\\n"))
+    .map(s => s.split(regex("(\\\\\\\\\s)|(\\\\\\\\\n)")).intersperse("\\\\\n"))
     .flatten()
     .map(s => s.split(regex("&")).intersperse("&"))
     .flatten()
@@ -2031,9 +2027,9 @@ input_file: tests/fixtures/packages/touying/core.typ
           utils.saved-default-frozen-states.update(
             self.default-frozen-states.map(s => s.get()),
           )
-          utils.saved-frozen-counters.update(
-            self.frozen-counters.map(s => s.get()),
-          )
+          utils.saved-frozen-counters.update(self.frozen-counters.map(
+            s => s.get(),
+          ))
           utils.saved-default-frozen-counters.update(
             self.default-frozen-counters.map(s => s.get()),
           )

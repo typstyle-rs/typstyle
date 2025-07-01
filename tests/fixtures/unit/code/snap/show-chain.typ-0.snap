@@ -18,68 +18,84 @@ input_file: tests/fixtures/unit/code/show-chain.typ
   a
     .b
     .f
-    .with(theme: {
-      let t = none
-      t
-    })
+    .with(
+      theme: {
+        let t = none
+        t
+      },
+    )
 )
 
 #show: (
   c
     .f
-    .with(theme: {
-      let t = none
-      t
-    })
+    .with(
+      theme: {
+        let t = none
+        t
+      },
+    )
 )
 
 #show: (
   a /* 1 */
     ./* 2 */b /* 3 */
     ./* 4 */f /* 5 */
-    .with(theme: {
-      let t = none
-      t
-    })
+    .with(
+      theme: {
+        let t = none
+        t
+      },
+    )
 )
 
 #show: (
   c /* 1 */
     ./* 2 */f /* 3 */
-    .with(theme: {
-      let t = none
-      t
-    })
+    .with(
+      theme: {
+        let t = none
+        t
+      },
+    )
 )
 
 #{
   show: a
     .b
     .f
-    .with(theme: {
-      let t = none
-      t
-    })
+    .with(
+      theme: {
+        let t = none
+        t
+      },
+    )
 
   show: c
     .f
-    .with(theme: {
-      let t = none
-      t
-    })
+    .with(
+      theme: {
+        let t = none
+        t
+      },
+    )
 
   show: a /* 1 */
     ./* 2 */b /* 3 */
     ./* 4 */f /* 5 */
-    .with(theme: {
-      let t = none
-      t
-    })
+    .with(
+      theme: {
+        let t = none
+        t
+      },
+    )
 
   show: c /* 1 */
     ./* 2 */f /* 3 */
-    .with(theme: {
-      let t = none
-      t
-    })
+    .with(
+      theme: {
+        let t = none
+        t
+      },
+    )
 }

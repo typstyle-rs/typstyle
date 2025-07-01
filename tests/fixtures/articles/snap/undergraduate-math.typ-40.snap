@@ -146,17 +146,14 @@ input_file: tests/fixtures/articles/undergraduate-math.typ
 #show: rest => columns(2, rest)
 
 // Title
-#align(
-  center,
-  link(
-    "https://github.com/johanvx/typst-undergradmath",
-  )[
-    #text(
-      large,
-      headcolor,
-    )[*Typst Math for Undergrads*]
-  ],
-)
+#align(center, link(
+  "https://github.com/johanvx/typst-undergradmath",
+)[
+  #text(
+    large,
+    headcolor,
+  )[*Typst Math for Undergrads*]
+])
 
 // Put this here to avoid affecting the title
 #show link: underline
@@ -824,21 +821,18 @@ These do the same.
 
 Fix the size with the `lr` function.
 
-#align(
-  center,
-  table(
-    columns: 2,
-    column-gutter: 1em,
-    [$
-        lr([sum_(k = 0)^n e^(k^2)], size: #50%)
-      $],
-    [
-      ```
+#align(center, table(
+  columns: 2,
+  column-gutter: 1em,
+  [$
       lr([sum_(k = 0)^n e^(k^2)], size: #50%)
-      ```
-    ],
-  ),
-)
+    $],
+  [
+    ```
+    lr([sum_(k = 0)^n e^(k^2)], size: #50%)
+    ```
+  ],
+))
 
 To have them grow with the enclosed formula, also use the `lr` function.
 
@@ -995,47 +989,44 @@ Get a numbered version by `#set math.equation(numbering: ..)`.
 = Calculus examples
 The last three here are display style.
 
-#align(
-  center,
-  table(
-    columns: 2,
-    column-gutter: 1em,
-    [$ f: RR -> RR $],
-    [
-      ```
-      f: RR -> RR
-      ```
-    ],
+#align(center, table(
+  columns: 2,
+  column-gutter: 1em,
+  [$ f: RR -> RR $],
+  [
+    ```
+    f: RR -> RR
+    ```
+  ],
 
-    [$ 9.8 thin "m/s"^2 $],
-    [`9.8 thin "m/s"^2` @tricky],
+  [$ 9.8 thin "m/s"^2 $],
+  [`9.8 thin "m/s"^2` @tricky],
 
-    [$ lim_(h->0) (f(x+h)-f(x))/h $],
-    [
-      ```
-      lim_(h -> 0) (f(x + h) - f(x)) / h
-      ```
-    ],
+  [$ lim_(h->0) (f(x+h)-f(x))/h $],
+  [
+    ```
+    lim_(h -> 0) (f(x + h) - f(x)) / h
+    ```
+  ],
 
-    [$
-        integral x^2 dif x = x^3 \/ 3 + C
-      $],
-    [
-      ```
+  [$
       integral x^2 dif x = x^3 \/ 3 + C
-      ```
-    ],
+    $],
+  [
+    ```
+    integral x^2 dif x = x^3 \/ 3 + C
+    ```
+  ],
 
-    [$
-        nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
-      $],
-    [
-      ```
+  [$
       nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
-      ```
-    ],
-  ),
-)
+    $],
+  [
+    ```
+    nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
+    ```
+  ],
+))
 
 = Discrete mathematics examples
 For modulo, there is a symbol $equiv$ from `equiv` and a text operator $mod$ from `mod`.
@@ -1046,39 +1037,34 @@ This resizes to be bigger in a display.
 For permutations use $n^(underline(r))$ from `n^(underline(r))` (some authors use $P(n, r)$, or $""_n P_r$ from `""_n P_r`).
 
 = Statistics examples
-#align(
-  center,
-  table(
-    columns: 2,
-    column-gutter: 1em,
-    [$
-        sigma^2 = sqrt(sum(x_i - mu)^2 \/ N)
-      $],
-    [
-      ```
+#align(center, table(
+  columns: 2,
+  column-gutter: 1em,
+  [$
       sigma^2 = sqrt(sum(x_i - mu)^2 \/ N)
-      ```
-    ],
+    $],
+  [
+    ```
+    sigma^2 = sqrt(sum(x_i - mu)^2 \/ N)
+    ```
+  ],
 
-    [$
-        E(X) = mu_X = sum(x_i - P(x_i))
-      $],
-    [
-      ```
-      E(X) = mu_X = sum(x_i - P(x_i))
-      ```
-    ],
+  [$ E(X) = mu_X = sum(x_i - P(x_i)) $],
+  [
+    ```
+    E(X) = mu_X = sum(x_i - P(x_i))
+    ```
+  ],
 
-    [$
-        1 / sqrt(2 sigma^2 pi) e^(- (x - mu)^2 / (2 sigma^2))
-      $],
-    [
-      ```
+  [$
       1 / sqrt(2 sigma^2 pi) e^(- (x - mu)^2 / (2 sigma^2))
-      ```
-    ],
-  ),
-)
+    $],
+  [
+    ```
+    1 / sqrt(2 sigma^2 pi) e^(- (x - mu)^2 / (2 sigma^2))
+    ```
+  ],
+))
 
 = For more
 See also the Typst Documentation at #link("https://typst.app/docs").

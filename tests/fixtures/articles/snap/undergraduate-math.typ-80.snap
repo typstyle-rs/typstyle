@@ -9,26 +9,19 @@ input_file: tests/fixtures/articles/undergraduate-math.typ
 #let headcolor = rgb("004225")
 
 // Margin and footer
-#set page(
-  margin: 0.5in,
-  footer: context {
-    if counter(page).display() == "2" {
-      grid(
-        columns: (1fr, 1fr),
-        [],
-        block(
-          inset: 4pt,
-          stroke: (top: headcolor),
-          text(
-            headcolor,
-          )[johanvx (https://github.com/johanvx) #h(1fr) #datetime.today().display()],
-        ),
-      )
-    } else {
-      []
-    }
-  },
-)
+#set page(margin: 0.5in, footer: context {
+  if counter(page).display() == "2" {
+    grid(
+      columns: (1fr, 1fr),
+      [],
+      block(inset: 4pt, stroke: (top: headcolor), text(
+        headcolor,
+      )[johanvx (https://github.com/johanvx) #h(1fr) #datetime.today().display()]),
+    )
+  } else {
+    []
+  }
+})
 
 // Font size
 #let scriptsize = 7pt
@@ -598,43 +591,40 @@ Get a numbered version by `#set math.equation(numbering: ..)`.
 = Calculus examples
 The last three here are display style.
 
-#align(
-  center,
-  table(
-    columns: 2,
-    column-gutter: 1em,
-    [$ f: RR -> RR $],
-    [
-      ```
-      f: RR -> RR
-      ```
-    ],
+#align(center, table(
+  columns: 2,
+  column-gutter: 1em,
+  [$ f: RR -> RR $],
+  [
+    ```
+    f: RR -> RR
+    ```
+  ],
 
-    [$ 9.8 thin "m/s"^2 $], [`9.8 thin "m/s"^2` @tricky],
-    [$ lim_(h->0) (f(x+h)-f(x))/h $],
-    [
-      ```
-      lim_(h -> 0) (f(x + h) - f(x)) / h
-      ```
-    ],
+  [$ 9.8 thin "m/s"^2 $], [`9.8 thin "m/s"^2` @tricky],
+  [$ lim_(h->0) (f(x+h)-f(x))/h $],
+  [
+    ```
+    lim_(h -> 0) (f(x + h) - f(x)) / h
+    ```
+  ],
 
-    [$ integral x^2 dif x = x^3 \/ 3 + C $],
-    [
-      ```
-      integral x^2 dif x = x^3 \/ 3 + C
-      ```
-    ],
+  [$ integral x^2 dif x = x^3 \/ 3 + C $],
+  [
+    ```
+    integral x^2 dif x = x^3 \/ 3 + C
+    ```
+  ],
 
-    [$
-        nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
-      $],
-    [
-      ```
+  [$
       nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
-      ```
-    ],
-  ),
-)
+    $],
+  [
+    ```
+    nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
+    ```
+  ],
+))
 
 = Discrete mathematics examples
 For modulo, there is a symbol $equiv$ from `equiv` and a text operator $mod$ from `mod`.

@@ -38,37 +38,39 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     ) {
       cetz
         .draw
-        .group({
-          cetz
-            .draw
-            .translate(
-              node
-                .pos
-                .xyz,
-            )
-          for (
-            i,
-            extrude,
-          ) in node
-            .extrude
-            .enumerate() {
+        .group(
+          {
             cetz
               .draw
-              .set-style(
-                fill: if i
-                  == 0 {
-                  node.fill
-                },
-                stroke: node.stroke,
+              .translate(
+                node
+                  .pos
+                  .xyz,
               )
-            (
-              node.shape
-            )(
-              node,
+            for (
+              i,
               extrude,
-            )
-          }
-        })
+            ) in node
+              .extrude
+              .enumerate() {
+              cetz
+                .draw
+                .set-style(
+                  fill: if i
+                    == 0 {
+                    node.fill
+                  },
+                  stroke: node.stroke,
+                )
+              (
+                node.shape
+              )(
+                node,
+                extrude,
+              )
+            }
+          },
+        )
     }
 
     if (
@@ -174,28 +176,30 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     // node anchoring outline (what edges snap to)
     cetz
       .draw
-      .group({
-        cetz
-          .draw
-          .translate(
-            node
-              .pos
-              .xyz,
+      .group(
+        {
+          cetz
+            .draw
+            .translate(
+              node
+                .pos
+                .xyz,
+            )
+          cetz
+            .draw
+            .set-style(
+              stroke: DEBUG_COLOR2
+                + 0.25pt,
+              fill: none,
+            )
+          (
+            node.shape
+          )(
+            node,
+            node.outset,
           )
-        cetz
-          .draw
-          .set-style(
-            stroke: DEBUG_COLOR2
-              + 0.25pt,
-            fill: none,
-          )
-        (
-          node.shape
-        )(
-          node,
-          node.outset,
-        )
-      })
+        },
+      )
   }
 }
 
@@ -353,68 +357,72 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
   (
     0,
     1,
-  ).map(pos => {
-    let mark = edge
-      .marks
-      .find(mark => (
-        calc.abs(
-          mark.pos
-            - pos,
+  ).map(
+    pos => {
+      let mark = edge
+        .marks
+        .find(
+          mark => (
+            calc.abs(
+              mark.pos
+                - pos,
+            )
+              < 1e-3
+          ),
         )
-          < 1e-3
-      ))
-    if (
-      mark
-        == none
-    ) {
-      return 0pt
-    }
+      if (
+        mark
+          == none
+      ) {
+        return 0pt
+      }
 
-    let is-tip = (
-      (
-        pos
-          == 0
+      let is-tip = (
+        (
+          pos
+            == 0
+        )
+          == mark.rev
       )
-        == mark.rev
-    )
-    let sign = if mark.rev {
-      -1
-    } else {
-      +1
-    }
+      let sign = if mark.rev {
+        -1
+      } else {
+        +1
+      }
 
-    let x = cap-offset(
-      mark
-        + (
-          tip: is-tip,
-        ),
-      sign
-        * y
-        / edge
-          .stroke
-          .thickness,
-    )
+      let x = cap-offset(
+        mark
+          + (
+            tip: is-tip,
+          ),
+        sign
+          * y
+          / edge
+            .stroke
+            .thickness,
+      )
 
-    let origin = if is-tip {
-      mark.tip-origin
-    } else {
-      mark.tail-origin
-    }
-    x -= (
-      origin
-        * float(
-          mark.scale,
-        )
-    )
+      let origin = if is-tip {
+        mark.tip-origin
+      } else {
+        mark.tail-origin
+      }
+      x -= (
+        origin
+          * float(
+            mark.scale,
+          )
+      )
 
-    (
-      sign
-        * x
-        * edge
-          .stroke
-          .thickness
-    )
-  })
+      (
+        sign
+          * x
+          * edge
+            .stroke
+            .thickness
+      )
+    },
+  )
 }
 
 #let with-decorations(
@@ -433,13 +441,15 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
   ) = (
     edge
       .marks
-      .find(mark => (
-        calc.abs(
-          mark.pos
-            - t,
-        )
-          < 1e-3
-      ))
+      .find(
+        mark => (
+          calc.abs(
+            mark.pos
+              - t,
+          )
+            < 1e-3
+        ),
+      )
       != none
   )
 
@@ -517,31 +527,33 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
       .zip(
         offsets,
       )
-      .map((
+      .map(
         (
-          point,
-          offset,
-        ),
-      ) => {
-        // Shift line sideways (for multi-stroke effect)
-        point = (
-          rel: (
-            θ
-              + 90deg,
-            shift,
-          ),
-          to: point,
-        )
-        // Shift end points lengthways depending on marks
-        point = (
-          rel: (
-            θ,
+          (
+            point,
             offset,
           ),
-          to: point,
-        )
-        point
-      })
+        ) => {
+          // Shift line sideways (for multi-stroke effect)
+          point = (
+            rel: (
+              θ
+                + 90deg,
+              shift,
+            ),
+            to: point,
+          )
+          // Shift end points lengthways depending on marks
+          point = (
+            rel: (
+              θ,
+              offset,
+            ),
+            to: point,
+          )
+          point
+        },
+      )
 
     let obj = cetz
       .draw
@@ -661,12 +673,14 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     ) = cap-offsets(
       edge,
       shift,
-    ).map(arclen => (
-      -bend-dir
-        * arclen
-        / radius
-        * 1rad
-    ))
+    ).map(
+      arclen => (
+        -bend-dir
+          * arclen
+          / radius
+          * 1rad
+      ),
+    )
 
     let obj = cetz
       .draw
@@ -769,29 +783,31 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
   // angles of each segment
   let θs = range(
     n-segments,
-  ).map(i => {
-    let (
-      vert,
-      vert-next,
-    ) = (
-      verts.at(
-        i,
-      ),
-      verts.at(
-        i
-          + 1,
-      ),
-    )
-    assert(
-      vert
-        != vert-next,
-      message: "Adjacent vertices must be distinct.",
-    )
-    angle-between(
-      vert,
-      vert-next,
-    )
-  })
+  ).map(
+    i => {
+      let (
+        vert,
+        vert-next,
+      ) = (
+        verts.at(
+          i,
+        ),
+        verts.at(
+          i
+            + 1,
+        ),
+      )
+      assert(
+        vert
+          != vert-next,
+        message: "Adjacent vertices must be distinct.",
+      )
+      angle-between(
+        vert,
+        vert-next,
+      )
+    },
+  )
 
 
   // round corners
@@ -1030,14 +1046,16 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
                 - 1,
             )
         )
-        marks.push((
-          inherit: "bar",
-          pos: 0,
-          angle: 90deg
-            - Δθ
-              / 2,
-          hide: true,
-        ))
+        marks.push(
+          (
+            inherit: "bar",
+            pos: 0,
+            angle: 90deg
+              - Δθ
+                / 2,
+            hide: true,
+          ),
+        )
       }
       if (
         i
@@ -1053,14 +1071,16 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
               i,
             )
         )
-        marks.push((
-          inherit: "bar",
-          pos: 1,
-          angle: 90deg
-            + Δθ
-              / 2,
-          hide: true,
-        ))
+        marks.push(
+          (
+            inherit: "bar",
+            pos: 1,
+            angle: 90deg
+              + Δθ
+                / 2,
+            hide: true,
+          ),
+        )
       }
 
       Δphase += vector-len(
@@ -1181,17 +1201,21 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     // distribute original marks across segments
     marks += edge
       .marks
-      .map(mark => {
-        mark.pos = lerp-scale(
-          mark.pos,
-          i,
-        )
-        mark
-      })
-      .filter(mark => (
-        mark.pos
-          != none
-      ))
+      .map(
+        mark => {
+          mark.pos = lerp-scale(
+            mark.pos,
+            i,
+          )
+          mark
+        },
+      )
+      .filter(
+        mark => (
+          mark.pos
+            != none
+        ),
+      )
 
     let label-pos = lerp-scale(
       edge.label-pos,
@@ -1285,46 +1309,54 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
 
   cetz
     .draw
-    .get-ctx(ctx => {
-      let calculate-anchors = ctx
-        .nodes
-        .at(
-          node-name,
+    .get-ctx(
+      ctx => {
+        let calculate-anchors = ctx
+          .nodes
+          .at(
+            node-name,
+          )
+          .anchors
+        let anchor-names = calculate-anchors(
+          (),
         )
-        .anchors
-      let anchor-names = calculate-anchors(())
-      let anchor-points = anchor-names
-        .map(
-          calculate-anchors,
-        )
-        .map(point => {
-          // funky disagreement between coordinate systems??
-          point.at(
-            1,
-          ) *= -1
-          vector-2d(
-            vector.scale(
-              point,
-              1cm,
+        let anchor-points = anchor-names
+          .map(
+            calculate-anchors,
+          )
+          .map(
+            point => {
+              // funky disagreement between coordinate systems??
+              point.at(
+                1,
+              ) *= -1
+              vector-2d(
+                vector.scale(
+                  point,
+                  1cm,
+                ),
+              )
+            },
+          )
+          .sorted(
+            key: point => vector-len(
+              vector.sub(
+                point,
+                target,
+              ),
             ),
           )
-        })
-        .sorted(key: point => vector-len(
-          vector.sub(
-            point,
-            target,
-          ),
-        ))
 
-      let anchor = anchor-points.at(
-        -1,
-        default: target,
-      )
+        let anchor = anchor-points.at(
+          -1,
+          default: target,
+        )
 
-      callback(
-        anchor,
-      )
-    })
+        callback(
+          anchor,
+        )
+      },
+    )
 }
 
 #let find-anchor-pair(
@@ -1346,10 +1378,12 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
         to-group,
         to-point,
         to-anchor => {
-          callback((
-            from-anchor,
-            to-anchor,
-          ))
+          callback(
+            (
+              from-anchor,
+              to-anchor,
+            ),
+          )
         },
       )
     },
@@ -1364,21 +1398,23 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
 ) = {
   let outline = cetz
     .draw
-    .group({
-      cetz
-        .draw
-        .translate(
-          node
-            .pos
-            .xyz,
+    .group(
+      {
+        cetz
+          .draw
+          .translate(
+            node
+              .pos
+              .xyz,
+          )
+        (
+          node.shape
+        )(
+          node,
+          node.outset,
         )
-      (
-        node.shape
-      )(
-        node,
-        node.outset,
-      )
-    })
+      },
+    )
   let dummy-line = cetz
     .draw
     .line(
@@ -1540,31 +1576,35 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
       to,
     )
 
-  let intersection-objects = nodes.map(nodes => {
-    for node in (
-      nodes
-    ) {
-      cetz
-        .draw
-        .group({
-          cetz
-            .draw
-            .translate(
-              node
-                .pos
-                .xyz,
-            )
-          (
-            node.shape
-          )(
-            node,
-            node.outset,
+  let intersection-objects = nodes.map(
+    nodes => {
+      for node in (
+        nodes
+      ) {
+        cetz
+          .draw
+          .group(
+            {
+              cetz
+                .draw
+                .translate(
+                  node
+                    .pos
+                    .xyz,
+                )
+              (
+                node.shape
+              )(
+                node,
+                node.outset,
+              )
+            },
           )
-        })
-    }
-    // if node == none { return }
-    dummy-line
-  })
+      }
+      // if node == none { return }
+      dummy-line
+    },
+  )
 
 
   find-anchor-pair(
@@ -1619,58 +1659,64 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     .zip(
       θs,
     )
-    .map((
+    .map(
       (
-        point,
-        φ,
-      ),
-    ) => cetz
-      .draw
-      .line(
-        point,
-        vector.add(
+        (
           point,
-          vector-polar(
-            10cm,
-            φ,
-          ),
-        ), // ray emanating from node
-      ))
+          φ,
+        ),
+      ) => cetz
+        .draw
+        .line(
+          point,
+          vector.add(
+            point,
+            vector-polar(
+              10cm,
+              φ,
+            ),
+          ), // ray emanating from node
+        ),
+    )
 
   let intersection-objects = nodes
     .zip(
       dummy-lines,
     )
-    .map((
+    .map(
       (
-        nodes,
-        dummy-line,
-      ),
-    ) => {
-      for node in (
-        nodes
-      ) {
-        cetz
-          .draw
-          .group({
-            cetz
-              .draw
-              .translate(
-                node
-                  .pos
-                  .xyz,
-              )
-            (
-              node.shape
-            )(
-              node,
-              node.outset,
+        (
+          nodes,
+          dummy-line,
+        ),
+      ) => {
+        for node in (
+          nodes
+        ) {
+          cetz
+            .draw
+            .group(
+              {
+                cetz
+                  .draw
+                  .translate(
+                    node
+                      .pos
+                      .xyz,
+                  )
+                (
+                  node.shape
+                )(
+                  node,
+                  node.outset,
+                )
+              },
             )
-          })
-      }
-      // if node == none { return }
-      dummy-line
-    })
+        }
+        // if node == none { return }
+        dummy-line
+      },
+    )
 
   find-anchor-pair(
     intersection-objects,
@@ -1739,46 +1785,52 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
       ), // last two vertices
   )
 
-  let dummy-lines = end-segments.map(points => cetz
-    .draw
-    .line(
-      ..points,
-    ))
+  let dummy-lines = end-segments.map(
+    points => cetz
+      .draw
+      .line(
+        ..points,
+      ),
+  )
 
   let intersection-objects = nodes
     .zip(
       dummy-lines,
     )
-    .map((
+    .map(
       (
-        nodes,
-        dummy-line,
-      ),
-    ) => {
-      for node in (
-        nodes
-      ) {
-        cetz
-          .draw
-          .group({
-            cetz
-              .draw
-              .translate(
-                node
-                  .pos
-                  .xyz,
-              )
-            (
-              node.shape
-            )(
-              node,
-              node.outset,
+        (
+          nodes,
+          dummy-line,
+        ),
+      ) => {
+        for node in (
+          nodes
+        ) {
+          cetz
+            .draw
+            .group(
+              {
+                cetz
+                  .draw
+                  .translate(
+                    node
+                      .pos
+                      .xyz,
+                  )
+                (
+                  node.shape
+                )(
+                  node,
+                  node.outset,
+                )
+              },
             )
-          })
-      }
-      // if node == none { return }
-      dummy-line
-    })
+        }
+        // if node == none { return }
+        dummy-line
+      },
+    )
 
   find-anchor-pair(
     intersection-objects,
@@ -1889,42 +1941,44 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     y-lims,
   ) = range(
     2,
-  ).map(axis => (
-    grid
-      .centers
-      .at(
-        axis,
-      )
-      .at(
-        0,
-      )
-      - grid
-        .cell-sizes
+  ).map(
+    axis => (
+      grid
+        .centers
         .at(
           axis,
         )
         .at(
           0,
         )
-        / 2,
-    grid
-      .centers
-      .at(
-        axis,
-      )
-      .at(
-        -1,
-      )
-      + grid
-        .cell-sizes
+        - grid
+          .cell-sizes
+          .at(
+            axis,
+          )
+          .at(
+            0,
+          )
+          / 2,
+      grid
+        .centers
         .at(
           axis,
         )
         .at(
           -1,
         )
-        / 2,
-  ))
+        + grid
+          .cell-sizes
+          .at(
+            axis,
+          )
+          .at(
+            -1,
+          )
+          / 2,
+    ),
+  )
 
   let (
     u-min,
@@ -1984,156 +2038,84 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
   }
 
   import cetz.draw
-  draw.group({
-    let (
-      a,
-      b,
-    ) = array.zip(
-      x-lims,
-      y-lims,
-    )
-    if (
-      a
-        == b
-    ) {
-      b = vector.add(
-        b,
-        (
-          1e-3pt,
-          1e-3pt,
-        ),
-      )
-    }
-    draw.rect(
-      a,
-      b,
-      stroke: DEBUG_COLOR
-        + .5pt,
-    )
-
-    draw.set-style(stroke: (
-      paint: DEBUG_COLOR,
-      thickness: .3pt,
-      dash: "densely-dotted",
-    ))
-
-    for axis in range(
-      2,
-    ) {
-      let swap(
+  draw.group(
+    {
+      let (
         a,
         b,
-      ) = if (
-        axis
-          != 1
-      ) {
-        (
-          a,
-          b,
-        )
-      } else {
-        (
-          b,
-          a,
-        )
-      }
-      let x-range = (
-        u-range,
-        v-range,
-      ).at(
-        axis,
-      )
-      let (
-        min,
-        max,
-      ) = (
-        y-lims,
+      ) = array.zip(
         x-lims,
-      ).at(
-        axis,
+        y-lims,
       )
-      for (
-        i,
-        x,
-      ) in x-range.enumerate() {
-        // coordinate line
-        draw.line(
-          swap(
-            grid
-              .centers
-              .at(
-                axis,
-              )
-              .at(
-                i,
-              ),
-            min,
-          ),
-          swap(
-            grid
-              .centers
-              .at(
-                axis,
-              )
-              .at(
-                i,
-              ),
-            max,
+      if (
+        a
+          == b
+      ) {
+        b = vector.add(
+          b,
+          (
+            1e-3pt,
+            1e-3pt,
           ),
         )
-        // size bracket
-        let size = grid
-          .cell-sizes
-          .at(
-            axis,
-          )
-          .at(
-            i,
-          )
-        draw.rect(
+      }
+      draw.rect(
+        a,
+        b,
+        stroke: DEBUG_COLOR
+          + .5pt,
+      )
+
+      draw.set-style(
+        stroke: (
+          paint: DEBUG_COLOR,
+          thickness: .3pt,
+          dash: "densely-dotted",
+        ),
+      )
+
+      for axis in range(
+        2,
+      ) {
+        let swap(
+          a,
+          b,
+        ) = if (
+          axis
+            != 1
+        ) {
           (
-            to: swap(
-              grid
-                .centers
-                .at(
-                  axis,
-                )
-                .at(
-                  i,
-                ),
-              min,
-            ),
-            rel: swap(
-              -size
-                / 2,
-              0,
-            ),
-          ),
+            a,
+            b,
+          )
+        } else {
           (
-            to: swap(
-              grid
-                .centers
-                .at(
-                  axis,
-                )
-                .at(
-                  i,
-                ),
-              min,
-            ),
-            rel: swap(
-              +size
-                / 2,
-              -1pt,
-            ),
-          ),
-          fill: DEBUG_COLOR,
-          stroke: none,
+            b,
+            a,
+          )
+        }
+        let x-range = (
+          u-range,
+          v-range,
+        ).at(
+          axis,
         )
-        // coordinate label
-        draw.content(
-          (
-            to: swap(
+        let (
+          min,
+          max,
+        ) = (
+          y-lims,
+          x-lims,
+        ).at(
+          axis,
+        )
+        for (
+          i,
+          x,
+        ) in x-range.enumerate() {
+          // coordinate line
+          draw.line(
+            swap(
               grid
                 .centers
                 .at(
@@ -2144,90 +2126,166 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
                 ),
               min,
             ),
-            rel: swap(
-              0,
-              -.2em,
+            swap(
+              grid
+                .centers
+                .at(
+                  axis,
+                )
+                .at(
+                  i,
+                ),
+              max,
             ),
-          ),
-          text(
+          )
+          // size bracket
+          let size = grid
+            .cell-sizes
+            .at(
+              axis,
+            )
+            .at(
+              i,
+            )
+          draw.rect(
+            (
+              to: swap(
+                grid
+                  .centers
+                  .at(
+                    axis,
+                  )
+                  .at(
+                    i,
+                  ),
+                min,
+              ),
+              rel: swap(
+                -size
+                  / 2,
+                0,
+              ),
+            ),
+            (
+              to: swap(
+                grid
+                  .centers
+                  .at(
+                    axis,
+                  )
+                  .at(
+                    i,
+                  ),
+                min,
+              ),
+              rel: swap(
+                +size
+                  / 2,
+                -1pt,
+              ),
+            ),
             fill: DEBUG_COLOR,
-            size: .7em,
-          )[#x],
-          anchor: if axis
-            == 0 {
-            "north"
-          } else {
-            "east"
-          },
-        )
-      }
-    }
-
-    if debug {
-      let (
-        u-label,
-        v-label,
-      ) = if grid
-        .flip
-        .xy {
-        (
-          $arrow$,
-          $arrow.t.twohead$,
-        )
-      } else {
-        (
-          $u$,
-          $v$,
-        )
-      }
-
-      let dir-to-arrow(
-        dir,
-      ) = {
-        if (
-          dir
-            == ltr
-        ) {
-          $arrow.r$
-        } else if (
-          dir
-            == rtl
-        ) {
-          $arrow.l$
-        } else if (
-          dir
-            == ttb
-        ) {
-          $arrow.b$
-        } else if (
-          dir
-            == btt
-        ) {
-          $arrow.t$
+            stroke: none,
+          )
+          // coordinate label
+          draw.content(
+            (
+              to: swap(
+                grid
+                  .centers
+                  .at(
+                    axis,
+                  )
+                  .at(
+                    i,
+                  ),
+                min,
+              ),
+              rel: swap(
+                0,
+                -.2em,
+              ),
+            ),
+            text(
+              fill: DEBUG_COLOR,
+              size: .7em,
+            )[#x],
+            anchor: if axis
+              == 0 {
+              "north"
+            } else {
+              "east"
+            },
+          )
         }
       }
 
-      draw.content(
-        (
-          x-lims.at(
-            0,
+      if debug {
+        let (
+          u-label,
+          v-label,
+        ) = if grid
+          .flip
+          .xy {
+          (
+            $arrow$,
+            $arrow.t.twohead$,
+          )
+        } else {
+          (
+            $u$,
+            $v$,
+          )
+        }
+
+        let dir-to-arrow(
+          dir,
+        ) = {
+          if (
+            dir
+              == ltr
+          ) {
+            $arrow.r$
+          } else if (
+            dir
+              == rtl
+          ) {
+            $arrow.l$
+          } else if (
+            dir
+              == ttb
+          ) {
+            $arrow.b$
+          } else if (
+            dir
+              == btt
+          ) {
+            $arrow.t$
+          }
+        }
+
+        draw.content(
+          (
+            x-lims.at(
+              0,
+            ),
+            y-lims.at(
+              0,
+            ),
           ),
-          y-lims.at(
-            0,
+          pad(
+            0.2em,
+            text(
+              0.5em,
+              DEBUG_COLOR,
+              $(#grid.axes.map(dir-to-arrow).join($,$))$,
+            ),
           ),
-        ),
-        pad(
-          0.2em,
-          text(
-            0.5em,
-            DEBUG_COLOR,
-            $(#grid.axes.map(dir-to-arrow).join($,$))$,
-          ),
-        ),
-        anchor: "north-east",
-      )
-    }
-  })
+          anchor: "north-east",
+        )
+      }
+    },
+  )
 }
 
 // Find candidate nodes that an edge should snap to
@@ -2251,10 +2309,12 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     )
       == label
   ) {
-    return nodes.filter(node => (
-      node.name
-        == key
-    ))
+    return nodes.filter(
+      node => (
+        node.name
+          == key
+      ),
+    )
   }
 
   if (
@@ -2266,25 +2326,27 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
         == 2
   ) {
     let xy-pos = key
-    let candidates = nodes.filter(node => {
-      if (
-        node.snap
-          == false
-      ) {
-        return false
-      }
-      let verdict = point-is-in-rect(
-        xy-pos,
-        (
-          center: node
-            .pos
-            .xyz,
-          size: node.size,
-        ),
-      )
+    let candidates = nodes.filter(
+      node => {
+        if (
+          node.snap
+            == false
+        ) {
+          return false
+        }
+        let verdict = point-is-in-rect(
+          xy-pos,
+          (
+            center: node
+              .pos
+              .xyz,
+            size: node.size,
+          ),
+        )
 
-      verdict
-    })
+        verdict
+      },
+    )
 
 
     if (
@@ -2293,14 +2355,18 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     ) {
       // filter out nodes with lower snap priority
       let max-snap-priority = calc.max(
-        ..candidates.map(node => {
-          node.snap
-        }),
+        ..candidates.map(
+          node => {
+            node.snap
+          },
+        ),
       )
-      candidates = candidates.filter(node => (
-        node.snap
-          == max-snap-priority
-      ))
+      candidates = candidates.filter(
+        node => (
+          node.snap
+            == max-snap-priority
+        ),
+      )
     }
 
     return candidates
@@ -2348,32 +2414,34 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
         ),
       )
       .enumerate()
-      .map((
+      .map(
         (
-          i,
           (
-            given,
-            raw,
-            xyz,
+            i,
+            (
+              given,
+              raw,
+              xyz,
+            ),
           ),
-        ),
-      ) => {
-        let key = map-auto(
-          given,
-          if type(
-            raw,
+        ) => {
+          let key = map-auto(
+            given,
+            if type(
+              raw,
+            )
+              == label {
+              raw
+            } else {
+              xyz
+            },
           )
-            == label {
-            raw
-          } else {
-            xyz
-          },
-        )
-        let node = node-finder(
-          key,
-        )
-        node
-      })
+          let node = node-finder(
+            key,
+          )
+          node
+        },
+      )
     draw-edge(
       edge,
       snap-to-nodes,
@@ -2436,24 +2504,26 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
   )
   seq
     .children
-    .map(child => {
-      if (
-        child.func()
-          == metadata
-      ) {
-        let value = child.value
-        value.post = cetz
-          .draw
-          .hide
-          .with(
-            bounds: bounds,
+    .map(
+      child => {
+        if (
+          child.func()
+            == metadata
+        ) {
+          let value = child.value
+          value.post = cetz
+            .draw
+            .hide
+            .with(
+              bounds: bounds,
+            )
+          metadata(
+            value,
           )
-        metadata(
-          value,
-        )
-      } else {
-        child
-      }
-    })
+        } else {
+          child
+        }
+      },
+    )
     .join()
 }

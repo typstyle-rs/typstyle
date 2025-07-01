@@ -27,6 +27,7 @@ rustc-hash.workspace = true
 serde = { workspace = true, optional = true }
 smallvec.workspace = true
 thiserror.workspace = true
+typed-arena.workspace = true
 unicode-width.workspace = true
 
 [dev-dependencies]

@@ -178,9 +178,11 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
 ) = {
   let description = lines
     .enumerate(start: first-line-number)
-    .map(eval-doc-comment-test.with(
-      label-prefix: label-prefix,
-    ))
+    .map(
+      eval-doc-comment-test.with(
+        label-prefix: label-prefix,
+      ),
+    )
     .join("\n")
 
   if description == none {

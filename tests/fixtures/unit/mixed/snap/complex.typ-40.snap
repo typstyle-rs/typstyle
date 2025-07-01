@@ -68,9 +68,11 @@ $
     A figure with
     * badly * formatted
     _caption_
-    #highlight(fill: yellow.lighten(
-      50%,
-    ))[
+    #highlight(
+      fill: yellow.lighten(
+        50%,
+      ),
+    )[
       highlighted text]
   ],
   supplement: none,

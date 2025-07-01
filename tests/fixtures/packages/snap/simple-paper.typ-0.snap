@@ -127,13 +127,15 @@ input_file: tests/fixtures/packages/simple-paper.typ
           authors.len(),
         ),
       gutter: 1em,
-      ..authors.map(author => align(
-        center,
-        text(
-          font: author-font,
-          author,
+      ..authors.map(
+        author => align(
+          center,
+          text(
+            font: author-font,
+            author,
+          ),
         ),
-      )),
+      ),
     ),
   )
 

@@ -9,12 +9,16 @@ input_file: tests/fixtures/unit/code/args/compact-simple.typ
     none
   }
 
-  f(if true {
-    let x = 3
-  })
-  f(if true {
-    let x = 3
-  })
+  f(
+    if true {
+      let x = 3
+    },
+  )
+  f(
+    if true {
+      let x = 3
+    },
+  )
   f(
     1111,
     22222,
@@ -65,14 +69,22 @@ input_file: tests/fixtures/unit/code/args/compact-simple.typ
     111111
       + 2222222,
   )
-  f({})
-  f({})
-  f(context {
-    1
-  })
-  f(context {
-    1
-  })
+  f(
+    {},
+  )
+  f(
+    {},
+  )
+  f(
+    context {
+      1
+    },
+  )
+  f(
+    context {
+      1
+    },
+  )
 }
 
 

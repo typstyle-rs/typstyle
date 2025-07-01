@@ -189,14 +189,16 @@ input_file: tests/fixtures/packages/codly.typ
   position,
   length,
 ) = {
-  state("codly-skips", ()).update(skips => {
-    if skips == none {
-      skips = ()
-    }
+  state("codly-skips", ()).update(
+    skips => {
+      if skips == none {
+        skips = ()
+      }
 
-    skips.push((position, length))
-    skips
-  })
+      skips.push((position, length))
+      skips
+    },
+  )
 }
 
 
@@ -414,9 +416,9 @@ input_file: tests/fixtures/packages/codly.typ
   }
 
   // Filter the highlights to only keep the relevant ones.
-  let highlights = highlights.filter(x => (
-    x.line == (it.number - 1)
-  ))
+  let highlights = highlights.filter(
+    x => x.line == (it.number - 1),
+  )
   let highlighted = it.body
 
   // Smart indentation code.
@@ -723,9 +725,9 @@ input_file: tests/fixtures/packages/codly.typ
         place(hide[#figure(
             kind: "codly-referencer",
             supplement: none,
-          )[#box(referenced)#box(str(
-              block-label,
-            ))]#hl.label])
+          )[#box(referenced)#box(
+              str(block-label),
+            )]#hl.label])
       } else {
         none
       }
@@ -746,7 +748,9 @@ input_file: tests/fixtures/packages/codly.typ
             baseline: highlight-inset,
             collection.join() + label,
           )
-          children.push([#content<codly-highlight>])
+          children.push(
+            [#content<codly-highlight>],
+          )
         } else {
           let col = collection.join()
           let height-col = measure(
@@ -1747,9 +1751,9 @@ input_file: tests/fixtures/packages/codly.typ
         place(hide[#figure(
             kind: "codly-referencer",
             supplement: none,
-          )[#box(referenced)#box(str(
-              block-label,
-            ))]#current-annot.label])
+          )[#box(referenced)#box(
+              str(block-label),
+            )]#current-annot.label])
       } else {
         none
       }
@@ -2068,9 +2072,9 @@ input_file: tests/fixtures/packages/codly.typ
   }
 
   if has-annotations {
-    state(
-      "codly-annotations",
-    ).update(())
+    state("codly-annotations").update(
+      (),
+    )
   }
 
   if header != () {
@@ -2126,11 +2130,14 @@ input_file: tests/fixtures/packages/codly.typ
       tag,
       label,
     ) = __codly-get-parts(it.element)
-    link(it.target, (
-      ref(label),
-      sep,
-      tag,
-    ).join())
+    link(
+      it.target,
+      (
+        ref(label),
+        sep,
+        tag,
+      ).join(),
+    )
   } else if (
     it.element != none
       and it.element.func() == figure
@@ -2155,11 +2162,14 @@ input_file: tests/fixtures/packages/codly.typ
       num,
       label,
     ) = __codly-get-parts(it.element)
-    link(it.target, (
-      ref(label),
-      sep,
-      num,
-    ).join())
+    link(
+      it.target,
+      (
+        ref(label),
+        sep,
+        num,
+      ).join(),
+    )
   } else if (
     it.element != none
       and it.element.func() == raw.line
@@ -2172,9 +2182,9 @@ input_file: tests/fixtures/packages/codly.typ
       segments.len() > 1,
       message: "codly: invalid label",
     )
-    let lab = label(segments
-      .slice(0, -1)
-      .join(":"))
+    let lab = label(
+      segments.slice(0, -1).join(":"),
+    )
 
     let sep = (
       __codly-args
@@ -2207,13 +2217,16 @@ input_file: tests/fixtures/packages/codly.typ
       ).get()
     })
 
-    link(it.target, (
-      ref(lab),
-      sep,
-      reference-number-format(
-        it.element.number,
-      ),
-    ).join())
+    link(
+      it.target,
+      (
+        ref(lab),
+        sep,
+        reference-number-format(
+          it.element.number,
+        ),
+      ).join(),
+    )
   } else {
     it
   }
@@ -2286,7 +2299,10 @@ input_file: tests/fixtures/packages/codly.typ
         "codly-extra-args",
         (:),
       ).get()
-      state("codly-extra-args", (:)).update(old => {
+      state(
+        "codly-extra-args",
+        (:),
+      ).update(old => {
         old + extra
       })
 
@@ -2355,9 +2371,9 @@ input_file: tests/fixtures/packages/codly.typ
       }
     }
     body
-    state(
-      "codly-extra-args",
-    ).update((:))
+    state("codly-extra-args").update(
+      (:),
+    )
   }
 }
 

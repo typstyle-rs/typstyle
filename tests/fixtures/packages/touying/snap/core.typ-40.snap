@@ -1015,9 +1015,11 @@ input_file: tests/fixtures/packages/touying/core.typ
     last-subslide: calc.max(
       ..subslides-contents
         .pairs()
-        .map(kv => utils.last-required-subslide(
-          kv.at(0),
-        )),
+        .map(
+          kv => utils.last-required-subslide(
+            kv.at(0),
+          ),
+        ),
     ),
     subslides-contents,
     position: position,
@@ -1362,20 +1364,22 @@ input_file: tests/fixtures/packages/touying/core.typ
   let result = ()
   let cover-arr = ()
   let children = it
-    .split(regex(
-      "(#meanwhile;?)|(meanwhile)",
-    ))
+    .split(
+      regex(
+        "(#meanwhile;?)|(meanwhile)",
+      ),
+    )
     .intersperse("touying-meanwhile")
     .map(s => s
-      .split(regex(
-        "(#pause;?)|(pause)",
-      ))
+      .split(
+        regex("(#pause;?)|(pause)"),
+      )
       .intersperse("touying-pause"))
     .flatten()
     .map(s => s
-      .split(regex(
-        "(\\\\\\s)|(\\\\\\n)",
-      ))
+      .split(
+        regex("(\\\\\\s)|(\\\\\\n)"),
+      )
       .intersperse("\\\n"))
     .flatten()
     .map(s => s
@@ -1509,9 +1513,11 @@ input_file: tests/fixtures/packages/touying/core.typ
       .intersperse("touying-pause"))
     .flatten()
     .map(s => s
-      .split(regex(
-        "(\\\\\\\\\s)|(\\\\\\\\\n)",
-      ))
+      .split(
+        regex(
+          "(\\\\\\\\\s)|(\\\\\\\\\n)",
+        ),
+      )
       .intersperse("\\\\\n"))
     .flatten()
     .map(s => s
@@ -2409,12 +2415,14 @@ input_file: tests/fixtures/packages/touying/core.typ
     }
     // clear the cover-arr when end
     if cover-arr.len() != 0 {
-      result.push(cover(cover-arr.sum()))
+      result.push(cover(
+        cover-arr.sum(),
+      ))
       cover-arr = ()
     }
-    result-arr.push(
-      result.sum(default: []),
-    )
+    result-arr.push(result.sum(
+      default: [],
+    ))
   }
   max-repetitions = calc.max(
     max-repetitions,
@@ -2448,9 +2456,10 @@ input_file: tests/fixtures/packages/touying/core.typ
     type(margin) == length
       or type(margin) == relative
   ) {
-    return it => pad(x: -margin, cell(
-      it,
-    ))
+    return it => pad(
+      x: -margin,
+      cell(it),
+    )
   }
   let pad-args = (:)
   if "x" in margin {
@@ -2492,9 +2501,10 @@ input_file: tests/fixtures/packages/touying/core.typ
   } else {
     595.28pt
   }
-  it => pad(bottom: page-height, cell(
-    it,
-  ))
+  it => pad(
+    bottom: page-height,
+    cell(it),
+  )
 }
 
 // get page extra args for show-notes-on-second-screen
@@ -2809,74 +2819,72 @@ input_file: tests/fixtures/packages/touying/core.typ
       self.at("headings", default: ())
         != ()
     ) {
-      place(
-        hide({
-          set heading(offset: 0)
-          let headings = self
-            .at("headings", default: ())
-            .map(it => if it.has(
-              "label",
+      place(hide({
+        set heading(offset: 0)
+        let headings = self
+          .at("headings", default: ())
+          .map(it => if it.has(
+            "label",
+          ) {
+            if (
+              str(it.label)
+                in (
+                  "touying:hidden",
+                  "touying:unnumbered",
+                  "touying:unoutlined",
+                  "touying:unbookmarked",
+                )
             ) {
+              let fields = it.fields()
+              let _ = fields.remove(
+                "label",
+                default: none,
+              )
+              let _ = fields.remove(
+                "body",
+                default: none,
+              )
               if (
                 str(it.label)
-                  in (
-                    "touying:hidden",
-                    "touying:unnumbered",
-                    "touying:unoutlined",
-                    "touying:unbookmarked",
-                  )
+                  == "touying:hidden"
               ) {
-                let fields = it.fields()
-                let _ = fields.remove(
-                  "label",
-                  default: none,
-                )
-                let _ = fields.remove(
-                  "body",
-                  default: none,
-                )
-                if (
-                  str(it.label)
-                    == "touying:hidden"
-                ) {
-                  fields.numbering = none
-                  fields.outlined = false
-                  fields.bookmarked = false
-                }
-                if (
-                  str(it.label)
-                    == "touying:unnumbered"
-                ) {
-                  fields.numbering = none
-                }
-                if (
-                  str(it.label)
-                    == "touying:unoutlined"
-                ) {
-                  fields.outlined = false
-                }
-                if (
-                  str(it.label)
-                    == "touying:unbookmarked"
-                ) {
-                  fields.bookmarked = false
-                }
-                utils.label-it(
-                  heading(
-                    ..fields,
-                    it.body,
-                  ),
-                  it.label,
-                )
-              } else {
-                it
+                fields.numbering = none
+                fields.outlined = false
+                fields.bookmarked = false
               }
+              if (
+                str(it.label)
+                  == "touying:unnumbered"
+              ) {
+                fields.numbering = none
+              }
+              if (
+                str(it.label)
+                  == "touying:unoutlined"
+              ) {
+                fields.outlined = false
+              }
+              if (
+                str(it.label)
+                  == "touying:unbookmarked"
+              ) {
+                fields.bookmarked = false
+              }
+              utils.label-it(
+                heading(
+                  ..fields,
+                  it.body,
+                ),
+                it.label,
+              )
             } else {
               it
-            })
-          headings.sum(default: none)
-        }),
-      )
+            }
+          } else {
+            it
+          })
+        headings.sum(default: none)
+      }))
     }
     utils.call-or-display(self, self.at(
       "slide-preamble",
@@ -2911,7 +2919,9 @@ input_file: tests/fixtures/packages/touying/core.typ
           utils
             .saved-frozen-states
             .update(
-              self.frozen-states.map(s => s.get()),
+              self.frozen-states.map(
+                s => s.get(),
+              ),
             )
           utils
             .saved-default-frozen-states
@@ -2934,9 +2944,11 @@ input_file: tests/fixtures/packages/touying/core.typ
         context {
           self
             .frozen-states
-            .zip(utils
-              .saved-frozen-states
-              .get())
+            .zip(
+              utils
+                .saved-frozen-states
+                .get(),
+            )
             .map(pair => pair
               .at(0)
               .update(pair.at(1)))
@@ -2954,9 +2966,11 @@ input_file: tests/fixtures/packages/touying/core.typ
             .sum(default: none)
           self
             .frozen-counters
-            .zip(utils
-              .saved-frozen-counters
-              .get())
+            .zip(
+              utils
+                .saved-frozen-counters
+                .get(),
+            )
             .map(pair => pair
               .at(0)
               .update(pair.at(1)))

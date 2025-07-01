@@ -20,9 +20,13 @@ and
 $
   "block equation"
 $
-#figure([Figures])
-#figure([Labeled
-  figures]) <label>
+#figure(
+  [Figures],
+)
+#figure(
+  [Labeled
+    figures],
+) <label>
 That's
 all!
 Wait,

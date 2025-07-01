@@ -23,14 +23,20 @@ input_file: tests/fixtures/unit/code/args/simple.typ
 ) => {
   args
 }
-#f({
-  "aaaaaaaaaaaaaaaaaaaaa"
-})
-#f((
-  (),
-))
+#f(
+  {
+    "aaaaaaaaaaaaaaaaaaaaa"
+  },
+)
+#f(
+  (
+    (),
+  ),
+)
 
-#f({})
+#f(
+  {},
+)
 #f(
   `xx
 `,
@@ -39,7 +45,9 @@ input_file: tests/fixtures/unit/code/args/simple.typ
   ```aa
   ```,
 )
-#f(())
+#f(
+  (),
+)
 #pad(
   left: 1em,
 )[```typ

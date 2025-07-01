@@ -637,14 +637,9 @@ An angle can also be given for the general meaning: "First consider the line fro
 
 #doc-style.show-parameter-block(show-default: false, "a", "coordinate", [The coordinate to interpolate from.])
 #doc-style.show-parameter-block(show-default: false, "b", "coordinate", [The coordinate to interpolate to.])
-#doc-style.show-parameter-block(
-  show-default: false,
-  "number",
-  ("ratio", "number"),
-  [
-    The distance between `a` and `b`. A ratio will be the relative distance between the two points, a number will be the absolute distance between the two points.
-  ],
-)
+#doc-style.show-parameter-block(show-default: false, "number", ("ratio", "number"), [
+  The distance between `a` and `b`. A ratio will be the relative distance between the two points, a number will be the absolute distance between the two points.
+])
 #doc-style.show-parameter-block(
   "angle",
   "angle",

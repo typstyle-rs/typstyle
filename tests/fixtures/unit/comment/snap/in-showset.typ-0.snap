@@ -26,12 +26,15 @@ input_file: tests/fixtures/unit/comment/in-showset.typ
   size: 1.8em,
 ) /* 1 */ if /* 2 */ true
 
-#set heading(/* 1 */ numbering/* 2 */: /* 3 */ (
-  /* 4 */
-  ../* 5 */num, /* 6 */
-) /* 1 */ => {
-  none
-})
+#set heading(
+  /* 1 */
+  numbering/* 2 */: /* 3 */ (
+    /* 4 */
+    ../* 5 */num, /* 6 */
+  ) /* 1 */ => {
+    none
+  },
+)
 #set /* 0 */ text(
   /* 1 */
   fill: /* 2 */ red, /* 3 */

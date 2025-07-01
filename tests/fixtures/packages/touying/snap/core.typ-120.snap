@@ -954,9 +954,12 @@ input_file: tests/fixtures/packages/touying/core.typ
     result.push("\\phantom{" + cover-arr.sum() + "}")
     cover-arr = ()
   }
-  let equation = (eqt.mitex)(block: eqt.block, numbering: eqt.numbering, supplement: eqt.supplement, result.sum(
-    default: "",
-  ))
+  let equation = (eqt.mitex)(
+    block: eqt.block,
+    numbering: eqt.numbering,
+    supplement: eqt.supplement,
+    result.sum(default: ""),
+  )
   if eqt-metadata.has("label") and eqt-metadata.label != <touying-temporary-mark> {
     equation = utils.label-it(equation, eqt-metadata.label)
   }

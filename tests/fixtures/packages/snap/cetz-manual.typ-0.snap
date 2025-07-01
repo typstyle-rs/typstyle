@@ -38,17 +38,19 @@ input_file: tests/fixtures/packages/cetz-manual.typ
 #set par(
   justify: true,
 )
-#set heading(numbering: (
-  ..num,
-) => if num
-  .pos()
-  .len()
-  < 4 {
-  numbering(
-    "1.1",
+#set heading(
+  numbering: (
     ..num,
-  )
-})
+  ) => if num
+    .pos()
+    .len()
+    < 4 {
+    numbering(
+      "1.1",
+      ..num,
+    )
+  },
+)
 #show link: set text(
   blue,
 )
@@ -361,7 +363,9 @@ Marks are arrow tips that can be added to the end of path based elements that su
                 [],
               ),
             )
-            .join([, ]),
+            .join(
+              [, ],
+            ),
           cetz.canvas(
             cetz
               .draw
@@ -1375,54 +1379,58 @@ The palette library provides some predefined palettes.
 
 #let show-palette(
   p,
-) = box({
-  let p = p.with(
-    stroke: true,
-  )
-  canvas(
-    length: 1em,
-    {
-      import cetz.draw: *
-      for i in range(
-        0,
-        p(
-          "len",
-        ),
-      ) {
-        if (
-          calc.rem(
-            i,
-            10,
-          )
-            == 0
+) = box(
+  {
+    let p = p.with(
+      stroke: true,
+    )
+    canvas(
+      length: 1em,
+      {
+        import cetz.draw: *
+        for i in range(
+          0,
+          p(
+            "len",
+          ),
         ) {
-          move-to((
-            rel: (
-              0,
-              -.5,
+          if (
+            calc.rem(
+              i,
+              10,
+            )
+              == 0
+          ) {
+            move-to(
+              (
+                rel: (
+                  0,
+                  -.5,
+                ),
+              ),
+            )
+          }
+          rect(
+            (),
+            (
+              rel: (
+                1,
+                .5,
+              ),
             ),
-          ))
+            name: "r",
+            ..p(
+              i,
+            ),
+          )
+          move-to(
+            "r.south-east",
+          )
         }
-        rect(
-          (),
-          (
-            rel: (
-              1,
-              .5,
-            ),
-          ),
-          name: "r",
-          ..p(
-            i,
-          ),
-        )
-        move-to(
-          "r.south-east",
-        )
-      }
-    },
-  )
-})
+      },
+    )
+  },
+)
 
 === List of predefined palettes
 #columns(

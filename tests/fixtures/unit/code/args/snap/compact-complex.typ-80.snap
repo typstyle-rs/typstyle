@@ -109,9 +109,12 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 #f([short content], [another content], [more content], [final content])
 
 // Similar function calls - keep consistent
-#f(circle(radius: 1cm), rect(width: 2cm), square(size: 1cm), circle(
-  radius: 2cm,
-))
+#f(
+  circle(radius: 1cm),
+  rect(width: 2cm),
+  square(size: 1cm),
+  circle(radius: 2cm),
+)
 
 // Similar dictionary structures
 #f((x: 1, y: 2), (a: 3, b: 4), (m: 5, n: 6), (p: 7, q: 8))

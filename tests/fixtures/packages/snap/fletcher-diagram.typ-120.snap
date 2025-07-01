@@ -130,7 +130,10 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
     if grid.flip.y { indices.at(1) = -1 - indices.at(1) }
     for axis in (0, 1) {
       let size = if grid.flip.xy { rect.size.at(axis) } else { rect.size.at(1 - axis) }
-      cell-sizes.at(axis).at(indices.at(axis)) = calc.max(cell-sizes.at(axis).at(indices.at(axis)), rect.size.at(axis))
+      cell-sizes.at(axis).at(indices.at(axis)) = calc.max(
+        cell-sizes.at(axis).at(indices.at(axis)),
+        rect.size.at(axis),
+      )
     }
   }
 

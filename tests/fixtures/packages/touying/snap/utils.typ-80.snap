@@ -312,10 +312,9 @@ input_file: tests/fixtures/packages/touying/utils.typ
   ) {
     self.methods.convert-label-to-short-heading
   } else {
-    (self: none, lbl) => titlecase(lbl
-      .replace(regex("^[^:]*:"), "")
-      .replace("_", " ")
-      .replace("-", " "))
+    (self: none, lbl) => titlecase(
+      lbl.replace(regex("^[^:]*:"), "").replace("_", " ").replace("-", " "),
+    )
   }
   convert-label-to-short-heading = convert-label-to-short-heading.with(
     self: self,
@@ -392,9 +391,10 @@ input_file: tests/fixtures/packages/touying/utils.typ
   style: (setting: body => body, numbered: true, current-heading) => setting({
     if numbered and current-heading.numbering != none {
       (
-        _typst-builtin-numbering(current-heading.numbering, ..counter(
-          heading,
-        ).at(current-heading.location()))
+        _typst-builtin-numbering(
+          current-heading.numbering,
+          ..counter(heading).at(current-heading.location()),
+        )
           + h(.3em)
       )
     }
@@ -445,13 +445,15 @@ input_file: tests/fixtures/packages/touying/utils.typ
         and numbering == auto
         and current-heading.numbering != none
     ) {
-      _typst-builtin-numbering(current-heading.numbering, ..counter(heading).at(
-        current-heading.location(),
-      ))
+      _typst-builtin-numbering(
+        current-heading.numbering,
+        ..counter(heading).at(current-heading.location()),
+      )
     } else if current-heading != none and numbering != auto {
-      _typst-builtin-numbering(numbering, ..counter(heading).at(
-        current-heading.location(),
-      ))
+      _typst-builtin-numbering(
+        numbering,
+        ..counter(heading).at(current-heading.location()),
+      )
     }
   }
 )

@@ -55,35 +55,38 @@ where
     }
 }
 
-pub trait ArenaFlatten<'a> {
-    fn flatten(&'a self, doc: RefDoc<'a>) -> RefDoc<'a>;
-}
+pub struct BadFlatten;
 
-impl<'a> ArenaFlatten<'a> for Arena<'a> {
-    fn flatten(&'a self, doc: RefDoc<'a>) -> RefDoc<'a> {
-        self.alloc_cow(doc.pretty(self).flatten().1)
-    }
-}
-
-pub trait DocBuilderFlatten<'a> {
+pub trait Flatten<'a> {
     fn flatten(self) -> DocBuilder<'a, Arena<'a>>;
+
+    fn try_flatten(self) -> Result<DocBuilder<'a, Arena<'a>>, BadFlatten>;
 }
 
-impl<'a> DocBuilderFlatten<'a> for DocBuilder<'a, Arena<'a>> {
+impl<'a> Flatten<'a> for DocBuilder<'a, Arena<'a>> {
     fn flatten(self) -> DocBuilder<'a, Arena<'a>> {
         let DocBuilder(alloc, doc) = self;
         match *doc {
-            Doc::Append(a, b) => DocBuilder(
-                alloc,
-                Doc::Append(alloc.flatten(a), alloc.flatten(b)).into(),
-            ),
+            Doc::Append(a, b) => a.pretty(alloc).flatten().append(b.pretty(alloc).flatten()),
             Doc::Group(g) => g.pretty(alloc).flatten(),
             Doc::FlatAlt(_, b) => b.pretty(alloc).flatten(),
             Doc::Nest(_, b) => b.pretty(alloc).flatten(),
             Doc::Hardline => DocBuilder(alloc, Doc::Fail.into()),
-            Doc::RenderLen(a, b) => DocBuilder(alloc, Doc::RenderLen(a, alloc.flatten(b)).into()),
             Doc::Union(a, _) => a.pretty(alloc).flatten(),
             _ => DocBuilder(alloc, doc),
+        }
+    }
+
+    fn try_flatten(self) -> Result<DocBuilder<'a, Arena<'a>>, BadFlatten> {
+        let DocBuilder(alloc, doc) = self;
+        match *doc {
+            Doc::Append(a, b) => Ok(a.pretty(alloc).flatten().append(b.pretty(alloc).flatten())),
+            Doc::Group(g) => g.pretty(alloc).try_flatten(),
+            Doc::FlatAlt(_, b) => b.pretty(alloc).try_flatten(),
+            Doc::Nest(_, b) => b.pretty(alloc).try_flatten(),
+            Doc::Hardline => Err(BadFlatten),
+            Doc::Union(a, _) => a.pretty(alloc).try_flatten(),
+            _ => Ok(DocBuilder(alloc, doc)),
         }
     }
 }

@@ -9,6 +9,15 @@ pub fn is_only_one_and<T>(
         .is_some_and(|first| iterator.next().is_none() && f(&first))
 }
 
+pub fn is_empty_or_one_if<T>(
+    mut iterator: impl Iterator<Item = T>,
+    f: impl FnOnce(&T) -> bool,
+) -> bool {
+    iterator
+        .next()
+        .is_none_or(|it| iterator.next().is_none() && f(&it))
+}
+
 pub fn is_comment_node(node: &SyntaxNode) -> bool {
     matches!(
         node.kind(),

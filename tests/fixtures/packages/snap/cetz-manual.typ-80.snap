@@ -885,14 +885,9 @@ plot.plot(
 #doc-style.show-parameter-block("stroke", "stroke", default: black, [
   The legends frame stroke style.
 ])
-#doc-style.show-parameter-block(
-  "padding",
-  "float",
-  default: .1,
-  [
-    The legends frame padding, that is the distance added between its items and its frame.
-  ],
-)
+#doc-style.show-parameter-block("padding", "float", default: .1, [
+  The legends frame padding, that is the distance added between its items and its frame.
+])
 #doc-style.show-parameter-block("offset", "tuple", default: (0, 0), [
   An offset tuple (x and y coordinates) to add to the legends position.
 ])
@@ -902,14 +897,9 @@ plot.plot(
 #doc-style.show-parameter-block("item.spacing", "number", default: .05, [
   The spacing between two legend items in canvas units.
 ])
-#doc-style.show-parameter-block(
-  "item.preview.width",
-  "number",
-  default: .75,
-  [
-    The width of a legend items preview picture, a small preview of the graph the legend item belongs to.
-  ],
-)
+#doc-style.show-parameter-block("item.preview.width", "number", default: .75, [
+  The width of a legend items preview picture, a small preview of the graph the legend item belongs to.
+])
 #doc-style.show-parameter-block("item.preview.height", "number", default: .3, [
   The height of a legend items preview picture.
 ])

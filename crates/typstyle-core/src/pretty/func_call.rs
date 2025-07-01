@@ -13,7 +13,7 @@ use super::{
     util::{get_parenthesized_args, get_parenthesized_args_untyped, has_parenthesized_args},
     Context, Mode, PrettyPrinter,
 };
-use crate::ext::StrExt;
+use crate::{ext::StrExt, pretty::args};
 
 impl<'a> PrettyPrinter<'a> {
     pub(super) fn convert_func_call(
@@ -248,43 +248,13 @@ fn is_ends_with_hashed_expr(mut children: std::slice::Iter<'_, SyntaxNode>) -> b
 ///    use compact folding (`FoldStyle::Compact`).
 /// 3. Otherwise, fall back to the default (`None`).
 fn suggest_fold_style_for_args(args: Args, count: usize) -> Option<FoldStyle> {
-    // Identify block‐like expressions that deserve their own lines.
-    let is_blocky = |expr: Expr<'_>| {
-        matches!(
-            expr,
-            Expr::Code(_)
-                | Expr::Conditional(_)
-                | Expr::While(_)
-                | Expr::For(_)
-                | Expr::Contextual(_)
-                | Expr::Closure(_)
-        )
-    };
-
-    // Identify simple expressions we can “smoosh” on one line.
-    let is_combinable = |expr: Expr<'_>| {
-        is_blocky(expr)
-            || matches!(
-                expr,
-                Expr::FuncCall(_)
-                    | Expr::Parenthesized(_)
-                    | Expr::Content(_)
-                    | Expr::Array(_)
-                    | Expr::Dict(_)
-            )
-    };
-
     // Track if we’ve already seen an array/dict before the last arg.
     let mut seen_array = false;
     let mut seen_dict = false;
 
     for (i, arg) in get_parenthesized_args(args).enumerate() {
         // Unwrap any nested parentheses to get the core expression.
-        let mut expr = match arg {
-            Arg::Pos(p) => p,
-            Arg::Named(n) => n.expr(),
-            Arg::Spread(s) => s.expr(),
-        };
+        let mut expr = args::unwrap_expr(arg);
         while let Expr::Parenthesized(inner) = expr {
             expr = inner.expr();
         }
@@ -292,27 +262,24 @@ fn suggest_fold_style_for_args(args: Args, count: usize) -> Option<FoldStyle> {
         // If this isn’t the last arg, record any arrays/dicts and bail out
         // early if we hit another block.
         if i < count - 1 {
-            seen_array |= matches!(expr, Expr::Array(_));
-            seen_dict |= matches!(expr, Expr::Dict(_));
-            if is_blocky(expr) {
+            if args::is_blocky(expr) {
                 break;
             }
+            match expr {
+                Expr::Array(array) if array.items().next().is_some() => seen_array = true,
+                Expr::Dict(dict) if dict.items().next().is_some() => seen_dict = true,
+                _ => (),
+            };
             continue;
         }
 
         // On the last argument: fold if it’s combinable and not a repeat
         // of an earlier array/dict.
-        if is_combinable(expr)
+        if args::is_combinable(expr)
             && !(seen_array && matches!(expr, Expr::Array(_))
                 || seen_dict && matches!(expr, Expr::Dict(_)))
         {
-            return Some(if count == 1 && !matches!(expr, Expr::FuncCall(_)) {
-                // A single non‐call arg → always fold.
-                FoldStyle::Always
-            } else {
-                // Otherwise, compact fold.
-                FoldStyle::Compact
-            });
+            return Some(FoldStyle::Compact);
         }
     }
 

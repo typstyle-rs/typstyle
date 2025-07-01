@@ -61,7 +61,7 @@ impl<'a> PrettyPrinter<'a> {
 
                         let mut buf = String::new();
                         self.convert_math_children(ctx, cell_nodes.into_iter())
-                            .render_fmt(self.config.max_width, &mut buf)
+                            .renderless_fmt(self.config.max_width, &mut buf)
                             .ok()?;
                         if ends_with_line_comment {
                             buf.push_str("\n "); // ensure an extra line is added

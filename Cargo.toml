@@ -29,6 +29,7 @@ rustc-hash = "2.0"
 serde = "1.0"
 smallvec = "1"
 thiserror = "2"
+typed-arena = "2"
 unicode-width = "0.1" # use the same version as in pretty
 
 # Used in WASM

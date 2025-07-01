@@ -1,0 +1,62 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/code/args/compact-simpler.typ
+---
+#let f(..args) = {
+  for p in args.pos() {
+    [#p]
+    linebreak()
+  }
+  for (k, v) in args.named() {
+    [#k: #v]
+    linebreak()
+  }
+}
+
+// Test cases with no blocky args and last arg as simple function call
+
+#f(
+  a: true,
+  b: false,
+  circle(radius: 1cm),
+)
+
+#f(
+  "first",
+  second: 42,
+  rect(width: 2cm),
+)
+
+#f(
+  text(emph[xx]),
+  strong([yyy]),
+  circle(),
+)
+
+#f(
+  1,
+  emph(text([])),
+  rect(radius: 1000pt),
+)
+
+#f("string", 1, text("content", blue))
+
+#f(true, false, rect(
+  width: 1cm,
+  height: 2cm,
+))
+
+#f(circle(), rect(), text(
+  [],
+  fill: (() => red)(),
+))
+
+#f(1, "two", three: 4, (x: 5), text(
+  stroke: 1pt,
+)[])
+
+#f(
+  [content],
+  (a: 1, b: 2),
+  circle(fill: red),
+)

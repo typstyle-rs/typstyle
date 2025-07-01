@@ -216,19 +216,23 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
   )
 
   // all points in diagram that should be spanned by coordinate grid
-  let points = rects.map(r => {
-    r.center
-  })
+  let points = rects.map(
+    r => {
+      r.center
+    },
+  )
   points += verts
 
   if (
     points.len()
       == 0
   ) {
-    points.push((
-      0,
-      0,
-    ))
+    points.push(
+      (
+        0,
+        0,
+      ),
+    )
   }
 
   let min-max-int(
@@ -249,17 +253,21 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
     x-min,
     x-max,
   ) = min-max-int(
-    points.map(p => p.at(
-      0,
-    )),
+    points.map(
+      p => p.at(
+        0,
+      ),
+    ),
   )
   let (
     y-min,
     y-max,
   ) = min-max-int(
-    points.map(p => p.at(
-      1,
-    )),
+    points.map(
+      p => p.at(
+        1,
+      ),
+    ),
   )
   let origin = (
     x-min,
@@ -275,12 +283,14 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
   )
 
   // Initialise row and column sizes
-  let cell-sizes = bounding-dims.map(n => (
-    (
-      0pt,
-    )
-      * n
-  ))
+  let cell-sizes = bounding-dims.map(
+    n => (
+      (
+        0pt,
+      )
+        * n
+    ),
+  )
 
   // Expand cells to fit rects
   for rect in (
@@ -389,56 +399,62 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
       grid.cell-sizes,
       grid.spacing,
     )
-    .map((
+    .map(
       (
-        sizes,
-        spacing,
-      ),
-    ) => {
-      array
-        .zip(
-          cumsum(
-            sizes,
-          ),
+        (
           sizes,
-          range(
-            sizes.len(),
-          ),
-        )
-        .map((
-          (
-            end,
-            size,
-            i,
-          ),
-        ) => (
-          end
-            - size
-              / 2
-            + spacing
-              * i
-        ))
-    })
+          spacing,
+        ),
+      ) => {
+        array
+          .zip(
+            cumsum(
+              sizes,
+            ),
+            sizes,
+            range(
+              sizes.len(),
+            ),
+          )
+          .map(
+            (
+              (
+                end,
+                size,
+                i,
+              ),
+            ) => (
+              end
+                - size
+                  / 2
+                + spacing
+                  * i
+            ),
+          )
+      },
+    )
 
   let bounding-size = array
     .zip(
       centers,
       grid.cell-sizes,
     )
-    .map((
+    .map(
       (
-        centers,
-        sizes,
-      ),
-    ) => (
-      centers.at(
-        -1,
-      )
-        + sizes.at(
+        (
+          centers,
+          sizes,
+        ),
+      ) => (
+        centers.at(
           -1,
         )
-          / 2
-    ))
+          + sizes.at(
+            -1,
+          )
+            / 2
+      ),
+    )
 
   (
     centers: centers,
@@ -476,18 +492,20 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
     .zip(
       options.cell-size,
     )
-    .map((
+    .map(
       (
-        sizes,
-        min-size,
-      ),
-    ) => sizes.map(
-      calc
-        .max
-        .with(
+        (
+          sizes,
           min-size,
         ),
-    ))
+      ) => sizes.map(
+        calc
+          .max
+          .with(
+            min-size,
+          ),
+      ),
+    )
 
   grid += compute-cell-centers(
     grid,
@@ -606,9 +624,11 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
     ) {
       y += 1
       x = 0
-      matrix.push((
-        none,
-      ))
+      matrix.push(
+        (
+          none,
+        ),
+      )
     } else if (
       repr(
         child.func(),
@@ -982,172 +1002,188 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
     args,
   )
 
-  box(context {
-    let options = options
+  box(
+    context {
+      let options = options
 
-    options.em-size = measure(
-      h(
-        1em,
-      ),
-    ).width
-    let to-pt(
-      len,
-    ) = to-abs-length(
-      len,
-      options.em-size,
-    )
-    options.spacing = options
-      .spacing
-      .map(
-        to-pt,
+      options.em-size = measure(
+        h(
+          1em,
+        ),
+      ).width
+      let to-pt(
+        len,
+      ) = to-abs-length(
+        len,
+        options.em-size,
       )
-    options.cell-size = options
-      .cell-size
-      .map(
-        to-pt,
+      options.spacing = options
+        .spacing
+        .map(
+          to-pt,
+        )
+      options.cell-size = options
+        .cell-size
+        .map(
+          to-pt,
+        )
+
+      let nodes = nodes.map(
+        node => {
+          node = resolve-node-options(
+            node,
+            options,
+          )
+          node = measure-node-size(
+            node,
+          )
+          node
+        },
+      )
+      let edges = edges.map(
+        edge => resolve-edge-options(
+          edge,
+          options,
+        ),
       )
 
-    let nodes = nodes.map(node => {
-      node = resolve-node-options(
-        node,
+
+      // try resolving node uv coordinates. this resolves to NaN coords if the coord depends on physical lengths
+      let ctx = (
+        target-system: "uv",
+        em-size: (
+          width: options.em-size,
+          height: options.em-size,
+        ),
+      )
+      let (
+        ctx-with-uv-anchors,
+        nodes,
+      ) = resolve-node-coordinates(
+        nodes,
+        ctx: ctx,
+      )
+
+
+      // nodes and edges whose uv coordinates can be resolved without knowing the grid
+      let rects-affecting-grid = nodes
+        .filter(
+          node => {
+            not is-nan-vector(
+              node
+                .pos
+                .uv,
+            )
+          },
+        )
+        .map(
+          node => (
+            center: node
+              .pos
+              .uv,
+            size: node.size,
+          ),
+        )
+
+      let vertices-affecting-grid = (
+        edges
+          .map(
+            edge => {
+              resolve-edge-vertices(
+                edge,
+                ctx: ctx-with-uv-anchors
+                  + (
+                    target-system: "uv",
+                  ),
+                nodes,
+              )
+            },
+          )
+          .join()
+          + ()
+      ) // coerce none to ()
+      vertices-affecting-grid = vertices-affecting-grid.filter(
+        vert => {
+          not is-nan-vector(
+            vert,
+          )
+        },
+      )
+
+
+      // determine diagram's elastic grid layout
+      let grid = compute-grid(
+        rects-affecting-grid,
+        vertices-affecting-grid,
         options,
       )
-      node = measure-node-size(
-        node,
+
+
+      // now with grid determined, compute final (physical) coordinates for nodes and edges
+      let (
+        ctx-with-xyz-anchors,
+        nodes,
+      ) = resolve-node-coordinates(
+        nodes,
+        ctx: (
+          target-system: "xyz",
+          grid: grid,
+        ),
       )
-      node
-    })
-    let edges = edges.map(edge => resolve-edge-options(
-      edge,
-      options,
-    ))
+      let (
+        _,
+        nodes,
+      ) = resolve-node-coordinates(
+        nodes,
+        ctx: (
+          target-system: "uv",
+          grid: grid,
+        ),
+      )
 
 
-    // try resolving node uv coordinates. this resolves to NaN coords if the coord depends on physical lengths
-    let ctx = (
-      target-system: "uv",
-      em-size: (
-        width: options.em-size,
-        height: options.em-size,
-      ),
-    )
-    let (
-      ctx-with-uv-anchors,
-      nodes,
-    ) = resolve-node-coordinates(
-      nodes,
-      ctx: ctx,
-    )
+      // resolve enclosing nodes
+      let (
+        extra-anchors,
+        nodes,
+      ) = resolve-node-enclosures(
+        nodes,
+        ctx-with-xyz-anchors,
+      )
+      ctx-with-xyz-anchors.nodes += extra-anchors
 
 
-    // nodes and edges whose uv coordinates can be resolved without knowing the grid
-    let rects-affecting-grid = nodes
-      .filter(node => {
-        not is-nan-vector(
-          node
-            .pos
-            .uv,
-        )
-      })
-      .map(node => (
-        center: node
-          .pos
-          .uv,
-        size: node.size,
-      ))
-
-    let vertices-affecting-grid = (
-      edges
-        .map(edge => {
-          resolve-edge-vertices(
+      // resolve edges
+      edges = edges.map(
+        edge => {
+          edge.final-vertices = resolve-edge-vertices(
             edge,
-            ctx: ctx-with-uv-anchors
+            ctx: ctx-with-xyz-anchors
               + (
-                target-system: "uv",
+                target-system: "xyz",
+                grid: grid,
               ),
             nodes,
           )
-        })
-        .join()
-        + ()
-    ) // coerce none to ()
-    vertices-affecting-grid = vertices-affecting-grid.filter(vert => {
-      not is-nan-vector(
-        vert,
-      )
-    })
 
-
-    // determine diagram's elastic grid layout
-    let grid = compute-grid(
-      rects-affecting-grid,
-      vertices-affecting-grid,
-      options,
-    )
-
-
-    // now with grid determined, compute final (physical) coordinates for nodes and edges
-    let (
-      ctx-with-xyz-anchors,
-      nodes,
-    ) = resolve-node-coordinates(
-      nodes,
-      ctx: (
-        target-system: "xyz",
-        grid: grid,
-      ),
-    )
-    let (
-      _,
-      nodes,
-    ) = resolve-node-coordinates(
-      nodes,
-      ctx: (
-        target-system: "uv",
-        grid: grid,
-      ),
-    )
-
-
-    // resolve enclosing nodes
-    let (
-      extra-anchors,
-      nodes,
-    ) = resolve-node-enclosures(
-      nodes,
-      ctx-with-xyz-anchors,
-    )
-    ctx-with-xyz-anchors.nodes += extra-anchors
-
-
-    // resolve edges
-    edges = edges.map(edge => {
-      edge.final-vertices = resolve-edge-vertices(
-        edge,
-        ctx: ctx-with-xyz-anchors
-          + (
-            target-system: "xyz",
-            grid: grid,
-          ),
-        nodes,
+          edge = convert-edge-corner-to-poly(
+            edge,
+          )
+          edge = apply-edge-shift(
+            grid,
+            edge,
+          )
+          edge
+        },
       )
 
-      edge = convert-edge-corner-to-poly(
-        edge,
-      )
-      edge = apply-edge-shift(
+
+      render(
         grid,
-        edge,
+        nodes,
+        edges,
+        options,
       )
-      edge
-    })
-
-
-    render(
-      grid,
-      nodes,
-      edges,
-      options,
-    )
-  })
+    },
+  )
 }
