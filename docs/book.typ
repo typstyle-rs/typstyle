@@ -31,6 +31,7 @@
       - #chapter("dev-guide/core.typ")[Core]
       - #chapter("dev-guide/documentation.typ")[Documentation]
       - #chapter("dev-guide/playground.typ")[Playground]
+      - #chapter("dev-guide/release-process.typ")[Release Process]
   ],
 )
 
