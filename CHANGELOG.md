@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.13.12 - [2025-07-02]
+
+🎉 typstyle has moved to https://github.com/typstyle-rs/typstyle !
+
+- Bug fix(https://github.com/typstyle-rs/typstyle/issues/334): Fixed incorrect formatting when term description is empty in definition lists.
+
+- Feature: Improved argument layout logic - do not use compact layout when arguments have multiline flavor, providing better formatting for complex function calls.
+
+- Feature: Enhanced math formatting - no longer align backslashes in mathematical expressions for cleaner output.
+
+- Feature: Introduced `typstyle-typlugin` crate for embedding typstyle as a WebAssembly plugin within Typst documents.
+
 ## v0.13.11 - [2025-06-14]
 
 - Feature(CLI): (breaking) Removed deprecated `format-all` command from CLI. This command was previously deprecated and has now been completely removed. Users should use `typstyle <dir> -i` instead.
