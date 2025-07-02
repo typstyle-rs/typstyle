@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.13.13 - [2025-07-02]
+
+- Bug fix(CI): Fixed a CI misconfiguration that prevented the release of v0.13.12.
+
 ## v0.13.12 - [2025-07-02]
 
 🎉 typstyle has moved to https://github.com/typstyle-rs/typstyle !
