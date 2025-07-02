@@ -242,24 +242,29 @@ fn is_ends_with_hashed_expr(mut children: std::slice::Iter<'_, SyntaxNode>) -> b
 /// Suggests a folding style (`FoldStyle`) for parenthesized function-call arguments
 /// based on their structure and content.
 ///
-/// Rules:
-/// 1. If the argument list is empty, default to `FoldStyle::Always`.
-/// 2. If there is exactly one argument and it is a code block, always fold it.
-/// 3. If the last argument is "combinable" (e.g., nested calls, arrays, dictionaries,
-///    or parenthesized groups), all preceding arguments are simple (not blocks),
-///    and there is no conflict with the last argument (i.e., both are arrays or dictionaries with items)
-///    use compact layout (`FoldStyle::Compact`).
-/// 4. Otherwise no folding is suggested (`None`).
+/// Rules (ordered):
+/// 1. **Empty argument list:**
+///    - -> `FoldStyle::Always`
+/// 2. **Single combinable argument:**
+///    - The only argument is a function call -> `FoldStyle::Compact`
+///    - Otherwise -> `FoldStyle::Always`
+/// 3. **Multiple arguments without multiline flavor, combinable last argument:**
+///    - The last argument is "combinable" (e.g., nested call, array, dictionary, or parenthesized group),
+///      and all preceding arguments are simple (not blocks),
+///      and the last argument must not be an array (or dictionary) if any previous argument is also an array (or dictionary)
+///      -> `FoldStyle::Compact`
+/// 4. **Otherwise:**
+///    - -> the original fold style
 ///
 /// # Parameters
 /// - `pargs`: A slice of parenthesized arguments to analyze.
-/// -
+/// - `hint`: The fallback fold style to use if no rule matches.
 ///
 /// # Returns
-/// - The new fold style
+/// - The suggested `FoldStyle`
 fn suggest_fold_style_for_args(pargs: &[Arg], hint: FoldStyle) -> FoldStyle {
     let Some((&last, initials)) = pargs.split_last() else {
-        return FoldStyle::Always;
+        return FoldStyle::Always; // This should have been covered by call site.
     };
     let last_expr = args::unwrap_expr_deep(last);
 
