@@ -1,0 +1,70 @@
+// Function Call Formatting - BEFORE Typstyle
+// Shows badly formatted function calls that need fixing
+
+= Function Call Disasters
+
+== Basic Argument Mess
+
+Function calls with terrible spacing and formatting:
+
+#let simple(arg1,arg2,arg3)={}
+#let with_named(x:1,y:2,z:3)={}
+#let cramped(a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z)={}
+
+== Multi-line Arguments Chaos
+
+Inconsistent argument formatting:
+
+#let my_function(
+arg1,
+  arg2,
+    args: none
+  ) = {
+// terrible function body alignment
+}
+
+#let another_func(   a,
+  b,
+      c,
+        d  )={
+}
+
+== Complex Nested Calls
+
+#let create-chart = (..args) => {}
+#let sample-data = none
+#create-chart(
+  data: sample-data,
+  title: "Performance Metrics",
+  options: (
+    width: 400,
+    height: 300,
+    colors: ("blue", "red", "green")
+  )
+)
+
+== Parentheses Removal
+
+Unnecessary parentheses are removed automatically:
+
+#let a = ((((1))))
+#let b = (((("string"))))
+#let c = ((([1, 2, 3])))
+#let d = (((key: "value")))
+
+// But preserved around identifiers for safety
+#let name = "test"
+#let obj1 = (name: 1)      // identifier - parens removed
+#let obj2 = ((name): 1)    // expression - parens preserved
+
+== Long Function Calls
+
+When arguments don't fit on one line, they break intelligently:
+
+#figure(
+  caption: [A very long caption that demonstrates how Typstyle handles line breaking in function arguments],
+  placement: top,
+  supplement: [Figure]
+)[
+  Content goes here with proper indentation and formatting.
+]

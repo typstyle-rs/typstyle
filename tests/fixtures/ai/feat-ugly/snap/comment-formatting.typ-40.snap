@@ -1,0 +1,97 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/ai/feat-ugly/comment-formatting.typ
+---
+// DUMMY
+
+= Comment Formatting Problems
+
+==Inline Comments Mess
+
+Typstyle fixes poorly positioned inline comments:
+
+#let config(
+  title: "My Document", //bad spacing
+  authors: (
+    "Alice",
+    "Bob",
+  ), /*bad comment
+     positioning and indentation*/
+  lang: "en", //no space
+  date: datetime.today(), //missing space
+) = {
+  // misaligned function body
+}
+
+== Block Comments
+
+Multi-line block comments are automatically aligned:
+
+#{
+  let x = 1 /* This is a block comment
+            that spans multiple lines
+            and gets properly aligned */
+
+  /* Another block comment
+  with different indentation
+  that Typstyle will format */
+  let y = 2
+}
+
+== Comment Alignment
+
+Comments with leading stars are preserved:
+
+/* Block comment with leading stars
+ * that maintains consistent
+ * formatting across lines
+ * for better readability
+ */
+
+== Escape Hatch
+
+Use `// @typstyle off` to preserve specific formatting:
+
+// @typstyle off
+#let preserve_this_spacing    =    "exactly as written"
+#let normal_formatting = "this gets cleaned up"
+
+== Complex Comment Patterns
+
+#{
+  let calculate(..args) = {}
+
+  // Nested comments in code blocks
+  if true {
+    let result = calculate(
+      // Inline calculation
+      value: 42, /* The answer to everything
+                 according to Douglas Adams */
+      precision: 3, // Decimal places
+    )
+  }
+
+  /* Multi-line comment explaining
+     the algorithm complexity:
+     - Time: O(n log n)
+     - Space: O(n)
+  */
+}
+
+= Advanced Comment Scenarios
+
+== Comments in Function Calls
+
+#figure(
+  caption: [Data visualization], // Figure caption
+  placement: top, /* Position at top of page
+                  for better flow */
+  table(
+    columns: 3,
+    // Three-column layout
+    [A], [B], [C],
+    // Headers
+    [1], [2], [3],
+    // Data row
+  ),
+)

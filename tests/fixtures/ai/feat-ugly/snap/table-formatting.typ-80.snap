@@ -1,0 +1,82 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/ai/feat-ugly/table-formatting.typ
+---
+// DUMMY
+
+= Table Formatting Disasters
+== Basic Table Structure Mess
+#table(
+  columns: 3,
+  stroke: 0.5pt,
+  [*Name*], [*Age*], [*City*],
+  [Alice], [25], [Boston],
+  [Bob], [30], [Seattle],
+  [Carol], [28], [Denver],
+)
+
+== Column-Aware Formatting Horror
+Tables with terrible spacing:
+#table(
+  columns: (auto, 1fr, auto),
+  stroke: 0.5pt,
+  fill: (col, row) => if row == 0 { rgb("#e8f4fd") },
+  [*Product*], [*Description*], [*Price*],
+  [Laptop], [High-performance device], [\$1,299],
+  [Mouse], [Wireless optical], [\$29],
+  [Keyboard], [Mechanical RGB], [\$149],
+)
+
+== Headers and Footers
+#table(
+  columns: 4,
+  stroke: 0.5pt,
+  table.header([*Quarter*], [*Revenue*], [*Growth*], [*Status*]),
+  [Q1], [\$2.4M], [+12%], [✓],
+  [Q2], [\$2.8M], [+16%], [✓],
+  [Q3], [\$3.1M], [+11%], [✓],
+  table.footer([*Total*], [*\$8.3M*], [*+13%*], [*Excellent*]),
+)
+
+== Grid Layouts
+#grid(
+  columns: (1fr, 1fr),
+  stroke: 0.5pt,
+  fill: (col, row) => if calc.rem(col + row, 2) == 0 { rgb("#f8f8f8") },
+  [*Left Column*], [*Right Column*],
+  [Content A], [Content B],
+  [Content C], [Content D],
+)
+
+== Complex Grid with Spanning
+#table(
+  columns: (1fr, 1fr, 1fr),
+  stroke: 0.5pt,
+  table.cell(colspan: 3, fill: rgb("#e1f5fe"))[*Header Spanning All Columns*],
+  [Col 1],
+  [Col 2],
+  [Col 3],
+  table.cell(rowspan: 2)[*Tall Cell*],
+  [Normal],
+  [Normal],
+  [Normal], [Normal],
+)
+
+== Styled Tables
+#table(
+  columns: 3,
+  stroke: (x, y) => {
+    if y == 0 { (bottom: 2pt + rgb("#333")) } else {
+      (bottom: 0.5pt + rgb("#ddd"))
+    }
+  },
+  fill: (col, row) => {
+    if row == 0 { rgb("#e3f2fd") } else if calc.rem(row, 2) == 0 {
+      rgb("#f8f9fa")
+    }
+  },
+  [*Metric*], [*Value*], [*Trend*],
+  [Sales], [↗️ +15%], [Growing],
+  [Users], [➡️ +2%], [Stable],
+  [Revenue], [↗️ +18%], [Growing],
+)

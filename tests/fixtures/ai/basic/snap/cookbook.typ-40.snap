@@ -1,0 +1,148 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/ai/basic/cookbook.typ
+---
+#set page(margin: 1.5cm)
+#set text(font: "Georgia", size: 11pt)
+
+#align(center)[
+  #text(size: 28pt, weight: "bold")[
+    Family Recipe Collection
+  ]
+
+  #v(0.5cm)
+
+  #text(size: 16pt, style: "italic")[
+    Traditional dishes passed down through generations
+  ]
+]
+
+#v(1cm)
+
+= Appetizers
+
+== Classic Bruschetta
+_Serves 6-8 • Prep time: 15 minutes_
+
+=== Ingredients
+- 1 French baguette, sliced diagonally
+- 4 large tomatoes, diced
+- 3 cloves garlic, minced
+- 1/4 cup fresh basil, chopped
+- 2 tbsp extra virgin olive oil
+- 1 tbsp balsamic vinegar
+- Salt and pepper to taste
+- Fresh mozzarella (optional)
+
+=== Instructions
+
+#set enum(numbering: "1.", tight: false)
+
++ Preheat oven to 400°F (200°C).
+
++ Arrange baguette slices on a baking sheet and toast for 5-7 minutes until golden.
+
++ In a bowl, combine diced tomatoes, minced garlic, basil, olive oil, and balsamic vinegar.
+
++ Season the mixture with salt and pepper.
+
++ Top each toasted bread slice with the tomato mixture.
+
++ Add fresh mozzarella if desired and serve immediately.
+
+#rect(
+  width: 100%,
+  fill: rgb("#f0f8ff"),
+  inset: 10pt,
+  radius: 5pt,
+)[
+  *Chef's Tip:* For best results, use ripe, in-season tomatoes and let the mixture sit for 10 minutes before serving to allow flavors to meld.
+]
+
+#pagebreak()
+
+= Main Courses
+
+== Grandmother's Spaghetti Carbonara
+_Serves 4 • Prep time: 10 minutes • Cook time: 15 minutes_
+
+=== Ingredients
+- 400g spaghetti
+- 200g pancetta or guanciale, diced
+- 4 large eggs
+- 100g Pecorino Romano cheese, grated
+- 50g Parmesan cheese, grated
+- Black pepper, freshly ground
+- Salt for pasta water
+
+=== Instructions
+
++ Bring a large pot of salted water to boil and cook spaghetti according to package instructions.
+
++ While pasta cooks, heat a large pan over medium heat and cook pancetta until crispy.
+
++ In a bowl, whisk together eggs, Pecorino Romano, Parmesan, and plenty of black pepper.
+
++ Reserve 1 cup pasta cooking water before draining.
+
++ Add hot pasta to the pan with pancetta and toss.
+
++ Remove from heat and quickly stir in egg mixture, adding pasta water gradually to create a creamy sauce.
+
++ Serve immediately with extra cheese and black pepper.
+
+#figure(
+  rect(
+    width: 100%,
+    height: 80pt,
+    fill: gray.lighten(80%),
+    stroke: 1pt,
+  ),
+  caption: [Traditional Carbonara - perfectly creamy without cream!],
+)
+
+= Desserts
+
+== Tiramisu
+_Serves 8-10 • Prep time: 30 minutes • Chill time: 4+ hours_
+
+A classic Italian dessert that's perfect for special occasions.
+
+=== Ingredients
+#grid(
+  columns: 2,
+  gutter: 1cm,
+  [
+    *For the cream:*
+    - 6 egg yolks
+    - 150g caster sugar
+    - 500g mascarpone
+    - 3 egg whites
+  ],
+  [
+    *For assembly:*
+    - 300ml strong espresso, cooled
+    - 3 tbsp coffee liqueur (optional)
+    - 2 packages ladyfinger cookies
+    - Cocoa powder for dusting
+  ],
+)
+
+=== Method
+
+The secret to perfect tiramisu is patience - let it chill overnight for best results.
+
++ Whisk egg yolks and sugar until pale and thick.
++ Fold in mascarpone until smooth.
++ Whip egg whites to soft peaks and gently fold into mascarpone mixture.
++ Combine espresso and liqueur in a shallow dish.
++ Quickly dip each ladyfinger in coffee mixture and arrange in dish.
++ Spread half the mascarpone mixture over cookies.
++ Repeat layers and refrigerate for at least 4 hours.
++ Dust with cocoa powder before serving.
+
+#align(center)[
+  #text(size: 14pt, style: "italic")[
+    "The best recipes are made with love and shared with family."
+  ]
+]

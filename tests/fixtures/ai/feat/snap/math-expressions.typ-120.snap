@@ -1,0 +1,89 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/ai/feat/math-expressions.typ
+---
+// DUMMY
+
+#set math.equation(numbering: "(1)")
+
+= Mathematical Formatting Disasters
+
+== Basic Mathematical Expressions Mess
+
+Math with bad spacing: $x+y=z$ and $f(x)=x^2$
+
+== Equations with Numbering
+
+The quadratic formula:
+$ x = frac(-b plus.minus sqrt(b^2 - 4 a c), 2a) $ <quadratic>
+
+== Fractions and Complex Expressions
+
+$ f(x) = frac(1, sigma sqrt(2 pi)) e^(-frac((x - mu)^2, 2 sigma^2)) $
+
+$ integral_0^infinity x^2 e^(-x) dif x = Gamma(3) = 2! $
+
+== Matrix Notation
+
+$
+  A = mat(
+    a_(1,1), a_(1,2), ..., a_(1,n);
+    a_(2,1), a_(2,2), ..., a_(2,n);
+    dots.v, dots.v, dots.down, dots.v;
+    a_(m,1), a_(m,2), ..., a_(m,n)
+  )
+$
+
+== Series and Summations
+
+Taylor series expansion:
+$ f(x) = sum_(n=0)^infinity frac(f^((n))(a), n!) (x - a)^n $
+
+Common series:
+$ e^x = sum_(n=0)^infinity frac(x^n, n!) = 1 + x + frac(x^2, 2!) + frac(x^3, 3!) + ... $
+
+== Cases and Piecewise Functions
+
+$
+  f(x) = cases(
+    x^2 quad & "if" x >= 0,
+    -x^2 quad & "if" x < 0
+  )
+$
+
+== Aligned Equations
+
+$
+  x + 2y & = 5 \
+  3x - y & = 1
+$
+
+== Limits and Derivatives
+
+$ lim_(x -> 0) frac(sin(x), x) = 1 $
+
+$ frac(d, d x) [f(x) g(x)] = f'(x) g(x) + f(x) g'(x) $
+
+== Vector Notation
+
+$ bold(v) = vec(v_1, v_2, v_3) $
+
+$ bold(A) dot bold(B) = sum_(i=1)^n A_i B_i $
+
+== Probability and Statistics
+
+Normal distribution:
+$ phi(x) = frac(1, sqrt(2 pi)) e^(-x^2/2) $
+
+Binomial coefficient:
+$ binom(n, k) = frac(n!, k!(n-k)!) $
+
+== Complex Numbers
+
+Euler's formula:
+$ e^(i theta) = cos(theta) + i sin(theta) $
+
+== Advanced Formatting
+
+Multiple integrals:
+$ integral integral_D f(x,y) dif A = integral_a^b integral_(g_1(x))^(g_2(x)) f(x,y) dif y dif x $

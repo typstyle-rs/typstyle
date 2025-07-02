@@ -1,0 +1,25 @@
+/// typstyle: wrap_text
+
+= Introduction
+
+This is a *sample* document to showcase Typst formatting.
+
+== Math Example
+$ x = (-b plus.minus sqrt(b^2 - 4 a c)) / (2 a) $
+
+== Code Example
+```python
+def hello_world():
+    print("Hello, World!")
+```
+
+#let custom_function(content) = {
+  box(
+    fill: rgb("#e8f4fd"),
+    inset: 8pt,
+    radius: 4pt,
+    content
+  )
+}
+
+#custom_function[This is a custom styled box!]

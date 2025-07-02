@@ -1,0 +1,91 @@
+
+#let random() = 0
+
+= Dynamic Document Content
+
+== Inline Code in Text
+
+Today is #datetime.today().display("[weekday repr:long], [month repr:long] [day], [year]"),
+and this document has #context counter(heading).final().first() sections.
+
+== Conditional Text
+
+The weather is #if random() > 0.5 [sunny] else [cloudy] today.
+
+We have #range(10).filter(x => calc.rem(x, 2) == 0).len() even numbers from 0 to 9.
+
+== Dynamic Lists
+
+Shopping list for #datetime.today().display("[month repr:short] [day]"):
+
+#let items = ("apples", "bread", "milk", "eggs")
+#for (i, item) in items.enumerate() [
+  #(i + 1). #upper(item.first())#item.slice(1)
+]
+
+== Calculated Values in Tables
+
+#let sales-data = (
+  (month: "Jan", sales: 1200),
+  (month: "Feb", sales: 1450),
+  (month: "Mar", sales: 1380)
+)
+
+#table(
+  columns: 3,
+  [*Month*], [*Sales*], [*Growth*],
+
+  ..sales-data.enumerate().map(((i, data)) => (
+    data.month,
+    "$" + str(data.sales),
+    if i == 0 {
+      "—"
+    } else {
+      let prev = sales-data.at(i - 1).sales
+      let growth = calc.round((data.sales - prev) / prev * 100, digits: 1)
+      (if growth > 0 { "+" } else { "" }) + str(growth) + "%"
+    }
+  )).flatten()
+)
+
+== Function Integration
+
+#let format-price(amount) = "$" + str(amount)
+#let calculate-tax(price, rate: 0.08) = price * rate
+
+Item price: #format-price(29.99) \
+Tax amount: #format-price(calculate-tax(29.99)) \
+Total: #format-price(29.99 + calculate-tax(29.99))
+
+== Conditional Sections
+
+#if random() > 0.3 [
+  == Special Offer Section
+
+  This section appears randomly to demonstrate conditional content.
+
+  Limited time offer: Save #calc.floor(random() * 30 + 10)% on all items!
+]
+
+== Data Processing in Text
+
+#{
+  let scores = (85, 92, 78, 95, 88)
+  let average = scores.fold(0, (sum, score) => sum + score) / scores.len()
+  let max-score = scores.fold(0, calc.max)
+  let min-score = scores.fold(100, calc.min)
+
+  [
+    Test results analysis:
+    - Average score: #calc.round(average, digits: 1)
+    - Highest score: #max-score
+    - Lowest score: #min-score
+    - Range: #(max-score - min-score) points
+    - Grade: #if average >= 90 ["A"] else if average >= 80 ["B"] else ["C"]
+  ]
+}
+
+== Real-time Information
+
+This document was generated at #datetime.today().display()
+with #sys.version information.
