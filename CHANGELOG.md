@@ -2,9 +2,7 @@
 
 ## v0.13.13 - [2025-07-02]
 
-We failed to properly release v0.13.12 due to a CI misconfiguration. 
-
-- Bug fix(CI): Fixed CI configuration to ensure proper release pipeline execution. 
+- Bug fix(CI): Fixed a CI misconfiguration that prevented the release of v0.13.12.
 
 ## v0.13.12 - [2025-07-02]
 
