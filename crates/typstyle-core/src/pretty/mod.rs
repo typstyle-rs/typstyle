@@ -8,7 +8,6 @@ mod code_flow;
 mod code_list;
 mod code_misc;
 mod comment;
-mod doc_ext;
 mod func_call;
 mod import;
 mod layout;
@@ -92,7 +91,7 @@ impl<'a> PrettyPrinter<'a> {
             self.arena.hardline(),
         );
         self.arena
-            .nesting(move |l| doc.clone().nest(-(l as isize)).into_doc())
+            .on_nesting(move |l| doc.clone().nest(-(l as isize)).into_doc())
     }
 
     /// For leaf only.

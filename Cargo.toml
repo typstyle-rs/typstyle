@@ -24,12 +24,12 @@ typst-syntax = "0.13.1"
 
 ecow = "0.2.3"
 itertools = "0.14"
-pretty = "0.12.4"
+prettyless = "0.2"
 rustc-hash = "2.0"
 serde = "1.0"
 smallvec = "1"
 thiserror = "2"
-unicode-width = "0.1" # use the same version as in pretty
+unicode-width = "0.2" # use the same version as in pretty
 
 # Used in WASM
 console_error_panic_hook = "0.1.7"
@@ -59,9 +59,7 @@ similar-asserts = "1.7"
 tempfile = "3"
 toml = "0.8"
 
-tinymist-world = { version = "0.13.12", default-features = false, features = [
-  "system",
-] }
+tinymist-world = { version = "0.13.12", default-features = false, features = ["system"] }
 
 typst-assets = { version = "0.13.1", features = ["fonts"] }
 typst-render = "0.13.1"

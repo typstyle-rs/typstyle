@@ -330,15 +330,15 @@ impl<'a> ListStylist<'a> {
             } else if sty.omit_delim_flat {
                 inner
                     .enclose(
-                        arena.text(delim.0).flat_alt(arena.nil()),
-                        arena.text(delim.1).flat_alt(arena.nil()),
+                        arena.text(delim.0).when_group_break(),
+                        arena.text(delim.1).when_group_break(),
                     )
                     .group()
             } else if sty.add_delim_space {
                 inner
                     .enclose(
-                        arena.text(delim.0) + arena.nil().flat_alt(arena.space()),
-                        arena.nil().flat_alt(arena.space()) + arena.text(delim.1),
+                        arena.text(delim.0) + arena.space().when_group_flat(),
+                        arena.space().when_group_flat() + arena.text(delim.1),
                     )
                     .group()
             } else {
@@ -365,7 +365,7 @@ impl<'a> ListStylist<'a> {
                                 inner += arena.hardline();
                             }
                         }
-                        Item::Linebreak(n) => inner += arena.hardline().repeat_n(n),
+                        Item::Linebreak(n) => inner += arena.hardline().repeat(n),
                     }
                 }
                 if !sty.no_indent {
@@ -438,7 +438,7 @@ impl<'a> ListStylist<'a> {
                     };
                     let compact = last.clone();
                     let loose = (arena.line_() + last + sep.clone()).nest(2) + arena.line_();
-                    compact.union(loose)
+                    compact.partial_union(loose)
                 } else {
                     // NOTE: we can't pad here, since this can appear in inline chains.
                     let compact = arena.intersperse(
@@ -455,7 +455,7 @@ impl<'a> ListStylist<'a> {
                         + sep.clone()
                         + arena.line_())
                     .nest(2);
-                    compact.union(loose)
+                    compact.partial_union(loose)
                 };
                 enclose_fitted(inner)
             }
@@ -505,7 +505,7 @@ impl<'a> ListStylist<'a> {
                                 {
                                     sep.clone()
                                 } else {
-                                    sep.clone().flat_alt(arena.nil())
+                                    sep.clone().when_group_break()
                                 };
                                 follow
                             };
@@ -518,7 +518,7 @@ impl<'a> ListStylist<'a> {
                             };
                             inner += body + follow + ln;
                         }
-                        Item::Linebreak(n) => inner += arena.line_().repeat_n(n),
+                        Item::Linebreak(n) => inner += arena.line_().repeat(n),
                     }
                 }
                 if !sty.no_indent {

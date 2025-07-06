@@ -109,7 +109,7 @@ mod tests {
         let leading = get_follow_leading(cmt).unwrap();
         assert_eq!(leading, 4);
         let doc = arena.text("lorem ipsum") + arena.space() + align_multiline(&arena, cmt);
-        let result = doc.pretty(80).to_string();
+        let result = doc.print(80).to_string();
         // println!("{result}");
         assert_eq!(
             result,
@@ -130,7 +130,7 @@ mod tests {
       */";
         let arena = Arena::new();
         let doc = arena.text("lorem ipsum") + arena.space() + align_multiline_simple(&arena, cmt);
-        let result = doc.pretty(80).to_string();
+        let result = doc.print(80).to_string();
         // println!("{result}");
         assert_eq!(
             result,

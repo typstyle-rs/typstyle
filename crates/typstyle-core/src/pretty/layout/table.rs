@@ -97,7 +97,7 @@ impl<'a> TableCollector<'a> {
                     auto_break,
                 } => {
                     doc += if only_one_row {
-                        self.arena.text(",").flat_alt(self.arena.nil())
+                        self.arena.text(",").when_group_break()
                     } else {
                         self.arena.text(",")
                     };
