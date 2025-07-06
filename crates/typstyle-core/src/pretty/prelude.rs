@@ -1,5 +1,3 @@
-pub use pretty::{Arena, DocAllocator, DocBuilder};
-
-pub use super::doc_ext::*;
+pub use prettyless::{Arena, DocAllocator, DocBuilder};
 
 pub type ArenaDoc<'a> = DocBuilder<'a, Arena<'a>>;

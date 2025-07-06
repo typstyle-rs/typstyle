@@ -77,8 +77,8 @@ fn optional_paren<'a>(
     indent: usize,
     delims: (&'static str, &'static str),
 ) -> ArenaDoc<'a> {
-    let open = (arena.text(delims.0) + arena.hardline()).flat_alt(arena.nil());
-    let close = (arena.hardline() + arena.text(delims.1)).flat_alt(arena.nil());
+    let open = (arena.text(delims.0) + arena.hardline()).when_group_break();
+    let close = (arena.hardline() + arena.text(delims.1)).when_group_break();
     ((open + body).nest(indent as isize) + close).group()
 }
 

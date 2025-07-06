@@ -33,7 +33,7 @@ impl<'a> PrettyPrinter<'a> {
 
     pub(super) fn convert_parbreak(&'a self, parbreak: Parbreak) -> ArenaDoc<'a> {
         let newline_count = parbreak.to_untyped().text().count_linebreaks();
-        self.arena.hardline().repeat_n(newline_count)
+        self.arena.hardline().repeat(newline_count)
     }
 }
 

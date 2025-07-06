@@ -1450,101 +1450,98 @@ input_file: tests/fixtures/packages/tablex.typ
   for (i, col) in columns.enumerate() {
     if col == auto {
       // max cell width
-      let col_size = grid-get-column(grid, i).fold(
-        0pt,
-        (max, cell) => {
-          if cell == none {
-            panic(
-              "Not enough cells specified for the given amount of rows and columns.",
-            )
-          }
+      let col_size = grid-get-column(grid, i).fold(0pt, (max, cell) => {
+        if cell == none {
+          panic(
+            "Not enough cells specified for the given amount of rows and columns.",
+          )
+        }
 
-          let pcell = get-parent-cell(
-            cell,
-            grid: grid,
-          ) // in case this is a colspan
-          let last-auto-col = get-colspan-last-auto-col(pcell, columns: columns)
+        let pcell = get-parent-cell(
+          cell,
+          grid: grid,
+        ) // in case this is a colspan
+        let last-auto-col = get-colspan-last-auto-col(pcell, columns: columns)
 
-          let fit-this-span = if (
-            "fit-spans" in pcell and pcell.fit-spans != auto
+        let fit-this-span = if (
+          "fit-spans" in pcell and pcell.fit-spans != auto
+        ) {
+          pcell.fit-spans.x
+        } else {
+          fit-spans.x
+        }
+        let this-cell-can-expand-columns = (
+          pcell.colspan == 1 or not fit-this-span
+        )
+
+        // only expand the last auto column of a colspan,
+        // and only the amount necessary that isn't already
+        // covered by fixed size columns.
+        // However, ignore this cell if it is a colspan with
+        // `fit-spans.x == true` (it requests to not expand
+        // columns).
+        if last-auto-col == i and this-cell-can-expand-columns {
+          let cell-spans-all-frac-columns = (
+            pcell.colspan > 1
+              and all-frac-columns.len() > 0
+              and all-frac-columns.all(i => (
+                pcell.x <= i and i < (pcell.x + pcell.colspan)
+              ))
+          )
+          if (
+            cell-spans-all-frac-columns
+              and page-width != 0pt
+              and not is-infinite-len(page-width)
           ) {
-            pcell.fit-spans.x
-          } else {
-            fit-spans.x
+            // HEURISTIC (only effective when the page width isn't 'auto' / infinite):
+            // If this cell can expand auto cols, but it already
+            // spans all fractional columns, then don't expand
+            // this auto column, as the cell would already have
+            // all remaining available space for itself anyway
+            // through the fractional columns spanned.
+            // Effectively, ignore this colspan - it will already
+            // have the max space possible, since, eventually,
+            // auto columns will be reduced to fit in the available
+            // size.
+            // For 'auto'-width pages, fractional columns will
+            // always have 0pt width, so this doesn't apply.
+            return max
           }
-          let this-cell-can-expand-columns = (
-            pcell.colspan == 1 or not fit-this-span
+
+          // take extra inset as extra width or height on 'auto'
+          let cell_inset = default-if-auto(pcell.inset, inset)
+
+          // simulate wrapping this cell in the final box,
+          // but with unlimited width and height available
+          // so we can measure its width.
+          let cell-box = make-cell-box(
+            pcell,
+            width: auto,
+            height: auto,
+            inset: cell_inset,
+            align_default: auto,
           )
 
-          // only expand the last auto column of a colspan,
-          // and only the amount necessary that isn't already
-          // covered by fixed size columns.
-          // However, ignore this cell if it is a colspan with
-          // `fit-spans.x == true` (it requests to not expand
-          // columns).
-          if last-auto-col == i and this-cell-can-expand-columns {
-            let cell-spans-all-frac-columns = (
-              pcell.colspan > 1
-                and all-frac-columns.len() > 0
-                and all-frac-columns.all(i => (
-                  pcell.x <= i and i < (pcell.x + pcell.colspan)
-                ))
-            )
-            if (
-              cell-spans-all-frac-columns
-                and page-width != 0pt
-                and not is-infinite-len(page-width)
-            ) {
-              // HEURISTIC (only effective when the page width isn't 'auto' / infinite):
-              // If this cell can expand auto cols, but it already
-              // spans all fractional columns, then don't expand
-              // this auto column, as the cell would already have
-              // all remaining available space for itself anyway
-              // through the fractional columns spanned.
-              // Effectively, ignore this colspan - it will already
-              // have the max space possible, since, eventually,
-              // auto columns will be reduced to fit in the available
-              // size.
-              // For 'auto'-width pages, fractional columns will
-              // always have 0pt width, so this doesn't apply.
-              return max
-            }
+          let width = measure(
+            cell-box,
+            styles,
+          ).width // + 2*cell_inset // the box already considers inset
 
-            // take extra inset as extra width or height on 'auto'
-            let cell_inset = default-if-auto(pcell.inset, inset)
+          // here, we are excluding from the width of this cell
+          // at this column all width that was already covered by
+          // previous columns, so we need to specify 'new_columns'
+          // instead of 'columns' as the previous auto columns
+          // also have a fixed size now (we know their width).
+          let fixed_size = get-colspan-fixed-size-covered(
+            pcell,
+            columns: new_columns,
+          )
 
-            // simulate wrapping this cell in the final box,
-            // but with unlimited width and height available
-            // so we can measure its width.
-            let cell-box = make-cell-box(
-              pcell,
-              width: auto,
-              height: auto,
-              inset: cell_inset,
-              align_default: auto,
-            )
-
-            let width = measure(
-              cell-box,
-              styles,
-            ).width // + 2*cell_inset // the box already considers inset
-
-            // here, we are excluding from the width of this cell
-            // at this column all width that was already covered by
-            // previous columns, so we need to specify 'new_columns'
-            // instead of 'columns' as the previous auto columns
-            // also have a fixed size now (we know their width).
-            let fixed_size = get-colspan-fixed-size-covered(
-              pcell,
-              columns: new_columns,
-            )
-
-            calc.max(max, width - fixed_size, 0pt)
-          } else {
-            max
-          }
-        },
-      )
+          calc.max(max, width - fixed_size, 0pt)
+        } else {
+          max
+        }
+      })
 
       total_auto_size += col_size
       auto_sizes.push((i, col_size))
@@ -1745,76 +1742,68 @@ input_file: tests/fixtures/packages/tablex.typ
   for (i, row) in rows.enumerate() {
     if row == auto {
       // max cell height
-      let row_size = grid-get-row(grid, i).fold(
-        0pt,
-        (max, cell) => {
-          if cell == none {
-            panic(
-              "Not enough cells specified for the given amount of rows and columns.",
-            )
-          }
+      let row_size = grid-get-row(grid, i).fold(0pt, (max, cell) => {
+        if cell == none {
+          panic(
+            "Not enough cells specified for the given amount of rows and columns.",
+          )
+        }
 
-          let pcell = get-parent-cell(
-            cell,
-            grid: grid,
-          ) // in case this is a rowspan
-          let last-auto-row = get-rowspan-last-auto-row(pcell, rows: rows)
+        let pcell = get-parent-cell(
+          cell,
+          grid: grid,
+        ) // in case this is a rowspan
+        let last-auto-row = get-rowspan-last-auto-row(pcell, rows: rows)
 
-          let fit-this-span = if (
-            "fit-spans" in pcell and pcell.fit-spans != auto
-          ) {
-            pcell.fit-spans.y
-          } else {
-            fit-spans.y
-          }
-          let this-cell-can-expand-rows = (
-            pcell.rowspan == 1 or not fit-this-span
+        let fit-this-span = if (
+          "fit-spans" in pcell and pcell.fit-spans != auto
+        ) {
+          pcell.fit-spans.y
+        } else {
+          fit-spans.y
+        }
+        let this-cell-can-expand-rows = pcell.rowspan == 1 or not fit-this-span
+
+        // only expand the last auto row of a rowspan,
+        // and only the amount necessary that isn't already
+        // covered by fixed size rows.
+        // However, ignore this cell if it is a rowspan with
+        // `fit-spans.y == true` (it requests to not expand
+        // rows).
+        if last-auto-row == i and this-cell-can-expand-rows {
+          let width = get-colspan-fixed-size-covered(pcell, columns: columns)
+
+          // take extra inset as extra width or height on 'auto'
+          let cell_inset = default-if-auto(pcell.inset, inset)
+
+          let cell-box = make-cell-box(
+            pcell,
+            width: width,
+            height: auto,
+            inset: cell_inset,
+            align_default: align,
           )
 
-          // only expand the last auto row of a rowspan,
-          // and only the amount necessary that isn't already
-          // covered by fixed size rows.
-          // However, ignore this cell if it is a rowspan with
-          // `fit-spans.y == true` (it requests to not expand
-          // rows).
-          if last-auto-row == i and this-cell-can-expand-rows {
-            let width = get-colspan-fixed-size-covered(pcell, columns: columns)
+          // measure the cell's actual height,
+          // with its calculated width
+          // and with other constraints
+          let height = measure(
+            cell-box,
+            styles,
+          ).height // + 2*cell_inset (box already considers inset)
 
-            // take extra inset as extra width or height on 'auto'
-            let cell_inset = default-if-auto(pcell.inset, inset)
+          // here, we are excluding from the height of this cell
+          // at this row all height that was already covered by
+          // other rows, so we need to specify 'new_rows' instead
+          // of 'rows' as the previous auto rows also have a fixed
+          // size now (we know their height).
+          let fixed_size = get-rowspan-fixed-size-covered(pcell, rows: new_rows)
 
-            let cell-box = make-cell-box(
-              pcell,
-              width: width,
-              height: auto,
-              inset: cell_inset,
-              align_default: align,
-            )
-
-            // measure the cell's actual height,
-            // with its calculated width
-            // and with other constraints
-            let height = measure(
-              cell-box,
-              styles,
-            ).height // + 2*cell_inset (box already considers inset)
-
-            // here, we are excluding from the height of this cell
-            // at this row all height that was already covered by
-            // other rows, so we need to specify 'new_rows' instead
-            // of 'rows' as the previous auto rows also have a fixed
-            // size now (we know their height).
-            let fixed_size = get-rowspan-fixed-size-covered(
-              pcell,
-              rows: new_rows,
-            )
-
-            calc.max(max, height - fixed_size, 0pt)
-          } else {
-            max
-          }
-        },
-      )
+          calc.max(max, height - fixed_size, 0pt)
+        } else {
+          max
+        }
+      })
 
       total_auto_size += row_size
       auto_sizes.push((i, row_size))
@@ -1960,10 +1949,7 @@ input_file: tests/fixtures/packages/tablex.typ
   gutter: none,
   pre-gutter: false,
 ) = {
-  let col-gutter = default-if-none(
-    default-if-none(gutter, (col: 0pt)).col,
-    0pt,
-  )
+  let col-gutter = default-if-none(default-if-none(gutter, (col: 0pt)).col, 0pt)
   end = default-if-none(end, columns.len())
 
   let col_range = range(start, calc.min(columns.len() + 1, end))
@@ -1989,10 +1975,7 @@ input_file: tests/fixtures/packages/tablex.typ
   gutter: none,
   pre-gutter: false,
 ) = {
-  let row-gutter = default-if-none(
-    default-if-none(gutter, (row: 0pt)).row,
-    0pt,
-  )
+  let row-gutter = default-if-none(default-if-none(gutter, (row: 0pt)).row, 0pt)
   end = default-if-none(end, rows.len())
 
   let row_range = range(start, calc.min(rows.len() + 1, end))

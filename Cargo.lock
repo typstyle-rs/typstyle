@@ -2183,14 +2183,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "pretty"
-version = "0.12.4"
+name = "prettyless"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac98773b7109bc75f475ab5a134c9b64b87e59d776d31098d8f346922396a477"
+checksum = "d03ccf1cbd64d88883e4d9363b8ba202cdce66b7bec175233c8b157e772b1165"
 dependencies = [
  "arrayvec 0.5.2",
  "typed-arena",
- "unicode-width 0.1.14",
+ "unicode-width 0.2.0",
 ]
 
 [[package]]
@@ -3781,13 +3781,13 @@ dependencies = [
  "ecow",
  "insta",
  "itertools 0.14.0",
- "pretty",
+ "prettyless",
  "rustc-hash",
  "serde",
  "smallvec",
  "thiserror 2.0.11",
  "typst-syntax",
- "unicode-width 0.1.14",
+ "unicode-width 0.2.0",
 ]
 
 [[package]]

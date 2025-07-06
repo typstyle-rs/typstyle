@@ -22,7 +22,7 @@ typst-syntax.workspace = true
 
 ecow.workspace = true
 itertools.workspace = true
-pretty.workspace = true
+prettyless.workspace = true
 rustc-hash.workspace = true
 serde = { workspace = true, optional = true }
 smallvec.workspace = true

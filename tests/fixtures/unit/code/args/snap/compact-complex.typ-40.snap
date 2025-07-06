@@ -84,16 +84,11 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 //==================================================
 
 // Content blocks with rich formatting
-#f(
-  true,
-  [short],
-  emph[markup],
-  [
-    First line
-    Second line with #text(blue)[colored] content
-    Third line with *emphasis*
-  ],
-)
+#f(true, [short], emph[markup], [
+  First line
+  Second line with #text(blue)[colored] content
+  Third line with *emphasis*
+])
 
 #f(
   lorem(10),

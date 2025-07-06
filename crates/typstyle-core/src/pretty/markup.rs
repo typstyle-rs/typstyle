@@ -128,7 +128,7 @@ impl<'a> PrettyPrinter<'a> {
             SyntaxKind::Parbreak => FlowItem::tight(
                 self.arena
                     .hardline()
-                    .repeat_n(child.text().count_linebreaks()),
+                    .repeat(child.text().count_linebreaks()),
             ),
             SyntaxKind::Markup => {
                 if !seen_term || child.children().next().is_some() {
@@ -162,7 +162,7 @@ impl<'a> PrettyPrinter<'a> {
             SyntaxKind::Parbreak => FlowItem::tight(
                 self.arena
                     .hardline()
-                    .repeat_n(child.text().count_linebreaks()),
+                    .repeat(child.text().count_linebreaks()),
             ),
             SyntaxKind::Markup if child.children().next().is_some() => {
                 // empty markup is ignored here
@@ -273,7 +273,7 @@ impl<'a> PrettyPrinter<'a> {
                 };
             }
             if breaks > 0 {
-                doc += self.arena.hardline().repeat_n(breaks);
+                doc += self.arena.hardline().repeat(breaks);
             }
         }
         doc
@@ -369,7 +369,7 @@ impl<'a> PrettyPrinter<'a> {
             {
                 doc += self.arena.softline();
             } else if breaks > 0 {
-                doc += self.arena.hardline().repeat_n(breaks);
+                doc += self.arena.hardline().repeat(breaks);
             }
         }
         doc

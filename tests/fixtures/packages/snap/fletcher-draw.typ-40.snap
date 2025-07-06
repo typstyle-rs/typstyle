@@ -1277,14 +1277,11 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
 
       draw.content(
         (x-lims.at(0), y-lims.at(0)),
-        pad(
-          0.2em,
-          text(
-            0.5em,
-            DEBUG_COLOR,
-            $(#grid.axes.map(dir-to-arrow).join($,$))$,
-          ),
-        ),
+        pad(0.2em, text(
+          0.5em,
+          DEBUG_COLOR,
+          $(#grid.axes.map(dir-to-arrow).join($,$))$,
+        )),
         anchor: "north-east",
       )
     }

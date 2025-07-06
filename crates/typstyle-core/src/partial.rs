@@ -42,7 +42,7 @@ impl Typstyle {
         let indent = utils::count_spaces_after_last_newline(source.text(), range.start);
         let res = doc
             .nest(indent as isize)
-            .pretty(self.config.max_width)
+            .print(self.config.max_width)
             .to_string();
         Ok((node.range(), res))
     }
