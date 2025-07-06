@@ -1,0 +1,15 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/code/set-rule.typ
+---
+// DUMMY
+
+#set text(red)
+
+#set circle[666]
+#circle()
+#circle[]
+#set circle()
+#circle()
+#set circle(stroke: blue)[777]
+#circle()

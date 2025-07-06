@@ -1,3 +1,6 @@
+// Empty table
+#table()
+
 // Empty table with only columns
 #table(columns:    3)
 
@@ -11,6 +14,9 @@
 #table(columns:      2,table.header(repeat:    true))
 
 // Table with only footer
+#table(
+  columns:   3,table.footer()
+)
 #table(
   columns:   3,table.footer(
 
@@ -33,3 +39,14 @@
   inset:    5pt,stroke:   (thickness:     1pt,
     dash:       "dotted"),
   ..(fill:     rgb(    "eee")))
+
+
+// No parenthesized args
+#table(
+  columns: 2,
+  table.header[],
+)
+#table(
+  columns: 2,
+  table.header[][],
+)

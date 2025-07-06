@@ -20,23 +20,19 @@ pub fn unwrap_expr_deep(arg: Arg) -> Expr {
     expr
 }
 
-/// Like `f()`, `f(x, y)`, not `f[]`
-pub fn has_parenthesized_args(node: Args<'_>) -> bool {
-    node.to_untyped()
-        .children()
-        .next()
-        .is_some_and(|child| child.kind() == SyntaxKind::LeftParen)
-}
-
-pub fn get_parenthesized_args_untyped(node: Args<'_>) -> impl Iterator<Item = &SyntaxNode> {
-    node.to_untyped()
-        .children()
-        .skip_while(|node| node.kind() != SyntaxKind::LeftParen)
-        .take_while(|node| node.kind() != SyntaxKind::RightParen)
-}
-
-pub fn get_parenthesized_args(node: Args<'_>) -> impl Iterator<Item = Arg<'_>> {
-    get_parenthesized_args_untyped(node).filter_map(|node| node.cast::<Arg>())
+/// Split the arguments of a function call into parenthesized and trailing nodes.
+pub fn split_paren_args(args: Args) -> (&[SyntaxNode], &[SyntaxNode]) {
+    let children = args.to_untyped().children().as_slice();
+    // split args, find first `)` and split there (inclusive)
+    if let Some(idx) = children
+        .iter()
+        .position(|n| n.kind() == SyntaxKind::RightParen)
+    {
+        children.split_at(idx + 1)
+    } else {
+        // no parens at all → all nodes are "trailing"
+        (&[][..], children)
+    }
 }
 
 /// Identify block‐like expressions that deserve their own lines.
