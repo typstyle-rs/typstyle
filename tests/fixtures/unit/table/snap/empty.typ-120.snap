@@ -2,6 +2,9 @@
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/table/empty.typ
 ---
+// Empty table
+#table()
+
 // Empty table with only columns
 #table(columns: 3)
 
@@ -18,6 +21,10 @@ input_file: tests/fixtures/unit/table/empty.typ
 )
 
 // Table with only footer
+#table(
+  columns: 3,
+  table.footer(),
+)
 #table(
   columns: 3,
   table.footer(),
@@ -46,4 +53,15 @@ input_file: tests/fixtures/unit/table/empty.typ
     dash: "dotted",
   ),
   ..(fill: rgb("eee"))
+)
+
+
+// No parenthesized args
+#table(
+  columns: 2,
+  table.header[],
+)
+#table(
+  columns: 2,
+  table.header[][],
 )

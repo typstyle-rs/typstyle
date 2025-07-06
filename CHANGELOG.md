@@ -1,5 +1,55 @@
 # Changelog
 
+## Unreleased
+
+- Bug fix: In code mode, `std.table` was not recognized as a table function, preventing proper table formatting.
+
+- Bug fix: Fixed incorrect formatting of table functions with empty content blocks.
+  When `table.header` or `table.footer` had no parentheses (`()`), the formatter would incorrectly add parentheses before empty content blocks. When parenthesized args are empty, the formatter would insert a line break with short line length.
+  For example:
+  ```typst
+  #table(
+    columns: 2,
+    table.header[],
+    table.footer(),
+  )
+  ```
+  was formatted to:
+  ```typst
+  #table(
+    columns: 2,
+    table.header()[],
+    table.footer(),
+  )
+  ```
+  or with short line length:
+  ```typst
+  #table(
+    columns: 2,
+    table.header(
+
+    )[],
+    table.footer(
+
+    ),
+  )
+  ```
+
+- Bug fix: Fixed incorrect handling of trailing content blocks in set rules.
+  Previously, when there were no parentheses, a following content block would be wrapped by `()`; when parentheses were already present, any trailing content block was dropped.
+  For example:
+  ```typst
+  #set circle[1]
+  #set circle()[1]
+  #set circle(stroke: blue)[1]
+  ```
+  was previously formatted to:
+  ```typst
+  #set circle([1])
+  #set circle()
+  #set circle(stroke: blue)
+  ```
+
 ## v0.13.13 - [2025-07-02]
 
 - Bug fix(CI): Fixed a CI misconfiguration that prevented the release of v0.13.12.

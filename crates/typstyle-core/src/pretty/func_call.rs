@@ -25,78 +25,89 @@ impl<'a> PrettyPrinter<'a> {
                 return res;
             }
         }
-        self.convert_func_call_plain(ctx, func_call)
-    }
-
-    pub(super) fn convert_func_call_plain(
-        &'a self,
-        ctx: Context,
-        func_call: FuncCall<'a>,
-    ) -> ArenaDoc<'a> {
         self.convert_expr(ctx, func_call.callee())
-            + self.convert_func_call_args(ctx, func_call, func_call.args())
-    }
-
-    pub(super) fn convert_func_call_as_table(
-        &'a self,
-        ctx: Context,
-        func_call: FuncCall<'a>,
-        columns: usize,
-    ) -> ArenaDoc<'a> {
-        let args = func_call.args();
-        let has_parenthesized_args = args::has_parenthesized_args(args);
-        self.convert_expr(ctx, func_call.callee())
-            + self.convert_table(ctx, func_call, columns)
-            + self.convert_additional_args(ctx, args, has_parenthesized_args)
-    }
-
-    fn convert_func_call_args(
-        &'a self,
-        ctx: Context,
-        func_call: FuncCall<'a>,
-        args: Args<'a>,
-    ) -> ArenaDoc<'a> {
-        if ctx.mode.is_math() {
-            return self.convert_args_in_math(ctx, args);
-        };
-
-        let mut doc = self.arena.nil();
-        let has_parenthesized_args = args::has_parenthesized_args(args);
-        if table::is_table(func_call) {
-            if let Some(table) = self.try_convert_table(ctx, func_call) {
-                doc += table;
-            } else if has_parenthesized_args {
-                doc += self.convert_parenthesized_args_as_list(ctx, args);
+            + if ctx.mode.is_math() {
+                self.convert_args_in_math(ctx, func_call.args())
+            } else {
+                self.convert_args_of_func(ctx, func_call)
             }
-        } else if has_parenthesized_args {
-            doc += self.convert_parenthesized_args(ctx, args);
-        };
-        doc + self.convert_additional_args(ctx, args, has_parenthesized_args)
     }
 
-    pub(super) fn convert_args(&'a self, ctx: Context, args: Args<'a>) -> ArenaDoc<'a> {
-        let has_parenthesized_args = args::has_parenthesized_args(args);
-        let parenthesized = if has_parenthesized_args {
-            self.convert_parenthesized_args(ctx, args)
+    pub(super) fn convert_args_of_func(
+        &'a self,
+        ctx: Context,
+        func_call: FuncCall<'a>,
+    ) -> ArenaDoc<'a> {
+        self.convert_args(ctx, func_call.args(), |nodes| {
+            self.convert_parenthesized_args_of_func(ctx, func_call, nodes)
+        })
+    }
+
+    /// The most thorough converter for parenthesized args, considering tables.
+    fn convert_parenthesized_args_of_func(
+        &'a self,
+        ctx: Context,
+        func_call: FuncCall<'a>,
+        paren_nodes: &'a [SyntaxNode],
+    ) -> ArenaDoc<'a> {
+        if table::is_table(func_call) {
+            if let Some(table) = self.try_convert_table(ctx, func_call, paren_nodes) {
+                table
+            } else {
+                self.convert_parenthesized_args_as_list(ctx, paren_nodes)
+            }
         } else {
-            self.arena.nil()
-        };
-        parenthesized + self.convert_additional_args(ctx, args, has_parenthesized_args)
+            self.convert_parenthesized_args_normal(ctx, func_call.args(), paren_nodes)
+        }
     }
 
-    pub(super) fn convert_parenthesized_args(
+    pub(super) fn convert_args(
         &'a self,
         ctx: Context,
         args: Args<'a>,
+        parenthesized_nodes_handler: impl FnOnce(&'a [SyntaxNode]) -> ArenaDoc<'a>,
+    ) -> ArenaDoc<'a> {
+        let (paren_nodes, trailing_nodes) = args::split_paren_args(args);
+
+        // 1) parenthesized args (if any)
+        let paren_doc = match paren_nodes {
+            [] | [_] => self.arena.nil(),    // no parentheses at all
+            [_, _] => self.arena.text("()"), // exactly `(` `)` → emit "()"
+            [_, inner @ .., _] => parenthesized_nodes_handler(inner), // at least one element between the parens
+        };
+
+        // 2) trailing content args (whatever comes after `)`)
+        let trailing_doc = self.convert_trailing_content_args(ctx, trailing_nodes);
+
+        paren_doc + trailing_doc
+    }
+
+    /// Handle additional content blocks
+    fn convert_trailing_content_args(
+        &'a self,
+        ctx: Context,
+        nodes: &'a [SyntaxNode],
+    ) -> ArenaDoc<'a> {
+        self.arena.concat(
+            nodes
+                .iter()
+                .filter_map(SyntaxNode::cast)
+                .map(|arg| self.convert_content_block(ctx, arg)),
+        )
+    }
+
+    pub(super) fn convert_parenthesized_args_normal(
+        &'a self,
+        ctx: Context,
+        args: Args<'a>,
+        paren_nodes: &'a [SyntaxNode],
     ) -> ArenaDoc<'a> {
         let ctx = ctx.with_mode(Mode::CodeCont);
 
-        let get_children = || {
-            args.to_untyped()
-                .children()
-                .take_while(|it| it.kind() != SyntaxKind::RightParen)
-        };
-        let pargs = args::get_parenthesized_args(args).collect_vec();
+        let pargs = paren_nodes
+            .iter()
+            .filter_map(SyntaxNode::cast)
+            .collect_vec();
 
         let fold_style = match self.get_fold_style(ctx, args) {
             _ if pargs.is_empty() => FoldStyle::Always,
@@ -109,7 +120,7 @@ impl<'a> PrettyPrinter<'a> {
         ListStylist::new(self)
             .keep_linebreak(self.config.blank_lines_upper_bound)
             .with_fold_style(fold_style)
-            .process_iterable_impl(ctx, get_children(), |ctx, child| {
+            .process_iterable_impl(ctx, paren_nodes.iter(), |ctx, child| {
                 // We should ignore additional args here.
                 child.cast().map(|arg| self.convert_arg(ctx, arg))
             })
@@ -118,19 +129,22 @@ impl<'a> PrettyPrinter<'a> {
             })
     }
 
-    fn convert_parenthesized_args_as_list(&'a self, ctx: Context, args: Args<'a>) -> ArenaDoc<'a> {
+    fn convert_parenthesized_args_as_list(
+        &'a self,
+        ctx: Context,
+        paren_nodes: &'a [SyntaxNode],
+    ) -> ArenaDoc<'a> {
         let ctx = ctx.with_mode(Mode::CodeCont);
 
         let inner = PlainStylist::new(self)
-            .process_iterable(
-                ctx,
-                args::get_parenthesized_args_untyped(args),
-                |ctx, child| self.convert_arg(ctx, child),
-            )
+            .process_iterable(ctx, paren_nodes.iter(), |ctx, child| {
+                self.convert_arg(ctx, child)
+            })
             .print_doc();
         inner.nest(self.config.tab_spaces as isize).parens()
     }
 
+    /// Args in math do not have trailing content args.
     fn convert_args_in_math(&'a self, ctx: Context, args: Args<'a>) -> ArenaDoc<'a> {
         // strip spaces
         let mut peek_linebreak = false;
@@ -207,28 +221,6 @@ impl<'a> PrettyPrinter<'a> {
         } else {
             inner.parens()
         }
-    }
-
-    /// Handle additional content blocks
-    fn convert_additional_args(
-        &'a self,
-        ctx: Context,
-        args: Args<'a>,
-        has_paren: bool,
-    ) -> ArenaDoc<'a> {
-        let args = args
-            .to_untyped()
-            .children()
-            .skip_while(|node| {
-                if has_paren {
-                    node.kind() != SyntaxKind::RightParen
-                } else {
-                    node.kind() != SyntaxKind::ContentBlock
-                }
-            })
-            .filter_map(|node| node.cast::<ContentBlock>());
-        self.arena
-            .concat(args.map(|arg| self.convert_content_block(ctx, arg)))
     }
 }
 

@@ -1,9 +1,9 @@
-use typst_syntax::{ast::*, SyntaxKind};
+use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
 
 use super::{prelude::*, util::func_name, Context};
 use crate::{
     ext::StrExt,
-    pretty::{args, layout::table::TableCollector, Mode},
+    pretty::{layout::table::TableCollector, Mode},
     PrettyPrinter,
 };
 
@@ -12,20 +12,22 @@ impl<'a> PrettyPrinter<'a> {
         &'a self,
         ctx: Context,
         table: FuncCall<'a>,
+        paren_nodes: &'a [SyntaxNode],
     ) -> Option<ArenaDoc<'a>> {
-        let columns = if is_table(table) && is_table_formattable(table) {
+        // NOTE: args are not empty here
+        let columns = if is_table(table) && is_table_formattable(table, paren_nodes) {
             get_table_columns(table)
         } else {
             None
         }?;
-        Some(self.convert_table(ctx, table, columns))
+        Some(self.convert_table(ctx, paren_nodes, columns))
     }
 
     /// Handle parenthesized args of a table.
     pub(super) fn convert_table(
         &'a self,
         ctx: Context,
-        table: FuncCall<'a>,
+        paren_nodes: &'a [SyntaxNode],
         columns: usize,
     ) -> ArenaDoc<'a> {
         let ctx = ctx.with_mode(Mode::CodeCont);
@@ -34,16 +36,22 @@ impl<'a> PrettyPrinter<'a> {
         // - named/spread args, header/footer: occupy a line.
         // - reflow cells if no special cells (cell, hline, vline, )
         // - hard break at linebreaks with at least 1 empty lines
-        let can_reflow_cells = table.args().items().any(is_special_cell);
+        let can_reflow_cells = paren_nodes
+            .iter()
+            .any(|it| it.cast().is_some_and(is_special_cell));
         let mut collector =
             TableCollector::new(&self.arena, if can_reflow_cells { 0 } else { columns });
 
-        for node in args::get_parenthesized_args_untyped(table.args()) {
+        for node in paren_nodes.iter() {
             if let Some(arg) = node.cast::<Arg>() {
                 match arg {
                     Arg::Pos(Expr::FuncCall(func_call)) if is_header_footer(func_call) => {
-                        collector
-                            .push_row(self.convert_func_call_as_table(ctx, func_call, columns));
+                        collector.push_row(
+                            self.convert_expr(ctx, func_call.callee())
+                                + self.convert_args(ctx, func_call.args(), |nodes| {
+                                    self.convert_table(ctx, nodes, columns)
+                                }),
+                        );
                     }
                     Arg::Pos(expr) => {
                         collector.push_cell(self.convert_expr(ctx, expr));
@@ -70,13 +78,12 @@ impl<'a> PrettyPrinter<'a> {
     }
 }
 
-pub fn is_table(func_call: FuncCall<'_>) -> bool {
+pub fn is_table(func_call: FuncCall) -> bool {
     matches!(func_name(func_call), Some("table") | Some("grid"))
 }
 
-fn is_table_formattable(func_call: FuncCall<'_>) -> bool {
+fn is_table_formattable(func_call: FuncCall, paren_nodes: &[SyntaxNode]) -> bool {
     // 1. no block comments
-    // 2. has at least one pos arg
     if func_call
         .args()
         .to_untyped()
@@ -85,10 +92,13 @@ fn is_table_formattable(func_call: FuncCall<'_>) -> bool {
     {
         return false;
     }
-    args::get_parenthesized_args(func_call.args()).any(|it| matches!(it, Arg::Pos(_)))
+    // 2. has at least one pos arg
+    paren_nodes
+        .iter()
+        .any(|it| matches!(it.cast::<Arg>(), Some(Arg::Pos(_))))
 }
 
-fn get_table_columns(func_call: FuncCall<'_>) -> Option<usize> {
+fn get_table_columns(func_call: FuncCall) -> Option<usize> {
     use crate::liteval::{Liteval, Value};
 
     let Some(columns_expr) = func_call.args().items().find_map(|node| {

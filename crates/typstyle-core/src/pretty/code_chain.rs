@@ -102,7 +102,7 @@ impl<'a> PrettyPrinter<'a> {
                 doc += self.arena.text(".") + self.convert_ident(field_access.field());
             }
         }
-        doc += self.convert_args(ctx, func_call.args());
+        doc += self.convert_args_of_func(ctx, func_call);
         Some(doc)
     }
 
@@ -123,7 +123,7 @@ impl<'a> PrettyPrinter<'a> {
                 |ctx, node| {
                     if let Some(func_call) = node.cast::<FuncCall>() {
                         // There is no comment allowed, so we can directly convert args.
-                        Some(self.convert_args(ctx, func_call.args()))
+                        Some(self.convert_args_of_func(ctx, func_call))
                     } else {
                         node.cast().map(|expr| self.convert_expr(ctx, expr))
                     }

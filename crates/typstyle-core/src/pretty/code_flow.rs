@@ -252,7 +252,9 @@ impl<'a> PrettyPrinter<'a> {
                 FlowItem::spaced(self.convert_expr(ctx, expr))
             } else if let Some(args) = child.cast() {
                 // args
-                FlowItem::tight_spaced(self.convert_parenthesized_args(ctx, args))
+                FlowItem::tight_spaced(self.convert_args(ctx, args, |nodes| {
+                    self.convert_parenthesized_args_normal(ctx, args, nodes)
+                }))
             } else {
                 FlowItem::none()
             }
