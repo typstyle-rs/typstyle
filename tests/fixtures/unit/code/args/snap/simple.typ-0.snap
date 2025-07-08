@@ -26,9 +26,11 @@ input_file: tests/fixtures/unit/code/args/simple.typ
 #f({
   "aaaaaaaaaaaaaaaaaaaaa"
 })
-#f((
-  (),
-))
+#f(
+  (
+    (),
+  ),
+)
 
 #f({})
 #f(

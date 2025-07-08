@@ -493,12 +493,13 @@ input_file: tests/fixtures/packages/touying/utils.typ
       default: none,
     )
   }
-  let headings = query(
-    heading,
-  ).filter(h => (
-    h.location().page() <= current-page
-      and h.level <= depth
-  ))
+  let headings = query(heading).filter(
+    h => (
+      h.location().page()
+        <= current-page
+        and h.level <= depth
+    ),
+  )
   if headings == () {
     return
   }
@@ -1132,56 +1133,58 @@ input_file: tests/fixtures/packages/touying/utils.typ
     fill = rgb(fill)
   }
 
-  let to-display = layout(layout-size => {
-    context {
-      let body-size = measure(body)
-      let bounding-width = calc.min(
-        body-size.width,
-        layout-size.width,
-      )
-      let wrapped-body-size = measure(
-        box(
+  let to-display = layout(
+    layout-size => {
+      context {
+        let body-size = measure(body)
+        let bounding-width = calc.min(
+          body-size.width,
+          layout-size.width,
+        )
+        let wrapped-body-size = measure(
+          box(
+            body,
+            width: bounding-width,
+          ),
+        )
+        let named = cover-args.named()
+        if "width" not in named {
+          named.insert(
+            "width",
+            wrapped-body-size.width,
+          )
+        }
+        if "height" not in named {
+          named.insert(
+            "height",
+            wrapped-body-size.height,
+          )
+        }
+        if "outset" not in named {
+          // This outset covers the tops of tall letters and the bottoms of letters with
+          // descenders. Alternatively, we could use
+          // `set text(top-edge: "bounds", bottom-edge: "bounds")` to get the same effect,
+          // but this changes text alignment and also misaligns bullets in enums/lists.
+          // In contrast, `outset` preserves spacing and alignment at the cost of adding
+          // a slight, visible border when the covered object is right next to the edge
+          // of a color change.
+          named.insert("outset", (
+            top: 0.15em,
+            bottom: 0.25em,
+          ))
+        }
+        stack(
+          spacing: -wrapped-body-size.height,
           body,
-          width: bounding-width,
-        ),
-      )
-      let named = cover-args.named()
-      if "width" not in named {
-        named.insert(
-          "width",
-          wrapped-body-size.width,
+          rect(
+            fill: fill,
+            ..named,
+            ..cover-args.pos(),
+          ),
         )
       }
-      if "height" not in named {
-        named.insert(
-          "height",
-          wrapped-body-size.height,
-        )
-      }
-      if "outset" not in named {
-        // This outset covers the tops of tall letters and the bottoms of letters with
-        // descenders. Alternatively, we could use
-        // `set text(top-edge: "bounds", bottom-edge: "bounds")` to get the same effect,
-        // but this changes text alignment and also misaligns bullets in enums/lists.
-        // In contrast, `outset` preserves spacing and alignment at the cost of adding
-        // a slight, visible border when the covered object is right next to the edge
-        // of a color change.
-        named.insert("outset", (
-          top: 0.15em,
-          bottom: 0.25em,
-        ))
-      }
-      stack(
-        spacing: -wrapped-body-size.height,
-        body,
-        rect(
-          fill: fill,
-          ..named,
-          ..cover-args.pos(),
-        ),
-      )
-    }
-  })
+    },
+  )
   if inline {
     box(to-display)
   } else {
@@ -1341,10 +1344,9 @@ input_file: tests/fixtures/packages/touying/utils.typ
   } else if (
     type(visible-subslides) == array
   ) {
-    visible-subslides.any(s => check-visible(
-      idx,
-      s,
-    ))
+    visible-subslides.any(
+      s => check-visible(idx, s),
+    )
   } else if (
     type(visible-subslides) == str
   ) {
@@ -1397,11 +1399,9 @@ input_file: tests/fixtures/packages/touying/utils.typ
   } else if (
     type(visible-subslides) == array
   ) {
-    calc.max(
-      ..visible-subslides.map(s => last-required-subslide(
-        s,
-      )),
-    )
+    calc.max(..visible-subslides.map(
+      s => last-required-subslide(s),
+    ))
   } else if (
     type(visible-subslides) == str
   ) {
@@ -1533,13 +1533,17 @@ input_file: tests/fixtures/packages/touying/utils.typ
     subslides-contents
   }
 
-  let subslides = subslides-contents.map(it => it.first())
-  let contents = subslides-contents.map(it => it.last())
+  let subslides = subslides-contents.map(
+    it => it.first(),
+  )
+  let contents = subslides-contents.map(
+    it => it.last(),
+  )
   if stretch {
     context {
-      let sizes = contents.map(c => measure(
-        c,
-      ))
+      let sizes = contents.map(
+        c => measure(c),
+      )
       let max-width = calc.max(
         ..sizes.map(sz => sz.width),
       )

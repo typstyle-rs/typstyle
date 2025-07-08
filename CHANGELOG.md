@@ -2,6 +2,30 @@
 
 ## Unreleased
 
+We now employ [prettyless](https://github.com/typstyle-rs/prettyless) as the layout engine. It provides more features to support us to adopt better layout logic.
+
+- Feature: Long lines after the first line will no longer cause compact layout to fail to fit.
+  For example:
+  ```typst
+  #figure(caption: [], {
+    "looooooooooooooooooooooooooong"
+  })
+  ```
+  It now fits in the compact layout regardless of the length of any long line in the code block.
+
+- Feature: We now respect the flavor of arguments in any case, except that the sole argument is a code block, which is always folded. This reverts the behavior of "force folding" when the sole argument is combinable, so that users can freely decide whether the argument should be compact. This change is expected not to affect your code if it is already compact.
+  For example:
+  ```typst
+  #f(
+    (1, 2, 3)
+  )
+  ```
+  was formatted to
+  ```typst
+  #f((1, 2, 3))
+  ```
+  Now it is kept unchanged given its multiline flavor.
+
 - Bug fix: In code mode, `std.table` was not recognized as a table function, preventing proper table formatting.
 
 - Bug fix: Fixed incorrect formatting of table functions with empty content blocks.

@@ -20,13 +20,15 @@ input_file: tests/fixtures/unit/code/destruction.typ
       authors.len(),
     ),
   gutter: 1em,
-  ..authors.map(author => align(
-    center,
-    text(
-      font: author-font,
-      author,
+  ..authors.map(
+    author => align(
+      center,
+      text(
+        font: author-font,
+        author,
+      ),
     ),
-  )),
+  ),
 )
 
 #let books = (

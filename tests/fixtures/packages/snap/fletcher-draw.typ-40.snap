@@ -900,18 +900,23 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     to,
   )
 
-  let intersection-objects = nodes.map(nodes => {
-    for node in nodes {
-      cetz.draw.group({
-        cetz.draw.translate(
-          node.pos.xyz,
-        )
-        (node.shape)(node, node.outset)
-      })
-    }
-    // if node == none { return }
-    dummy-line
-  })
+  let intersection-objects = nodes.map(
+    nodes => {
+      for node in nodes {
+        cetz.draw.group({
+          cetz.draw.translate(
+            node.pos.xyz,
+          )
+          (node.shape)(
+            node,
+            node.outset,
+          )
+        })
+      }
+      // if node == none { return }
+      dummy-line
+    },
+  )
 
 
   find-anchor-pair(
@@ -1017,9 +1022,9 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
       .slice(-2), // last two vertices
   )
 
-  let dummy-lines = end-segments.map(points => cetz.draw.line(
-    ..points,
-  ))
+  let dummy-lines = end-segments.map(
+    points => cetz.draw.line(..points),
+  )
 
   let intersection-objects = nodes
     .zip(dummy-lines)
@@ -1112,16 +1117,19 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
   grid,
   debug: false,
 ) = {
-  let (x-lims, y-lims) = range(
-    2,
-  ).map(axis => (
-    grid.centers.at(axis).at(0)
-      - grid.cell-sizes.at(axis).at(0)
-        / 2,
-    grid.centers.at(axis).at(-1)
-      + grid.cell-sizes.at(axis).at(-1)
-        / 2,
-  ))
+  let (x-lims, y-lims) = range(2).map(
+    axis => (
+      grid.centers.at(axis).at(0)
+        - grid.cell-sizes.at(axis).at(0)
+          / 2,
+      grid.centers.at(axis).at(-1)
+        + grid
+          .cell-sizes
+          .at(axis)
+          .at(-1)
+          / 2,
+    ),
+  )
 
   let (u-min, v-min) = grid.origin
 
@@ -1309,20 +1317,22 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
       and key.len() == 2
   ) {
     let xy-pos = key
-    let candidates = nodes.filter(node => {
-      if node.snap == false {
-        return false
-      }
-      let verdict = point-is-in-rect(
-        xy-pos,
-        (
-          center: node.pos.xyz,
-          size: node.size,
-        ),
-      )
+    let candidates = nodes.filter(
+      node => {
+        if node.snap == false {
+          return false
+        }
+        let verdict = point-is-in-rect(
+          xy-pos,
+          (
+            center: node.pos.xyz,
+            size: node.size,
+          ),
+        )
 
-      verdict
-    })
+        verdict
+      },
+    )
 
 
     if candidates.len() > 0 {
@@ -1332,9 +1342,11 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
           node.snap
         }),
       )
-      candidates = candidates.filter(node => (
-        node.snap == max-snap-priority
-      ))
+      candidates = candidates.filter(
+        node => (
+          node.snap == max-snap-priority
+        ),
+      )
     }
 
     return candidates

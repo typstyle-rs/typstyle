@@ -30,65 +30,71 @@ input_file: tests/fixtures/articles/physics-experiment.typ
     ..range(
       -2,
       3,
-    ).map(x => table.cell(
-      str(
-        x,
+    ).map(
+      x => table.cell(
+        str(
+          x,
+        ),
+        colspan: 2,
       ),
-      colspan: 2,
-    )),
+    ),
     [谱线 / 衍射角 $theta$],
     ..range(
       10,
-    ).map(x => if (
-      calc.odd(
-        x,
-      )
-    ) {
-      "右"
-    } else {
-      "左"
-    }),
+    ).map(
+      x => if (
+        calc.odd(
+          x,
+        )
+      ) {
+        "右"
+      } else {
+        "左"
+      },
+    ),
     ..(
       "紫光",
       "绿光",
       "黄光1",
       "黄光2",
     )
-      .map(x => {
-        let blank = [#h(
-            2em,
-          )]
-        let res = (
-          (
-            x,
+      .map(
+        x => {
+          let blank = [#h(
+              2em,
+            )]
+          let res = (
+            (
+              x,
+            )
+              + (
+                blank,
+              )
+                * 4
           )
-            + (
+          if (
+            x
+              == "紫光"
+          ) {
+            res += (
+              (
+                table.cell(
+                  rowspan: 4,
+                  blank,
+                ),
+              )
+                * 2
+            )
+          }
+          res += (
+            (
               blank,
             )
               * 4
-        )
-        if (
-          x
-            == "紫光"
-        ) {
-          res += (
-            (
-              table.cell(
-                rowspan: 4,
-                blank,
-              ),
-            )
-              * 2
           )
-        }
-        res += (
-          (
-            blank,
-          )
-            * 4
-        )
-        res
-      })
+          res
+        },
+      )
       .flatten(),
   ),
   caption: "测量记录",
@@ -188,10 +194,12 @@ input_file: tests/fixtures/articles/physics-experiment.typ
       "绿",
       "蓝",
     )
-      .map(x => (
-        [#x $- 1$],
-        [#x $+ 1$],
-      ))
+      .map(
+        x => (
+          [#x $- 1$],
+          [#x $+ 1$],
+        ),
+      )
       .flatten(),
     [位置 $("mm")$],
     ..(
@@ -343,10 +351,12 @@ input_file: tests/fixtures/articles/physics-experiment.typ
       1,
       8,
     )
-      .map(x => (
-        x
-          * 10
-      ))
+      .map(
+        x => (
+          x
+            * 10
+        ),
+      )
       .map(
         str,
       ),
@@ -415,13 +425,15 @@ input_file: tests/fixtures/articles/physics-experiment.typ
       1,
       6,
     )
-      .map(x => (
-        $theta_#x$,
-        [],
-        $theta_#(x + 5)$,
-        [],
-        [],
-      ))
+      .map(
+        x => (
+          $theta_#x$,
+          [],
+          $theta_#(x + 5)$,
+          [],
+          [],
+        ),
+      )
       .flatten(),
     table.cell(
       colspan: 4,

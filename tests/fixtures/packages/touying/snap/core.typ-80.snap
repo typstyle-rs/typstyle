@@ -498,12 +498,14 @@ input_file: tests/fixtures/packages/touying/core.typ
         result.push(cont)
       }
       // Appendix content
-      result.push(split-content-into-slides(
-        self: utils.merge-dicts(self, child.value.config),
-        recaller-map: recaller-map,
-        new-start: true,
-        child.value.body,
-      ))
+      result.push(
+        split-content-into-slides(
+          self: utils.merge-dicts(self, child.value.config),
+          recaller-map: recaller-map,
+          new-start: true,
+          child.value.body,
+        ),
+      )
     } else if is-first-slide and utils.is-styled(child) {
       current-slide = utils.trim(current-slide)
       if current-slide != () or current-headings != () {
@@ -522,16 +524,18 @@ input_file: tests/fixtures/packages/touying/core.typ
         )
         result.push(cont)
       }
-      result.push(utils.reconstruct-styled(
-        child,
-        split-content-into-slides(
-          self: self,
-          recaller-map: recaller-map,
-          new-start: true,
-          is-first-slide: is-first-slide,
-          child.child,
+      result.push(
+        utils.reconstruct-styled(
+          child,
+          split-content-into-slides(
+            self: self,
+            recaller-map: recaller-map,
+            new-start: true,
+            is-first-slide: is-first-slide,
+            child.child,
+          ),
         ),
-      ))
+      )
     } else {
       let child = if utils.is-styled(child) {
         // Split the content into slides recursively for styled content
@@ -1234,10 +1238,12 @@ input_file: tests/fixtures/packages/touying/core.typ
     }
     cover-arr = ()
   }
-  result-arr.push((reducer.reduce)(
-    ..reducer.kwargs,
-    result,
-  ))
+  result-arr.push(
+    (reducer.reduce)(
+      ..reducer.kwargs,
+      result,
+    ),
+  )
   max-repetitions = calc.max(max-repetitions, repetitions)
   return (result-arr, max-repetitions)
 }
@@ -1965,46 +1971,48 @@ input_file: tests/fixtures/packages/touying/core.typ
     [#metadata((kind: "touying-new-slide")) <touying-metadata>]
     // add headings for the first subslide
     if self.at("headings", default: ()) != () {
-      place(hide({
-        set heading(offset: 0)
-        let headings = self
-          .at("headings", default: ())
-          .map(it => if it.has("label") {
-            if (
-              str(it.label)
-                in (
-                  "touying:hidden",
-                  "touying:unnumbered",
-                  "touying:unoutlined",
-                  "touying:unbookmarked",
-                )
-            ) {
-              let fields = it.fields()
-              let _ = fields.remove("label", default: none)
-              let _ = fields.remove("body", default: none)
-              if str(it.label) == "touying:hidden" {
-                fields.numbering = none
-                fields.outlined = false
-                fields.bookmarked = false
+      place(
+        hide({
+          set heading(offset: 0)
+          let headings = self
+            .at("headings", default: ())
+            .map(it => if it.has("label") {
+              if (
+                str(it.label)
+                  in (
+                    "touying:hidden",
+                    "touying:unnumbered",
+                    "touying:unoutlined",
+                    "touying:unbookmarked",
+                  )
+              ) {
+                let fields = it.fields()
+                let _ = fields.remove("label", default: none)
+                let _ = fields.remove("body", default: none)
+                if str(it.label) == "touying:hidden" {
+                  fields.numbering = none
+                  fields.outlined = false
+                  fields.bookmarked = false
+                }
+                if str(it.label) == "touying:unnumbered" {
+                  fields.numbering = none
+                }
+                if str(it.label) == "touying:unoutlined" {
+                  fields.outlined = false
+                }
+                if str(it.label) == "touying:unbookmarked" {
+                  fields.bookmarked = false
+                }
+                utils.label-it(heading(..fields, it.body), it.label)
+              } else {
+                it
               }
-              if str(it.label) == "touying:unnumbered" {
-                fields.numbering = none
-              }
-              if str(it.label) == "touying:unoutlined" {
-                fields.outlined = false
-              }
-              if str(it.label) == "touying:unbookmarked" {
-                fields.bookmarked = false
-              }
-              utils.label-it(heading(..fields, it.body), it.label)
             } else {
               it
-            }
-          } else {
-            it
-          })
-        headings.sum(default: none)
-      }))
+            })
+          headings.sum(default: none)
+        }),
+      )
     }
     utils.call-or-display(self, self.at("slide-preamble", default: none))
     utils.call-or-display(self, self.at(
@@ -2030,9 +2038,9 @@ input_file: tests/fixtures/packages/touying/core.typ
           utils.saved-default-frozen-states.update(
             self.default-frozen-states.map(s => s.get()),
           )
-          utils.saved-frozen-counters.update(
-            self.frozen-counters.map(s => s.get()),
-          )
+          utils.saved-frozen-counters.update(self.frozen-counters.map(
+            s => s.get(),
+          ))
           utils.saved-default-frozen-counters.update(
             self.default-frozen-counters.map(s => s.get()),
           )

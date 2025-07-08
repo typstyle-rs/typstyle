@@ -523,9 +523,9 @@ input_file: tests/fixtures/packages/codly.typ
           assert("tag" in hl, message: "codly: tag is required for item reference")
           hl.tag
         }
-        place(hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(
-              str(block-label),
-            )]#hl.label])
+        place(
+          hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(str(block-label))]#hl.label],
+        )
       } else {
         none
       }
@@ -776,11 +776,13 @@ input_file: tests/fixtures/packages/codly.typ
     state("codly-number-align", __codly-args.number-align.default).get()
   })
 
-  let padding = __codly-inset((__codly-args.inset.type_check)(if "inset" in extra {
-    extrainset
-  } else {
-    state("codly-inset", __codly-args.inset.default).get()
-  }))
+  let padding = __codly-inset(
+    (__codly-args.inset.type_check)(if "inset" in extra {
+      extrainset
+    } else {
+      state("codly-inset", __codly-args.inset.default).get()
+    }),
+  )
 
   let breakable = (
     __codly-args.breakable.type_check
@@ -939,7 +941,13 @@ input_file: tests/fixtures/packages/codly.typ
   )
 
   // Get the height of an individual line.
-  let line-height = measure(raw.line(1, 1, "Hello, World!", [Hello, World!])).height + padding.top + padding.bottom
+  let line-height = (
+    measure(
+      raw.line(1, 1, "Hello, World!", [Hello, World!]),
+    ).height
+      + padding.top
+      + padding.bottom
+  )
 
   let items = ()
   let height = measure[1].height
@@ -999,11 +1007,13 @@ input_file: tests/fixtures/packages/codly.typ
       } else {
         state("codly-lang-radius", __codly-args.lang-radius.default).get()
       })
-      let padding = __codly-inset((__codly-args.lang-inset.type_check)(if "lang-inset" in extra {
-        extra.lang-inset
-      } else {
-        state("codly-lang-inset", __codly-args.lang-inset.default).get()
-      }))
+      let padding = __codly-inset(
+        (__codly-args.lang-inset.type_check)(if "lang-inset" in extra {
+          extra.lang-inset
+        } else {
+          state("codly-lang-inset", __codly-args.lang-inset.default).get()
+        }),
+      )
 
       let lang-stroke = (
         __codly-args.lang-stroke.type_check
@@ -1057,11 +1067,13 @@ input_file: tests/fixtures/packages/codly.typ
         state("codly-lang-radius", __codly-args.lang-radius.default).get()
       })
 
-      let padding = __codly-inset((__codly-args.lang-inset.type_check)(if "lang-inset" in extra {
-        extra.lang-inset
-      } else {
-        state("codly-lang-inset", __codly-args.lang-inset.default).get()
-      }))
+      let padding = __codly-inset(
+        (__codly-args.lang-inset.type_check)(if "lang-inset" in extra {
+          extra.lang-inset
+        } else {
+          state("codly-lang-inset", __codly-args.lang-inset.default).get()
+        }),
+      )
 
       let lang-stroke = (
         __codly-args.lang-stroke.type_check
@@ -1173,9 +1185,11 @@ input_file: tests/fixtures/packages/codly.typ
         } else {
           num
         }
-        place(hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(
-              str(block-label),
-            )]#current-annot.label])
+        place(
+          hide[#figure(kind: "codly-referencer", supplement: none)[#box(referenced)#box(
+                str(block-label),
+              )]#current-annot.label],
+        )
       } else {
         none
       }
@@ -1255,10 +1269,12 @@ input_file: tests/fixtures/packages/codly.typ
       if header != none {
         items.push(l)
       } else {
-        items.push(grid(
-          columns: (1fr, lb.width + padding.left + padding.right),
-          l, language-block-final,
-        ))
+        items.push(
+          grid(
+            columns: (1fr, lb.width + padding.left + padding.right),
+            l, language-block-final,
+          ),
+        )
       }
     }
   }
@@ -1318,23 +1334,25 @@ input_file: tests/fixtures/packages/codly.typ
     {
       if is-complex-fill {
         // We use place to draw the fill on a separate layer.
-        place(grid(
-          columns: if has-annotations {
-            (1fr, annot-width)
-          } else {
-            (1fr,)
-          },
-          stroke: none,
-          inset: padding.pairs().map(((k, x)) => (k, x * 1.5)).to-dict(),
-          fill: (x, y) => if zebra-color != none and calc.rem(y, 2) == 0 {
-            zebra-color
-          } else {
-            fill
-          },
-          ..header,
-          ..it.lines.map(line => hide(line)),
-          ..footer,
-        ))
+        place(
+          grid(
+            columns: if has-annotations {
+              (1fr, annot-width)
+            } else {
+              (1fr,)
+            },
+            stroke: none,
+            inset: padding.pairs().map(((k, x)) => (k, x * 1.5)).to-dict(),
+            fill: (x, y) => if zebra-color != none and calc.rem(y, 2) == 0 {
+              zebra-color
+            } else {
+              fill
+            },
+            ..header,
+            ..it.lines.map(line => hide(line)),
+            ..footer,
+          ),
+        )
       }
       if numbers-format != none {
         grid(

@@ -32,16 +32,18 @@ input_file: tests/fixtures/unit/code/chain/call-last-indent.typ
       1,
     )
     .enumerate()
-    .map((
+    .map(
       (
-        n,
+        (
+          n,
+          c,
+        ),
+      ) => build-node(
         c,
+        depth: depth
+          + 1,
+        sibling: n,
       ),
-    ) => build-node(
-      c,
-      depth: depth
-        + 1,
-      sibling: n,
-    ))
+    )
   children
 }

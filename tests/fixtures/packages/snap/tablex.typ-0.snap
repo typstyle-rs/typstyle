@@ -19,9 +19,11 @@ input_file: tests/fixtures/packages/tablex.typ
 #let _array-type = type(
   (),
 )
-#let _dict-type = type((
-  a: 5,
-))
+#let _dict-type = type(
+  (
+    a: 5,
+  ),
+)
 #let _bool-type = type(
   true,
 )
@@ -54,9 +56,11 @@ input_file: tests/fixtures/packages/tablex.typ
 #let _fraction-type = type(
   5fr,
 )
-#let _function-type = type(x => {
-  x
-})
+#let _function-type = type(
+  x => {
+    x
+  },
+)
 #let _content-type = type(
   [],
 )
@@ -209,13 +213,15 @@ input_file: tests/fixtures/packages/tablex.typ
     assert(
       fit-spans
         .keys()
-        .all(k => (
-          k
-            in (
-              "x",
-              "y",
-            )
-        )),
+        .all(
+          k => (
+            k
+              in (
+                "x",
+                "y",
+              )
+          ),
+        ),
       message: "Tablex error:"
         + error-prefix
         + " 'fit-spans', if a dictionary, must only have the keys x and y.",
@@ -223,12 +229,14 @@ input_file: tests/fixtures/packages/tablex.typ
     assert(
       fit-spans
         .values()
-        .all(v => (
-          type(
-            v,
-          )
-            == _bool-type
-        )),
+        .all(
+          v => (
+            type(
+              v,
+            )
+              == _bool-type
+          ),
+        ),
       message: "Tablex error:"
         + error-prefix
         + " keys 'x' and 'y' in the 'fit-spans' dictionary must be booleans (true/false).",
@@ -498,10 +506,12 @@ input_file: tests/fixtures/packages/tablex.typ
 
   // maximum explicit 'y' specified
   let max_explicit_y = items
-    .filter(c => (
-      c.y
-        != auto
-    ))
+    .filter(
+      c => (
+        c.y
+          != auto
+      ),
+    )
     .fold(
       0,
       (
@@ -817,10 +827,12 @@ input_file: tests/fixtures/packages/tablex.typ
   ) {
     panic(
       "Cell rowspan must be 1 or greater (bad cell: "
-        + repr((
-          x,
-          y,
-        ))
+        + repr(
+          (
+            x,
+            y,
+          ),
+        )
         + ")",
     )
   } else if (
@@ -829,10 +841,12 @@ input_file: tests/fixtures/packages/tablex.typ
   ) {
     panic(
       "Cell colspan must be 1 or greater (bad cell: "
-        + repr((
-          x,
-          y,
-        ))
+        + repr(
+          (
+            x,
+            y,
+          ),
+        )
         + ")",
     )
   }
@@ -874,10 +888,12 @@ input_file: tests/fixtures/packages/tablex.typ
       y,
       max_y,
     ) {
-      result.push((
-        x,
-        y,
-      ))
+      result.push(
+        (
+          x,
+          y,
+        ),
+      )
     }
   }
 
@@ -903,7 +919,9 @@ input_file: tests/fixtures/packages/tablex.typ
 
   range(
     amount,
-  ).map(i => init_function())
+  ).map(
+    i => init_function(),
+  )
 }
 
 // Default 'x' to a certain value if it is equal to the forbidden value
@@ -1803,11 +1821,13 @@ input_file: tests/fixtures/packages/tablex.typ
     grid-count-rows(
       grid,
     ),
-  ).map(y => grid-at(
-    grid,
-    x,
-    y,
-  ))
+  ).map(
+    y => grid-at(
+      grid,
+      x,
+      y,
+    ),
+  )
 }
 
 // Expand grid to the given coords (add the missing cells)
@@ -2168,10 +2188,12 @@ input_file: tests/fixtures/packages/tablex.typ
     ) {
       panic(
         "Internal tablex error: Grid wasn't large enough to fit the given cells. (Previous position: "
-          + repr((
-            prev_x,
-            prev_y,
-          ))
+          + repr(
+            (
+              prev_x,
+              prev_y,
+            ),
+          )
           + ", new cell: "
           + repr(
             cell,
@@ -2255,10 +2277,12 @@ input_file: tests/fixtures/packages/tablex.typ
     ) {
       panic(
         "Error: Cell coordinates must be integers. Invalid pair: "
-          + repr((
-            this_x,
-            this_y,
-          )),
+          + repr(
+            (
+              this_x,
+              this_y,
+            ),
+          ),
       )
     }
 
@@ -2307,10 +2331,12 @@ input_file: tests/fixtures/packages/tablex.typ
     ) {
       panic(
         "Error: Cell at "
-          + repr((
-            this_x,
-            this_y,
-          ))
+          + repr(
+            (
+              this_x,
+              this_y,
+            ),
+          )
           + " is placed at an inexistent column.",
       )
     }
@@ -2321,10 +2347,12 @@ input_file: tests/fixtures/packages/tablex.typ
     ) {
       panic(
         "Error: Cell at "
-          + repr((
-            this_x,
-            this_y,
-          ))
+          + repr(
+            (
+              this_x,
+              this_y,
+            ),
+          )
           + " has a colspan of "
           + repr(
             cell.colspan,
@@ -2365,20 +2393,26 @@ input_file: tests/fixtures/packages/tablex.typ
 
         panic(
           "Error: Multiple cells attempted to occupy the cell position at "
-            + repr((
-              px,
-              py,
-            ))
+            + repr(
+              (
+                px,
+                py,
+              ),
+            )
             + ": one starting at "
-            + repr((
-              this_x,
-              this_y,
-            ))
+            + repr(
+              (
+                this_x,
+                this_y,
+              ),
+            )
             + ", and one starting at "
-            + repr((
-              parent_cell.x,
-              parent_cell.y,
-            )),
+            + repr(
+              (
+                parent_cell.x,
+                parent_cell.y,
+              ),
+            ),
         )
       }
 
@@ -2419,10 +2453,12 @@ input_file: tests/fixtures/packages/tablex.typ
         ) {
           panic(
             "Internal tablex error: Could not expand grid to include cell at "
-              + repr((
-                this_x,
-                this_y,
-              )),
+              + repr(
+                (
+                  this_x,
+                  this_y,
+                ),
+              ),
           )
         }
         grid
@@ -2769,14 +2805,16 @@ input_file: tests/fixtures/packages/tablex.typ
 ) = {
   let frac-tracks = tracks
     .enumerate()
-    .filter(t => (
-      type(
-        t.at(
-          1,
-        ),
-      )
-        == _fraction-type
-    ))
+    .filter(
+      t => (
+        type(
+          t.at(
+            1,
+          ),
+        )
+          == _fraction-type
+      ),
+    )
 
   let amount-frac = frac-tracks.fold(
     0,
@@ -3018,17 +3056,21 @@ input_file: tests/fixtures/packages/tablex.typ
 
   let all-frac-columns = columns
     .enumerate()
-    .filter(i-col => (
-      type(
-        i-col.at(
-          1,
-        ),
-      )
-        == _fraction-type
-    ))
-    .map(i-col => i-col.at(
-      0,
-    ))
+    .filter(
+      i-col => (
+        type(
+          i-col.at(
+            1,
+          ),
+        )
+          == _fraction-type
+      ),
+    )
+    .map(
+      i-col => i-col.at(
+        0,
+      ),
+    )
   for (
     i,
     col,
@@ -3099,15 +3141,17 @@ input_file: tests/fixtures/packages/tablex.typ
                 > 1
                 and all-frac-columns.len()
                   > 0
-                and all-frac-columns.all(i => (
-                  pcell.x
-                    <= i
-                    and i
-                      < (
-                        pcell.x
-                          + pcell.colspan
-                      )
-                ))
+                and all-frac-columns.all(
+                  i => (
+                    pcell.x
+                      <= i
+                      and i
+                        < (
+                          pcell.x
+                            + pcell.colspan
+                        )
+                  ),
+                )
             )
             if (
               cell-spans-all-frac-columns
@@ -3177,10 +3221,12 @@ input_file: tests/fixtures/packages/tablex.typ
       )
 
       total_auto_size += col_size
-      auto_sizes.push((
-        i,
-        col_size,
-      ))
+      auto_sizes.push(
+        (
+          i,
+          col_size,
+        ),
+      )
       new_columns.at(
         i,
       ) = col_size
@@ -3318,31 +3364,33 @@ input_file: tests/fixtures/packages/tablex.typ
   col-gutter: none,
   fit-spans: none,
 ) = {
-  let columns = columns.map(c => {
-    if (
-      type(
-        c,
-      )
-        in (
-          _length-type,
-          _rel-len-type,
-          _ratio-type,
+  let columns = columns.map(
+    c => {
+      if (
+        type(
+          c,
         )
-    ) {
-      convert-length-to-pt(
-        c,
-        styles: styles,
-        page-size: page_width,
-      )
-    } else if (
-      c
-        == none
-    ) {
-      0pt
-    } else {
-      c
-    }
-  })
+          in (
+            _length-type,
+            _rel-len-type,
+            _ratio-type,
+          )
+      ) {
+        convert-length-to-pt(
+          c,
+          styles: styles,
+          page-size: page_width,
+        )
+      } else if (
+        c
+          == none
+      ) {
+        0pt
+      } else {
+        c
+      }
+    },
+  )
 
   // what is the fixed size of the gutter?
   // (calculate it later if it's fractional)
@@ -3423,34 +3471,38 @@ input_file: tests/fixtures/packages/tablex.typ
         )
       }
 
-      columns = columns.map(c => {
+      columns = columns.map(
+        c => {
+          if (
+            type(
+              c,
+            )
+              == _fraction-type
+          ) {
+            0pt // no space left to be divided
+          } else {
+            c
+          }
+        },
+      )
+    }
+  } else {
+    columns = columns.map(
+      c => {
         if (
-          type(
-            c,
-          )
-            == _fraction-type
+          c
+            == auto
+            or type(
+              c,
+            )
+              == _fraction-type
         ) {
-          0pt // no space left to be divided
+          0pt // no space remaining!
         } else {
           c
         }
-      })
-    }
-  } else {
-    columns = columns.map(c => {
-      if (
-        c
-          == auto
-          or type(
-            c,
-          )
-            == _fraction-type
-      ) {
-        0pt // no space remaining!
-      } else {
-        c
-      }
-    })
+      },
+    )
   }
 
   (
@@ -3598,10 +3650,12 @@ input_file: tests/fixtures/packages/tablex.typ
       )
 
       total_auto_size += row_size
-      auto_sizes.push((
-        i,
-        row_size,
-      ))
+      auto_sizes.push(
+        (
+          i,
+          row_size,
+        ),
+      )
       new_rows.at(
         i,
       ) = row_size
@@ -3626,26 +3680,28 @@ input_file: tests/fixtures/packages/tablex.typ
   row-gutter: none,
   fit-spans: none,
 ) = {
-  let rows = rows.map(r => {
-    if (
-      type(
-        r,
-      )
-        in (
-          _length-type,
-          _rel-len-type,
-          _ratio-type,
+  let rows = rows.map(
+    r => {
+      if (
+        type(
+          r,
         )
-    ) {
-      convert-length-to-pt(
-        r,
-        styles: styles,
-        page-size: page_height,
-      )
-    } else {
-      r
-    }
-  })
+          in (
+            _length-type,
+            _rel-len-type,
+            _ratio-type,
+          )
+      ) {
+        convert-length-to-pt(
+          r,
+          styles: styles,
+          page-size: page_height,
+        )
+      } else {
+        r
+      }
+    },
+  )
 
   let auto_rows_res = determine-auto-rows(
     grid: grid,
@@ -3702,19 +3758,21 @@ input_file: tests/fixtures/packages/tablex.typ
     )
   } else {
     (
-      rows: rows.map(r => {
-        if (
-          type(
-            r,
-          )
-            == _fraction-type
-        ) {
-          // no space remaining in this page or box
-          0pt
-        } else {
-          r
-        }
-      }),
+      rows: rows.map(
+        r => {
+          if (
+            type(
+              r,
+            )
+              == _fraction-type
+          ) {
+            // no space remaining in this page or box
+            0pt
+          } else {
+            r
+          }
+        },
+      ),
       gutter: if row-gutter
         == none {
         none
@@ -4026,130 +4084,142 @@ input_file: tests/fixtures/packages/tablex.typ
   }
 
   let hlines = hlines
-    .filter(h => {
-      let y = h.y
+    .filter(
+      h => {
+        let y = h.y
 
-      let in_top_or_bottom = (
-        y
-          in (
-            cell.y,
-            cell.y
-              + cell.rowspan,
-          )
-      )
-
-      let hline_hasnt_already_ended = (
-        h.end
-          in (
-            auto,
-            none,
-          ) // always goes towards the right
-          or h.end
-            >= cell.x
-              + cell.colspan // ends at or after this cell
-      )
-
-      (
-        in_top_or_bottom
-          and hline_hasnt_already_ended
-      )
-    })
-    .map(h => {
-      // get the intersection between the hline and the cell's x-span.
-      let span = get-included-span(
-        h.start,
-        h.end,
-        start: cell.x,
-        end: cell.x
-          + cell.colspan,
-        limit: x_limit,
-      )
-
-      if (
-        span
-          == none
-      ) {
-        // no intersection!
-        none
-      } else {
-        v-or-hline-with-span(
-          h,
-          start: span.at(
-            0,
-          ),
-          end: span.at(
-            1,
-          ),
+        let in_top_or_bottom = (
+          y
+            in (
+              cell.y,
+              cell.y
+                + cell.rowspan,
+            )
         )
-      }
-    })
-    .filter(x => (
-      x
-        != none
-    ))
+
+        let hline_hasnt_already_ended = (
+          h.end
+            in (
+              auto,
+              none,
+            ) // always goes towards the right
+            or h.end
+              >= cell.x
+                + cell.colspan // ends at or after this cell
+        )
+
+        (
+          in_top_or_bottom
+            and hline_hasnt_already_ended
+        )
+      },
+    )
+    .map(
+      h => {
+        // get the intersection between the hline and the cell's x-span.
+        let span = get-included-span(
+          h.start,
+          h.end,
+          start: cell.x,
+          end: cell.x
+            + cell.colspan,
+          limit: x_limit,
+        )
+
+        if (
+          span
+            == none
+        ) {
+          // no intersection!
+          none
+        } else {
+          v-or-hline-with-span(
+            h,
+            start: span.at(
+              0,
+            ),
+            end: span.at(
+              1,
+            ),
+          )
+        }
+      },
+    )
+    .filter(
+      x => (
+        x
+          != none
+      ),
+    )
 
   let vlines = vlines
-    .filter(v => {
-      let x = v.x
+    .filter(
+      v => {
+        let x = v.x
 
-      let at_left_or_right = (
-        x
-          in (
-            cell.x,
-            cell.x
-              + cell.colspan,
-          )
-      )
-
-      let vline_hasnt_already_ended = (
-        v.end
-          in (
-            auto,
-            none,
-          ) // always goes towards the bottom
-          or v.end
-            >= cell.y
-              + cell.rowspan // ends at or after this cell
-      )
-
-      (
-        at_left_or_right
-          and vline_hasnt_already_ended
-      )
-    })
-    .map(v => {
-      // get the intersection between the hline and the cell's x-span.
-      let span = get-included-span(
-        v.start,
-        v.end,
-        start: cell.y,
-        end: cell.y
-          + cell.rowspan,
-        limit: y_limit,
-      )
-
-      if (
-        span
-          == none
-      ) {
-        // no intersection!
-        none
-      } else {
-        v-or-hline-with-span(
-          v,
-          start: span.at(
-            0,
-          ),
-          end: span.at(
-            1,
-          ),
+        let at_left_or_right = (
+          x
+            in (
+              cell.x,
+              cell.x
+                + cell.colspan,
+            )
         )
-      }
-    })
-    .filter(x => (
-      x
-        != none
-    ))
+
+        let vline_hasnt_already_ended = (
+          v.end
+            in (
+              auto,
+              none,
+            ) // always goes towards the bottom
+            or v.end
+              >= cell.y
+                + cell.rowspan // ends at or after this cell
+        )
+
+        (
+          at_left_or_right
+            and vline_hasnt_already_ended
+        )
+      },
+    )
+    .map(
+      v => {
+        // get the intersection between the hline and the cell's x-span.
+        let span = get-included-span(
+          v.start,
+          v.end,
+          start: cell.y,
+          end: cell.y
+            + cell.rowspan,
+          limit: y_limit,
+        )
+
+        if (
+          span
+            == none
+        ) {
+          // no intersection!
+          none
+        } else {
+          v-or-hline-with-span(
+            v,
+            start: span.at(
+              0,
+            ),
+            end: span.at(
+              1,
+            ),
+          )
+        }
+      },
+    )
+    .filter(
+      x => (
+        x
+          != none
+      ),
+    )
 
   (
     hlines: hlines,
@@ -4186,11 +4256,13 @@ input_file: tests/fixtures/packages/tablex.typ
 ) = (
   calc.max(
     0pt,
-    ..lines.map(l => stroke-len(
-      l.stroke,
-      stroke-auto: stroke-auto,
-      styles: styles,
-    )),
+    ..lines.map(
+      l => stroke-len(
+        l.stroke,
+        stroke-auto: stroke-auto,
+        styles: styles,
+      ),
+    ),
   )
 )
 
@@ -4201,10 +4273,12 @@ input_file: tests/fixtures/packages/tablex.typ
   styles: none,
 ) = {
   _largest-stroke-among-lines(
-    hlines.filter(h => (
-      h.y
-        == y
-    )),
+    hlines.filter(
+      h => (
+        h.y
+          == y
+      ),
+    ),
     stroke-auto: stroke-auto,
     styles: styles,
   )
@@ -4217,10 +4291,12 @@ input_file: tests/fixtures/packages/tablex.typ
   styles: none,
 ) = {
   _largest-stroke-among-lines(
-    vlines.filter(v => (
-      v.x
-        == x
-    )),
+    vlines.filter(
+      v => (
+        v.x
+          == x
+      ),
+    ),
     stroke-auto: stroke-auto,
     styles: styles,
   )
@@ -4784,76 +4860,86 @@ input_file: tests/fixtures/packages/tablex.typ
 // NOTE: This function cannot differentiate between the actual page
 // and a possible box or block where the component using this function
 // could be contained in.
-#let get-page-dim-writer() = locate(w_loc => {
-  let table_id = _tablex-table-counter.at(
-    w_loc,
-  )
-  let page_dim_state = get-page-dim-state(
-    table_id,
-  )
+#let get-page-dim-writer() = locate(
+  w_loc => {
+    let table_id = _tablex-table-counter.at(
+      w_loc,
+    )
+    let page_dim_state = get-page-dim-state(
+      table_id,
+    )
 
-  place(
-    top
-      + left,
-    locate(loc => {
-      page_dim_state.update(s => {
-        if (
-          s.top_left
-            != none
-        ) {
-          s
-        } else {
-          let pos = loc.position()
-          let width = (
-            s.width
-              - pos.x
+    place(
+      top
+        + left,
+      locate(
+        loc => {
+          page_dim_state.update(
+            s => {
+              if (
+                s.top_left
+                  != none
+              ) {
+                s
+              } else {
+                let pos = loc.position()
+                let width = (
+                  s.width
+                    - pos.x
+                )
+                let height = (
+                  s.width
+                    - pos.y
+                )
+                (
+                  width: width,
+                  height: height,
+                  top_left: pos,
+                  bottom_right: s.bottom_right,
+                )
+              }
+            },
           )
-          let height = (
-            s.width
-              - pos.y
-          )
-          (
-            width: width,
-            height: height,
-            top_left: pos,
-            bottom_right: s.bottom_right,
-          )
-        }
-      })
-    }),
-  )
+        },
+      ),
+    )
 
-  place(
-    bottom
-      + right,
-    locate(loc => {
-      page_dim_state.update(s => {
-        if (
-          s.bottom_right
-            != none
-        ) {
-          s
-        } else {
-          let pos = loc.position()
-          let width = (
-            s.width
-              + pos.x
+    place(
+      bottom
+        + right,
+      locate(
+        loc => {
+          page_dim_state.update(
+            s => {
+              if (
+                s.bottom_right
+                  != none
+              ) {
+                s
+              } else {
+                let pos = loc.position()
+                let width = (
+                  s.width
+                    + pos.x
+                )
+                let height = (
+                  s.width
+                    + pos.y
+                )
+                (
+                  width: width,
+                  height: height,
+                  top_left: s.top_left,
+                  bottom_right: pos,
+                )
+              }
+            },
           )
-          let height = (
-            s.width
-              + pos.y
-          )
-          (
-            width: width,
-            height: height,
-            top_left: s.top_left,
-            bottom_right: pos,
-          )
-        }
-      })
-    }),
-  )
-})
+        },
+      ),
+    )
+  },
+)
 
 // Draws a row group using locate() and a block().
 #let draw-row-group(
@@ -4909,469 +4995,475 @@ input_file: tests/fixtures/packages/tablex.typ
     end-y,
   ) = row-group.y_span
 
-  locate(loc => {
-    // let old_page = latest-page-state.at(loc)
-    // let this_page = loc.page()
+  locate(
+    loc => {
+      // let old_page = latest-page-state.at(loc)
+      // let this_page = loc.page()
 
-    // let page_turned = not is-header and old_page not in (this_page, -1)
-    let pos = loc.position()
-    let page = pos.page
-    let rel_page = (
-      page
-        - table-loc.page()
-        + 1
-    )
+      // let page_turned = not is-header and old_page not in (this_page, -1)
+      let pos = loc.position()
+      let page = pos.page
+      let rel_page = (
+        page
+          - table-loc.page()
+          + 1
+      )
 
-    let at_top = (
-      pos.y
-        == min-pos.y
-    ) // to guard against re-draw issues
-    let header_pages = header-pages-state.at(
-      loc,
-    )
-    let header_count = header_pages.len()
-    let page_turned = (
-      page
-        not in header_pages
-    )
+      let at_top = (
+        pos.y
+          == min-pos.y
+      ) // to guard against re-draw issues
+      let header_pages = header-pages-state.at(
+        loc,
+      )
+      let header_count = header_pages.len()
+      let page_turned = (
+        page
+          not in header_pages
+      )
 
-    // draw row group
-    block(
-      breakable: false,
-      fill: none,
-      radius: 0pt,
-      stroke: none,
-      {
-        let added_header_height = 0pt // if we added a header, move down
+      // draw row group
+      block(
+        breakable: false,
+        fill: none,
+        radius: 0pt,
+        stroke: none,
+        {
+          let added_header_height = 0pt // if we added a header, move down
 
-        // page turned => add header
-        if (
-          page_turned
-            and at_top
-            and not is-header
-        ) {
+          // page turned => add header
           if (
-            repeat-header
-              != false
+            page_turned
+              and at_top
+              and not is-header
           ) {
-            header-pages-state.update(l => (
-              l
-                + (
-                  page,
-                )
-            ))
             if (
-              (
-                repeat-header
-                  == true
-              )
-                or (
-                  type(
-                    repeat-header,
-                  )
-                    == _int-type
-                    and rel_page
-                      <= repeat-header
-                )
-                or (
-                  type(
-                    repeat-header,
-                  )
-                    == _array-type
-                    and rel_page
-                      in repeat-header
-                )
+              repeat-header
+                != false
             ) {
-              let measures = measure(
-                first-row-group.content,
-                styles,
+              header-pages-state.update(
+                l => (
+                  l
+                    + (
+                      page,
+                    )
+                ),
               )
+              if (
+                (
+                  repeat-header
+                    == true
+                )
+                  or (
+                    type(
+                      repeat-header,
+                    )
+                      == _int-type
+                      and rel_page
+                        <= repeat-header
+                  )
+                  or (
+                    type(
+                      repeat-header,
+                    )
+                      == _array-type
+                      and rel_page
+                        in repeat-header
+                  )
+              ) {
+                let measures = measure(
+                  first-row-group.content,
+                  styles,
+                )
+                place(
+                  top
+                    + left,
+                  first-row-group.content,
+                ) // add header
+                added_header_height = measures.height
+              }
+            }
+          }
+
+          let row_gutter_dy = default-if-none(
+            gutter.row,
+            0pt,
+          )
+
+          let first_x = none
+          let first_y = none
+          let rightmost_x = none
+
+          let row_heights = array-sum(
+            rows.slice(
+              start-y,
+              end-y
+                + 1,
+            ),
+            zero: 0pt,
+          )
+
+          let first_row = true
+          for row in (
+            group-rows
+          ) {
+            for cell_box in (
+              row
+            ) {
+              let x = cell_box
+                .cell
+                .x
+              let y = cell_box
+                .cell
+                .y
+              first_x = default-if-none(
+                first_x,
+                x,
+              )
+              first_y = default-if-none(
+                first_y,
+                y,
+              )
+              rightmost_x = default-if-none(
+                rightmost_x,
+                width-between(
+                  start: first_x,
+                  end: none,
+                ),
+              )
+
+              // where to place the cell (horizontally)
+              let dx = width-between(
+                start: first_x,
+                end: x,
+              )
+
+              // TODO: consider implementing RTL before the rendering
+              // stage (perhaps by inverting 'x' positions on cells
+              // and lines beforehand).
+              if rtl {
+                // invert cell's x position (start from the right)
+                dx = (
+                  rightmost_x
+                    - dx
+                )
+                // assume the cell doesn't start at the very end
+                // (that would be weird)
+                // Here we have to move dx back a bit as, after
+                // inverting it, it'd be the right edge of the cell;
+                // we need to keep it as the left edge's x position,
+                // as #place works with the cell's left edge.
+                // To do that, we subtract the cell's width from dx.
+                dx -= width-between(
+                  start: x,
+                  end: x
+                    + cell_box
+                      .cell
+                      .colspan,
+                )
+              }
+
+              // place the cell!
               place(
                 top
                   + left,
-                first-row-group.content,
-              ) // add header
-              added_header_height = measures.height
+                dx: dx,
+                dy: height-between(
+                  start: first_y,
+                  end: y,
+                )
+                  + added_header_height,
+                cell_box.box,
+              )
+
+              // let box_h = measure(cell_box.box, styles).height
+              // tallest_box_h = calc.max(tallest_box_h, box_h)
             }
+            first_row = false
           }
-        }
 
-        let row_gutter_dy = default-if-none(
-          gutter.row,
-          0pt,
-        )
-
-        let first_x = none
-        let first_y = none
-        let rightmost_x = none
-
-        let row_heights = array-sum(
-          rows.slice(
-            start-y,
-            end-y
-              + 1,
-          ),
-          zero: 0pt,
-        )
-
-        let first_row = true
-        for row in (
-          group-rows
-        ) {
-          for cell_box in (
-            row
-          ) {
-            let x = cell_box
-              .cell
-              .x
-            let y = cell_box
-              .cell
-              .y
-            first_x = default-if-none(
-              first_x,
-              x,
-            )
-            first_y = default-if-none(
-              first_y,
-              y,
-            )
-            rightmost_x = default-if-none(
-              rightmost_x,
-              width-between(
-                start: first_x,
-                end: none,
-              ),
-            )
-
-            // where to place the cell (horizontally)
-            let dx = width-between(
-              start: first_x,
-              end: x,
-            )
-
-            // TODO: consider implementing RTL before the rendering
-            // stage (perhaps by inverting 'x' positions on cells
-            // and lines beforehand).
-            if rtl {
-              // invert cell's x position (start from the right)
-              dx = (
-                rightmost_x
-                  - dx
+          let row_group_height = (
+            row_heights
+              + added_header_height
+              + (
+                row_gutter_dy
+                  * group-rows.len()
               )
-              // assume the cell doesn't start at the very end
-              // (that would be weird)
-              // Here we have to move dx back a bit as, after
-              // inverting it, it'd be the right edge of the cell;
-              // we need to keep it as the left edge's x position,
-              // as #place works with the cell's left edge.
-              // To do that, we subtract the cell's width from dx.
-              dx -= width-between(
-                start: x,
-                end: x
-                  + cell_box
-                    .cell
-                    .colspan,
-              )
-            }
-
-            // place the cell!
-            place(
-              top
-                + left,
-              dx: dx,
-              dy: height-between(
-                start: first_y,
-                end: y,
-              )
-                + added_header_height,
-              cell_box.box,
-            )
-
-            // let box_h = measure(cell_box.box, styles).height
-            // tallest_box_h = calc.max(tallest_box_h, box_h)
-          }
-          first_row = false
-        }
-
-        let row_group_height = (
-          row_heights
-            + added_header_height
-            + (
-              row_gutter_dy
-                * group-rows.len()
-            )
-        )
-
-        let is_last_row = (
-          not is-infinite-len(
-            max-pos.y,
           )
-            and pos.y
-              + row_group_height
-              + row_gutter_dy
-              >= max-pos.y
-        )
 
-        if is_last_row {
-          row_group_height -= row_gutter_dy
-          // one less gutter at the end
-        }
-
-        hide(
-          rect(
-            width: total-width,
-            height: row_group_height,
-          ),
-        )
-
-        let draw-hline = draw-hline.with(
-          initial_x: first_x,
-          initial_y: first_y,
-          rightmost_x: rightmost_x,
-          rtl: rtl,
-        )
-        let draw-vline = draw-vline.with(
-          initial_x: first_x,
-          initial_y: first_y,
-          rightmost_x: rightmost_x,
-          rtl: rtl,
-        )
-
-        // ensure the lines are drawn absolutely, after the header
-        let draw-hline = (
-          ..args,
-        ) => place(
-          top
-            + left,
-          dy: added_header_height,
-          draw-hline(
-            ..args,
-          ),
-        )
-        let draw-vline = (
-          ..args,
-        ) => place(
-          top
-            + left,
-          dy: added_header_height,
-          draw-vline(
-            ..args,
-          ),
-        )
-
-        let header_last_y = if (
-          first-row-group
-            != none
-        ) {
-          first-row-group
-            .row_group
-            .y_span
-            .at(
-              1,
+          let is_last_row = (
+            not is-infinite-len(
+              max-pos.y,
             )
-        } else {
-          none
-        }
-        // if this is the second row, and the header's hlines
-        // do not have priority (thus are not drawn by them,
-        // otherwise they'd repeat on every page), then
-        // we draw its hlines for the header, below it.
-        let hlines = if (
-          not header-hlines-have-priority
-            and not is-header
-            and start-y
-              == header_last_y
-                + 1
-        ) {
-          let hlines_below_header = first-row-group
-            .row_group
-            .hlines
-            .filter(h => (
-              h.y
+              and pos.y
+                + row_group_height
+                + row_gutter_dy
+                >= max-pos.y
+          )
+
+          if is_last_row {
+            row_group_height -= row_gutter_dy
+            // one less gutter at the end
+          }
+
+          hide(
+            rect(
+              width: total-width,
+              height: row_group_height,
+            ),
+          )
+
+          let draw-hline = draw-hline.with(
+            initial_x: first_x,
+            initial_y: first_y,
+            rightmost_x: rightmost_x,
+            rtl: rtl,
+          )
+          let draw-vline = draw-vline.with(
+            initial_x: first_x,
+            initial_y: first_y,
+            rightmost_x: rightmost_x,
+            rtl: rtl,
+          )
+
+          // ensure the lines are drawn absolutely, after the header
+          let draw-hline = (
+            ..args,
+          ) => place(
+            top
+              + left,
+            dy: added_header_height,
+            draw-hline(
+              ..args,
+            ),
+          )
+          let draw-vline = (
+            ..args,
+          ) => place(
+            top
+              + left,
+            dy: added_header_height,
+            draw-vline(
+              ..args,
+            ),
+          )
+
+          let header_last_y = if (
+            first-row-group
+              != none
+          ) {
+            first-row-group
+              .row_group
+              .y_span
+              .at(
+                1,
+              )
+          } else {
+            none
+          }
+          // if this is the second row, and the header's hlines
+          // do not have priority (thus are not drawn by them,
+          // otherwise they'd repeat on every page), then
+          // we draw its hlines for the header, below it.
+          let hlines = if (
+            not header-hlines-have-priority
+              and not is-header
+              and start-y
                 == header_last_y
                   + 1
-            ))
-
-          (
-            hlines
-              + hlines_below_header
-          )
-        } else {
-          hlines
-        }
-
-        for hline in (
-          hlines
-        ) {
-          // only draw the top hline
-          // if header's wasn't already drawn
-          if (
-            hline.y
-              == start-y
           ) {
-            let header_last_y = if (
-              first-row-group
-                != none
-            ) {
-              first-row-group
-                .row_group
-                .y_span
-                .at(
-                  1,
-                )
-            } else {
-              none
-            }
-            // pre-gutter is always false here, as we assume
-            // hlines at the top of this row are handled
-            // at pre-gutter by the preceding row,
-            // and at post-gutter by this (the following) row.
-            // these if's are to check if we should indeed
-            // draw this hline, or if the previous row /
-            // the header should take care of it.
-            if (
-              not header-hlines-have-priority
-                and not is-header
-                and start-y
-                  == header_last_y
-                    + 1
-            ) {
-              // second row (after header, and it has no hline priority).
-              draw-hline(
-                hline,
-                pre-gutter: false,
+            let hlines_below_header = first-row-group
+              .row_group
+              .hlines
+              .filter(
+                h => (
+                  h.y
+                    == header_last_y
+                      + 1
+                ),
               )
-            } else if (
-              hline.y
-                == 0
-            ) {
-              // hline at the very top of the table.
-              draw-hline(
-                hline,
-                pre-gutter: false,
-              )
-            } else if (
-              not page_turned
-                and gutter.row
-                  != none
-                and hline.gutter-restrict
-                  != top
-            ) {
-              // this hline, at the top of this row group,
-              // isn't restricted to a pre-gutter position,
-              // so let's draw it right above us.
-              // The page turn check is important:
-              // the hline should not be drawn if the header
-              // was repeated and its own hlines have
-              // priority.
-              draw-hline(
-                hline,
-                pre-gutter: false,
-              )
-            } else if (
-              page_turned
-                and (
-                  added_header_height
-                    == 0pt
-                    or not header-hlines-have-priority
-                )
-            ) {
-              draw-hline(
-                hline,
-                pre-gutter: false,
-              )
-              // no header repeated, but still at the top of the current page
-            }
-          } else {
-            if (
-              hline.y
-                == end-y
-                  + 1
-                and (
-                  (
-                    is-header
-                      and not header-hlines-have-priority
-                  )
-                    or (
-                      gutter.row
-                        != none
-                        and hline.gutter-restrict
-                          == bottom
-                    )
-                )
-            ) {
-              // this hline is after all cells
-              // in the row group, and either
-              // this is the header and its hlines
-              // don't have priority (=> the row
-              // groups below it - if repeated -
-              // should draw the hlines above them),
-              // or the hline is restricted to
-              // post-gutter => let the next
-              // row group draw it.
-              continue
-            }
 
-            // normally, only draw the bottom hlines
-            // (and both their pre-gutter and
-            // post-gutter variations)
-            draw-hline(
-              hline,
-              pre-gutter: true,
+            (
+              hlines
+                + hlines_below_header
             )
+          } else {
+            hlines
+          }
 
-            // don't draw the post-row gutter hline
-            // if this is the last row in the page,
-            // the last row in the row group
-            // (=> the next row group will
-            // place the hline above it, so that
-            // lines break properly between pages),
-            // or the last row in the whole table.
+          for hline in (
+            hlines
+          ) {
+            // only draw the top hline
+            // if header's wasn't already drawn
             if (
-              gutter.row
-                != none
-                and hline.y
-                  < rows.len()
-                and hline.y
-                  < end-y
-                    + 1
-                and not is_last_row
+              hline.y
+                == start-y
             ) {
+              let header_last_y = if (
+                first-row-group
+                  != none
+              ) {
+                first-row-group
+                  .row_group
+                  .y_span
+                  .at(
+                    1,
+                  )
+              } else {
+                none
+              }
+              // pre-gutter is always false here, as we assume
+              // hlines at the top of this row are handled
+              // at pre-gutter by the preceding row,
+              // and at post-gutter by this (the following) row.
+              // these if's are to check if we should indeed
+              // draw this hline, or if the previous row /
+              // the header should take care of it.
+              if (
+                not header-hlines-have-priority
+                  and not is-header
+                  and start-y
+                    == header_last_y
+                      + 1
+              ) {
+                // second row (after header, and it has no hline priority).
+                draw-hline(
+                  hline,
+                  pre-gutter: false,
+                )
+              } else if (
+                hline.y
+                  == 0
+              ) {
+                // hline at the very top of the table.
+                draw-hline(
+                  hline,
+                  pre-gutter: false,
+                )
+              } else if (
+                not page_turned
+                  and gutter.row
+                    != none
+                  and hline.gutter-restrict
+                    != top
+              ) {
+                // this hline, at the top of this row group,
+                // isn't restricted to a pre-gutter position,
+                // so let's draw it right above us.
+                // The page turn check is important:
+                // the hline should not be drawn if the header
+                // was repeated and its own hlines have
+                // priority.
+                draw-hline(
+                  hline,
+                  pre-gutter: false,
+                )
+              } else if (
+                page_turned
+                  and (
+                    added_header_height
+                      == 0pt
+                      or not header-hlines-have-priority
+                  )
+              ) {
+                draw-hline(
+                  hline,
+                  pre-gutter: false,
+                )
+                // no header repeated, but still at the top of the current page
+              }
+            } else {
+              if (
+                hline.y
+                  == end-y
+                    + 1
+                  and (
+                    (
+                      is-header
+                        and not header-hlines-have-priority
+                    )
+                      or (
+                        gutter.row
+                          != none
+                          and hline.gutter-restrict
+                            == bottom
+                      )
+                  )
+              ) {
+                // this hline is after all cells
+                // in the row group, and either
+                // this is the header and its hlines
+                // don't have priority (=> the row
+                // groups below it - if repeated -
+                // should draw the hlines above them),
+                // or the hline is restricted to
+                // post-gutter => let the next
+                // row group draw it.
+                continue
+              }
+
+              // normally, only draw the bottom hlines
+              // (and both their pre-gutter and
+              // post-gutter variations)
               draw-hline(
                 hline,
-                pre-gutter: false,
+                pre-gutter: true,
               )
+
+              // don't draw the post-row gutter hline
+              // if this is the last row in the page,
+              // the last row in the row group
+              // (=> the next row group will
+              // place the hline above it, so that
+              // lines break properly between pages),
+              // or the last row in the whole table.
+              if (
+                gutter.row
+                  != none
+                  and hline.y
+                    < rows.len()
+                  and hline.y
+                    < end-y
+                      + 1
+                  and not is_last_row
+              ) {
+                draw-hline(
+                  hline,
+                  pre-gutter: false,
+                )
+              }
             }
           }
-        }
 
-        for vline in (
-          vlines
-        ) {
-          draw-vline(
-            vline,
-            pre-gutter: true,
-            stop-before-row-gutter: is_last_row,
-          )
-
-          // don't draw the post-col gutter vline
-          // if this is the last vline
-          if (
-            gutter.col
-              != none
-              and vline.x
-                < columns.len()
+          for vline in (
+            vlines
           ) {
             draw-vline(
               vline,
-              pre-gutter: false,
+              pre-gutter: true,
               stop-before-row-gutter: is_last_row,
             )
+
+            // don't draw the post-col gutter vline
+            // if this is the last vline
+            if (
+              gutter.col
+                != none
+                and vline.x
+                  < columns.len()
+            ) {
+              draw-vline(
+                vline,
+                pre-gutter: false,
+                stop-before-row-gutter: is_last_row,
+              )
+            }
           }
-        }
-      },
-    )
-  })
+        },
+      )
+    },
+  )
 }
 
 // Generates groups of rows.
@@ -5515,27 +5607,33 @@ input_file: tests/fixtures/packages/tablex.typ
         this_row_group
           .rows
           .last()
-          .push((
-            cell: cell,
-            box: cell_box,
-          ))
+          .push(
+            (
+              cell: cell,
+              box: cell_box,
+            ),
+          )
 
-        let hlines = hlines.filter(h => (
-          this_row_group
-            .hlines
-            .filter(
-              is-same-hline.with(
-                h,
-              ),
-            )
-            .len()
-            == 0
-        ))
+        let hlines = hlines.filter(
+          h => (
+            this_row_group
+              .hlines
+              .filter(
+                is-same-hline.with(
+                  h,
+                ),
+              )
+              .len()
+              == 0
+          ),
+        )
 
-        let vlines = vlines.filter(v => (
-          v
-            not in this_row_group.vlines
-        ))
+        let vlines = vlines.filter(
+          v => (
+            v
+              not in this_row_group.vlines
+          ),
+        )
 
         this_row_group.hlines += hlines
         this_row_group.vlines += vlines
@@ -5688,39 +5786,41 @@ input_file: tests/fixtures/packages/tablex.typ
           0,
           2,
         )
-        .map(e => {
-          if (
-            e
-              == none
-          ) {
-            e
-          } else {
-            e = default-if-auto(
-              e,
-              0pt,
-            )
+        .map(
+          e => {
             if (
-              type(
-                e,
-              )
-                not in (
-                  _length-type,
-                  _rel-len-type,
-                  _ratio-type,
-                )
+              e
+                == none
             ) {
-              panic(
-                "'expand' argument to lines must be a pair (length, length).",
+              e
+            } else {
+              e = default-if-auto(
+                e,
+                0pt,
+              )
+              if (
+                type(
+                  e,
+                )
+                  not in (
+                    _length-type,
+                    _rel-len-type,
+                    _ratio-type,
+                  )
+              ) {
+                panic(
+                  "'expand' argument to lines must be a pair (length, length).",
+                )
+              }
+
+              convert-length-to-pt(
+                e,
+                styles: styles,
+                page-size: page-size,
               )
             }
-
-            convert-length-to-pt(
-              e,
-              styles: styles,
-              page-size: page-size,
-            )
-          }
-        })
+          },
+        )
     }
 
     line
@@ -5768,18 +5868,24 @@ input_file: tests/fixtures/packages/tablex.typ
       row_len
         + 1,
     )
-      .filter(y => (
-        hlines
-          .filter(h => (
-            h.y
-              == y
-          ))
-          .len()
-          == 0
-      ))
-      .map(y => hlinex(
-        y: y,
-      ))
+      .filter(
+        y => (
+          hlines
+            .filter(
+              h => (
+                h.y
+                  == y
+              ),
+            )
+            .len()
+            == 0
+        ),
+      )
+      .map(
+        y => hlinex(
+          y: y,
+        ),
+      )
   }
 
   if auto-vlines {
@@ -5788,18 +5894,24 @@ input_file: tests/fixtures/packages/tablex.typ
       col_len
         + 1,
     )
-      .filter(x => (
-        vlines
-          .filter(v => (
-            v.x
-              == x
-          ))
-          .len()
-          == 0
-      ))
-      .map(x => vlinex(
-        x: x,
-      ))
+      .filter(
+        x => (
+          vlines
+            .filter(
+              v => (
+                v.x
+                  == x
+              ),
+            )
+            .len()
+            == 0
+        ),
+      )
+      .map(
+        x => vlinex(
+          x: x,
+        ),
+      )
   }
 
   (
@@ -5912,19 +6024,21 @@ input_file: tests/fixtures/packages/tablex.typ
     )
       == _function-type
   ) {
-    vlines = vlines.map(vline => {
-      let vline = map-vlines(
-        vline,
-      )
-      if not is-tablex-vline(
-        vline,
-      ) {
-        panic(
-          "'map-vlines' function returned a non-vline.",
+    vlines = vlines.map(
+      vline => {
+        let vline = map-vlines(
+          vline,
         )
-      }
-      vline
-    })
+        if not is-tablex-vline(
+          vline,
+        ) {
+          panic(
+            "'map-vlines' function returned a non-vline.",
+          )
+        }
+        vline
+      },
+    )
   }
 
   if (
@@ -5933,19 +6047,21 @@ input_file: tests/fixtures/packages/tablex.typ
     )
       == _function-type
   ) {
-    hlines = hlines.map(hline => {
-      let hline = map-hlines(
-        hline,
-      )
-      if not is-tablex-hline(
-        hline,
-      ) {
-        panic(
-          "'map-hlines' function returned a non-hline.",
+    hlines = hlines.map(
+      hline => {
+        let hline = map-hlines(
+          hline,
         )
-      }
-      hline
-    })
+        if not is-tablex-hline(
+          hline,
+        ) {
+          panic(
+            "'map-hlines' function returned a non-hline.",
+          )
+        }
+        hline
+      },
+    )
   }
 
   let should-map-rows = (
@@ -5989,15 +6105,17 @@ input_file: tests/fixtures/packages/tablex.typ
       // occupied cells = none for the outer user
       let cells = map-rows(
         row,
-        original-cells.map(c => {
-          if is-tablex-occupied(
-            c,
-          ) {
-            none
-          } else {
-            c
-          }
-        }),
+        original-cells.map(
+          c => {
+            if is-tablex-occupied(
+              c,
+            ) {
+              none
+            } else {
+              c
+            }
+          },
+        ),
       )
 
       if (
@@ -6122,15 +6240,17 @@ input_file: tests/fixtures/packages/tablex.typ
       // occupied cells = none for the outer user
       let cells = map-cols(
         column,
-        original-cells.map(c => {
-          if is-tablex-occupied(
-            c,
-          ) {
-            none
-          } else {
-            c
-          }
-        }),
+        original-cells.map(
+          c => {
+            if is-tablex-occupied(
+              c,
+            ) {
+              none
+            } else {
+              c
+            }
+          },
+        ),
       )
 
       if (
@@ -6314,12 +6434,14 @@ input_file: tests/fixtures/packages/tablex.typ
       repeat-header,
     )
       == _array-type
-      and repeat-header.any(i => (
-        type(
-          i,
-        )
-          != _int-type
-      ))
+      and repeat-header.any(
+        i => (
+          type(
+            i,
+          )
+            != _int-type
+        ),
+      )
   ) {
     panic(
       "Tablex error: 'repeat-header' cannot be an array of anything other than integers!",
@@ -6529,194 +6651,200 @@ input_file: tests/fixtures/packages/tablex.typ
     ),
   )
 
-  layout(size => locate(t_loc => style(styles => {
-    let table_id = _tablex-table-counter.at(
-      t_loc,
-    )
-    let page_dimensions = get-page-dim-state(
-      table_id,
-    )
-    let page_dim_at = page_dimensions.final(
-      t_loc,
-    )
-    let t_pos = t_loc.position()
+  layout(
+    size => locate(
+      t_loc => style(
+        styles => {
+          let table_id = _tablex-table-counter.at(
+            t_loc,
+          )
+          let page_dimensions = get-page-dim-state(
+            table_id,
+          )
+          let page_dim_at = page_dimensions.final(
+            t_loc,
+          )
+          let t_pos = t_loc.position()
 
-    // Subtract the max width/height from current width/height to disregard margin/etc.
-    let page_width = size.width
-    let page_height = size.height
+          // Subtract the max width/height from current width/height to disregard margin/etc.
+          let page_width = size.width
+          let page_height = size.height
 
-    let max_pos = default-if-none(
-      page_dim_at.bottom_right,
-      (
-        x: t_pos.x
-          + page_width,
-        y: t_pos.y
-          + page_height,
+          let max_pos = default-if-none(
+            page_dim_at.bottom_right,
+            (
+              x: t_pos.x
+                + page_width,
+              y: t_pos.y
+                + page_height,
+            ),
+          )
+          let min_pos = default-if-none(
+            page_dim_at.top_left,
+            t_pos,
+          )
+
+          let items = items
+            .pos()
+            .map(
+              table-item-convert,
+            )
+
+          let gutter = parse-gutters(
+            col-gutter: column-gutter,
+            row-gutter: row-gutter,
+            gutter: gutter,
+            styles: styles,
+            page-width: page_width,
+            page-height: page_height,
+          )
+
+          let validated_cols_rows = validate-cols-rows(
+            columns,
+            rows,
+            items: items.filter(
+              is-tablex-cell,
+            ),
+          )
+
+          let columns = validated_cols_rows.columns
+          let rows = validated_cols_rows.rows
+          items += validated_cols_rows.items
+
+          let col_len = columns.len()
+          let row_len = rows.len()
+
+          // generate cell matrix and other things
+          let grid_info = generate-grid(
+            items,
+            x_limit: col_len,
+            y_limit: row_len,
+            map-cells: map-cells,
+            fit-spans: fit-spans,
+          )
+
+          let table_grid = grid_info.grid
+          let hlines = grid_info.hlines
+          let vlines = grid_info.vlines
+          let items = grid_info.items
+
+          // When there are more rows than the user specified, we ensure they have
+          // the same size as the last specified row.
+          let last-row-size = if (
+            rows.len()
+              == 0
+          ) {
+            auto
+          } else {
+            rows.last()
+          }
+          for _ in range(
+            grid_info.new_row_count
+              - row_len,
+          ) {
+            rows.push(
+              last-row-size,
+            ) // add new rows (due to extra cells)
+          }
+
+          let col_len = columns.len()
+          let row_len = rows.len()
+
+          let auto_lines_res = generate-autolines(
+            auto-lines: auto-lines,
+            auto-hlines: auto-hlines,
+            auto-vlines: auto-vlines,
+            hlines: hlines,
+            vlines: vlines,
+            col_len: col_len,
+            row_len: row_len,
+          )
+
+          hlines += auto_lines_res.new_hlines
+          vlines += auto_lines_res.new_vlines
+
+          let parsed_lines = _parse-lines(
+            hlines,
+            vlines,
+            styles: styles,
+            page-width: page_width,
+            page-height: page_height,
+          )
+          hlines = parsed_lines.hlines
+          vlines = parsed_lines.vlines
+
+          let mapped_grid = apply-maps(
+            grid: table_grid,
+            hlines: hlines,
+            vlines: vlines,
+            map-hlines: map-hlines,
+            map-vlines: map-vlines,
+            map-rows: map-rows,
+            map-cols: map-cols,
+          )
+
+          table_grid = mapped_grid.grid
+          hlines = mapped_grid.hlines
+          vlines = mapped_grid.vlines
+
+          // re-parse just in case
+          let parsed_lines = _parse-lines(
+            hlines,
+            vlines,
+            styles: styles,
+            page-width: page_width,
+            page-height: page_height,
+          )
+          hlines = parsed_lines.hlines
+          vlines = parsed_lines.vlines
+
+          // convert auto to actual size
+          let updated_cols_rows = determine-auto-column-row-sizes(
+            grid: table_grid,
+            page_width: page_width,
+            page_height: page_height,
+            styles: styles,
+            columns: columns,
+            rows: rows,
+            inset: inset,
+            align: align,
+            gutter: gutter,
+            fit-spans: fit-spans,
+          )
+
+          let columns = updated_cols_rows.columns
+          let rows = updated_cols_rows.rows
+          let gutter = updated_cols_rows.gutter
+
+          let row_groups = generate-row-groups(
+            grid: table_grid,
+            columns: columns,
+            rows: rows,
+            stroke: stroke,
+            inset: inset,
+            gutter: gutter,
+            fill: fill,
+            align: align,
+            hlines: hlines,
+            vlines: vlines,
+            styles: styles,
+            repeat-header: repeat-header,
+            header-hlines-have-priority: header-hlines-have-priority,
+            header-rows: header-rows,
+            rtl: rtl,
+            min-pos: min_pos,
+            max-pos: max_pos,
+            table-loc: t_loc,
+            table-id: table_id,
+          )
+
+          grid(columns: (
+              auto,
+            ), rows: auto, ..row_groups)
+        },
       ),
-    )
-    let min_pos = default-if-none(
-      page_dim_at.top_left,
-      t_pos,
-    )
-
-    let items = items
-      .pos()
-      .map(
-        table-item-convert,
-      )
-
-    let gutter = parse-gutters(
-      col-gutter: column-gutter,
-      row-gutter: row-gutter,
-      gutter: gutter,
-      styles: styles,
-      page-width: page_width,
-      page-height: page_height,
-    )
-
-    let validated_cols_rows = validate-cols-rows(
-      columns,
-      rows,
-      items: items.filter(
-        is-tablex-cell,
-      ),
-    )
-
-    let columns = validated_cols_rows.columns
-    let rows = validated_cols_rows.rows
-    items += validated_cols_rows.items
-
-    let col_len = columns.len()
-    let row_len = rows.len()
-
-    // generate cell matrix and other things
-    let grid_info = generate-grid(
-      items,
-      x_limit: col_len,
-      y_limit: row_len,
-      map-cells: map-cells,
-      fit-spans: fit-spans,
-    )
-
-    let table_grid = grid_info.grid
-    let hlines = grid_info.hlines
-    let vlines = grid_info.vlines
-    let items = grid_info.items
-
-    // When there are more rows than the user specified, we ensure they have
-    // the same size as the last specified row.
-    let last-row-size = if (
-      rows.len()
-        == 0
-    ) {
-      auto
-    } else {
-      rows.last()
-    }
-    for _ in range(
-      grid_info.new_row_count
-        - row_len,
-    ) {
-      rows.push(
-        last-row-size,
-      ) // add new rows (due to extra cells)
-    }
-
-    let col_len = columns.len()
-    let row_len = rows.len()
-
-    let auto_lines_res = generate-autolines(
-      auto-lines: auto-lines,
-      auto-hlines: auto-hlines,
-      auto-vlines: auto-vlines,
-      hlines: hlines,
-      vlines: vlines,
-      col_len: col_len,
-      row_len: row_len,
-    )
-
-    hlines += auto_lines_res.new_hlines
-    vlines += auto_lines_res.new_vlines
-
-    let parsed_lines = _parse-lines(
-      hlines,
-      vlines,
-      styles: styles,
-      page-width: page_width,
-      page-height: page_height,
-    )
-    hlines = parsed_lines.hlines
-    vlines = parsed_lines.vlines
-
-    let mapped_grid = apply-maps(
-      grid: table_grid,
-      hlines: hlines,
-      vlines: vlines,
-      map-hlines: map-hlines,
-      map-vlines: map-vlines,
-      map-rows: map-rows,
-      map-cols: map-cols,
-    )
-
-    table_grid = mapped_grid.grid
-    hlines = mapped_grid.hlines
-    vlines = mapped_grid.vlines
-
-    // re-parse just in case
-    let parsed_lines = _parse-lines(
-      hlines,
-      vlines,
-      styles: styles,
-      page-width: page_width,
-      page-height: page_height,
-    )
-    hlines = parsed_lines.hlines
-    vlines = parsed_lines.vlines
-
-    // convert auto to actual size
-    let updated_cols_rows = determine-auto-column-row-sizes(
-      grid: table_grid,
-      page_width: page_width,
-      page_height: page_height,
-      styles: styles,
-      columns: columns,
-      rows: rows,
-      inset: inset,
-      align: align,
-      gutter: gutter,
-      fit-spans: fit-spans,
-    )
-
-    let columns = updated_cols_rows.columns
-    let rows = updated_cols_rows.rows
-    let gutter = updated_cols_rows.gutter
-
-    let row_groups = generate-row-groups(
-      grid: table_grid,
-      columns: columns,
-      rows: rows,
-      stroke: stroke,
-      inset: inset,
-      gutter: gutter,
-      fill: fill,
-      align: align,
-      hlines: hlines,
-      vlines: vlines,
-      styles: styles,
-      repeat-header: repeat-header,
-      header-hlines-have-priority: header-hlines-have-priority,
-      header-rows: header-rows,
-      rtl: rtl,
-      min-pos: min_pos,
-      max-pos: max_pos,
-      table-loc: t_loc,
-      table-id: table_id,
-    )
-
-    grid(columns: (
-        auto,
-      ), rows: auto, ..row_groups)
-  })))
+    ),
+  )
 }
 
 // Same as table but defaults to lines off

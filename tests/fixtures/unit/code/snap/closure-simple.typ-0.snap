@@ -18,23 +18,27 @@ input_file: tests/fixtures/unit/code/closure-simple.typ
   it
 }
 
-#set heading(numbering: (
-  ..num,
-) => if num
-  .pos()
-  .len()
-  < 4 {
-  numbering(
-    "1.1",
+#set heading(
+  numbering: (
     ..num,
-  )
-})
+  ) => if num
+    .pos()
+    .len()
+    < 4 {
+    numbering(
+      "1.1",
+      ..num,
+    )
+  },
+)
 
-#set heading(numbering: (
-  ..num,
-) => {
-  none
-})
+#set heading(
+  numbering: (
+    ..num,
+  ) => {
+    none
+  },
+)
 
 #show raw.where(
   block: false,
@@ -55,22 +59,28 @@ input_file: tests/fixtures/unit/code/closure-simple.typ
   p,
 ) = box({})
 
-#a.map((
+#a.map(
+  (
+    (
+      n,
+      c,
+    ),
+  ) => {
+    none
+  },
+)
+
+#a.map(
   (
     n,
     c,
-  ),
-) => {
-  none
-})
-
-#a.map((
-  n,
-  c,
-) => {
-  none
-})
+  ) => {
+    none
+  },
+)
 
 #range(
   amount,
-).map(i => init_function())
+).map(
+  i => init_function(),
+)

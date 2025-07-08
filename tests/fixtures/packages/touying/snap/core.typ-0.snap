@@ -23,10 +23,12 @@ input_file: tests/fixtures/packages/touying/core.typ
 #let _delayed-wrapper(
   body,
 ) = utils.label-it(
-  metadata((
-    kind: "touying-delayed-wrapper",
-    body: body,
-  )),
+  metadata(
+    (
+      kind: "touying-delayed-wrapper",
+      body: body,
+    ),
+  ),
   "touying-temporary-mark",
 )
 
@@ -41,11 +43,13 @@ input_file: tests/fixtures/packages/touying/core.typ
   config,
   body,
 ) = utils.label-it(
-  metadata((
-    kind: "touying-set-config",
-    config: config,
-    body: body,
-  )),
+  metadata(
+    (
+      kind: "touying-set-config",
+      config: config,
+      body: body,
+    ),
+  ),
   "touying-temporary-mark",
 )
 
@@ -73,19 +77,21 @@ input_file: tests/fixtures/packages/touying/core.typ
 #let touying-recall(
   lbl,
 ) = utils.label-it(
-  metadata((
-    kind: "touying-slide-recaller",
-    label: if type(
-      lbl,
-    )
-      == label {
-      str(
+  metadata(
+    (
+      kind: "touying-slide-recaller",
+      label: if type(
         lbl,
       )
-    } else {
-      lbl
-    },
-  )),
+        == label {
+        str(
+          lbl,
+        )
+      } else {
+        lbl
+      },
+    ),
+  ),
   "touying-temporary-mark",
 )
 
@@ -1077,13 +1083,15 @@ input_file: tests/fixtures/packages/touying/core.typ
   repetitions: none,
   ..args,
 ) = utils.label-it(
-  metadata((
-    kind: "touying-fn-wrapper",
-    fn: fn,
-    args: args,
-    last-subslide: last-subslide,
-    repetitions: repetitions,
-  )),
+  metadata(
+    (
+      kind: "touying-fn-wrapper",
+      fn: fn,
+      args: args,
+      last-subslide: last-subslide,
+      repetitions: repetitions,
+    ),
+  ),
   "touying-temporary-mark",
 )
 
@@ -1103,24 +1111,30 @@ input_file: tests/fixtures/packages/touying/core.typ
 #let touying-slide-wrapper(
   fn,
 ) = utils.label-it(
-  metadata((
-    kind: "touying-slide-wrapper",
-    fn: fn,
-  )),
+  metadata(
+    (
+      kind: "touying-slide-wrapper",
+      fn: fn,
+    ),
+  ),
   "touying-temporary-mark",
 )
 
 
 /// Uncover content after the `#pause` mark in next subslide.
-#let pause = [#metadata((
-    kind: "touying-pause",
-  ))<touying-temporary-mark>]
+#let pause = [#metadata(
+    (
+      kind: "touying-pause",
+    ),
+  )<touying-temporary-mark>]
 
 
 /// Display content after the `#meanwhile` mark meanwhile.
-#let meanwhile = [#metadata((
-    kind: "touying-meanwhile",
-  ))<touying-temporary-mark>]
+#let meanwhile = [#metadata(
+    (
+      kind: "touying-meanwhile",
+    ),
+  )<touying-temporary-mark>]
 
 
 /// Uncover content in some subslides. Reserved space when hidden (like `#hide()`).
@@ -1213,11 +1227,13 @@ input_file: tests/fixtures/packages/touying/core.typ
     last-subslide: calc.max(
       ..subslides-contents
         .pairs()
-        .map(kv => utils.last-required-subslide(
-          kv.at(
-            0,
+        .map(
+          kv => utils.last-required-subslide(
+            kv.at(
+              0,
+            ),
           ),
-        )),
+        ),
     ),
     subslides-contents,
     position: position,
@@ -1446,49 +1462,51 @@ input_file: tests/fixtures/packages/touying/core.typ
   scope: (:),
   body,
 ) = utils.label-it(
-  metadata((
-    kind: "touying-equation",
-    block: block,
-    numbering: numbering,
-    supplement: supplement,
-    scope: scope,
-    body: {
-      if (
-        type(
-          body,
-        )
-          == function
-      ) {
-        body
-      } else if (
-        type(
-          body,
-        )
-          == str
-      ) {
-        body
-      } else if (
-        type(
-          body,
-        )
-          == content
-          and body.has(
-            "text",
+  metadata(
+    (
+      kind: "touying-equation",
+      block: block,
+      numbering: numbering,
+      supplement: supplement,
+      scope: scope,
+      body: {
+        if (
+          type(
+            body,
           )
-      ) {
-        body.text
-      } else {
-        panic(
-          "Unsupported type: "
-            + str(
-              type(
-                body,
+            == function
+        ) {
+          body
+        } else if (
+          type(
+            body,
+          )
+            == str
+        ) {
+          body
+        } else if (
+          type(
+            body,
+          )
+            == content
+            and body.has(
+              "text",
+            )
+        ) {
+          body.text
+        } else {
+          panic(
+            "Unsupported type: "
+              + str(
+                type(
+                  body,
+                ),
               ),
-            ),
-        )
-      }
-    },
-  )),
+          )
+        }
+      },
+    ),
+  ),
   "touying-temporary-mark",
 )
 
@@ -1519,49 +1537,51 @@ input_file: tests/fixtures/packages/touying/core.typ
   mitex,
   body,
 ) = utils.label(
-  metadata((
-    kind: "touying-mitex",
-    block: block,
-    numbering: numbering,
-    supplement: supplement,
-    mitex: mitex,
-    body: {
-      if (
-        type(
-          body,
-        )
-          == function
-      ) {
-        body
-      } else if (
-        type(
-          body,
-        )
-          == str
-      ) {
-        body
-      } else if (
-        type(
-          body,
-        )
-          == content
-          and body.has(
-            "text",
+  metadata(
+    (
+      kind: "touying-mitex",
+      block: block,
+      numbering: numbering,
+      supplement: supplement,
+      mitex: mitex,
+      body: {
+        if (
+          type(
+            body,
           )
-      ) {
-        body.text
-      } else {
-        panic(
-          "Unsupported type: "
-            + str(
-              type(
-                body,
+            == function
+        ) {
+          body
+        } else if (
+          type(
+            body,
+          )
+            == str
+        ) {
+          body
+        } else if (
+          type(
+            body,
+          )
+            == content
+            and body.has(
+              "text",
+            )
+        ) {
+          body.text
+        } else {
+          panic(
+            "Unsupported type: "
+              + str(
+                type(
+                  body,
+                ),
               ),
-            ),
-        )
-      }
-    },
-  )),
+          )
+        }
+      },
+    ),
+  ),
   "touying-temporary-mark",
 )
 
@@ -1586,13 +1606,15 @@ input_file: tests/fixtures/packages/touying/core.typ
   },
   ..args,
 ) = utils.label-it(
-  metadata((
-    kind: "touying-reducer",
-    reduce: reduce,
-    cover: cover,
-    kwargs: args.named(),
-    args: args.pos(),
-  )),
+  metadata(
+    (
+      kind: "touying-reducer",
+      reduce: reduce,
+      cover: cover,
+      kwargs: args.named(),
+      args: args.pos(),
+    ),
+  ),
   "touying-temporary-mark",
 )
 
@@ -1654,35 +1676,41 @@ input_file: tests/fixtures/packages/touying/core.typ
     .intersperse(
       "touying-meanwhile",
     )
-    .map(s => s
-      .split(
-        regex(
-          "(#pause;?)|(pause)",
+    .map(
+      s => s
+        .split(
+          regex(
+            "(#pause;?)|(pause)",
+          ),
+        )
+        .intersperse(
+          "touying-pause",
         ),
-      )
-      .intersperse(
-        "touying-pause",
-      ))
+    )
     .flatten()
-    .map(s => s
-      .split(
-        regex(
-          "(\\\\\\s)|(\\\\\\n)",
+    .map(
+      s => s
+        .split(
+          regex(
+            "(\\\\\\s)|(\\\\\\n)",
+          ),
+        )
+        .intersperse(
+          "\\\n",
         ),
-      )
-      .intersperse(
-        "\\\n",
-      ))
+    )
     .flatten()
-    .map(s => s
-      .split(
-        regex(
+    .map(
+      s => s
+        .split(
+          regex(
+            "&",
+          ),
+        )
+        .intersperse(
           "&",
         ),
-      )
-      .intersperse(
-        "&",
-      ))
+    )
     .flatten()
   for child in (
     children
@@ -1875,35 +1903,41 @@ input_file: tests/fixtures/packages/touying/core.typ
     .intersperse(
       "touying-meanwhile",
     )
-    .map(s => s
-      .split(
-        regex(
-          "\\\\pause",
+    .map(
+      s => s
+        .split(
+          regex(
+            "\\\\pause",
+          ),
+        )
+        .intersperse(
+          "touying-pause",
         ),
-      )
-      .intersperse(
-        "touying-pause",
-      ))
+    )
     .flatten()
-    .map(s => s
-      .split(
-        regex(
-          "(\\\\\\\\\s)|(\\\\\\\\\n)",
+    .map(
+      s => s
+        .split(
+          regex(
+            "(\\\\\\\\\s)|(\\\\\\\\\n)",
+          ),
+        )
+        .intersperse(
+          "\\\\\n",
         ),
-      )
-      .intersperse(
-        "\\\\\n",
-      ))
+    )
     .flatten()
-    .map(s => s
-      .split(
-        regex(
+    .map(
+      s => s
+        .split(
+          regex(
+            "&",
+          ),
+        )
+        .intersperse(
           "&",
         ),
-      )
-      .intersperse(
-        "&",
-      ))
+    )
     .flatten()
   for child in (
     children
@@ -3643,9 +3677,11 @@ input_file: tests/fixtures/packages/touying/core.typ
         ),
       )
     }
-    [#metadata((
-        kind: "touying-new-slide",
-      )) <touying-metadata>]
+    [#metadata(
+        (
+          kind: "touying-new-slide",
+        ),
+      ) <touying-metadata>]
     // add headings for the first subslide
     if (
       self.at(
@@ -3664,76 +3700,78 @@ input_file: tests/fixtures/packages/touying/core.typ
               "headings",
               default: (),
             )
-            .map(it => if it.has(
-              "label",
-            ) {
-              if (
-                str(
-                  it.label,
-                )
-                  in (
-                    "touying:hidden",
-                    "touying:unnumbered",
-                    "touying:unoutlined",
-                    "touying:unbookmarked",
-                  )
+            .map(
+              it => if it.has(
+                "label",
               ) {
-                let fields = it.fields()
-                let _ = fields.remove(
-                  "label",
-                  default: none,
-                )
-                let _ = fields.remove(
-                  "body",
-                  default: none,
-                )
                 if (
                   str(
                     it.label,
                   )
-                    == "touying:hidden"
+                    in (
+                      "touying:hidden",
+                      "touying:unnumbered",
+                      "touying:unoutlined",
+                      "touying:unbookmarked",
+                    )
                 ) {
-                  fields.numbering = none
-                  fields.outlined = false
-                  fields.bookmarked = false
-                }
-                if (
-                  str(
+                  let fields = it.fields()
+                  let _ = fields.remove(
+                    "label",
+                    default: none,
+                  )
+                  let _ = fields.remove(
+                    "body",
+                    default: none,
+                  )
+                  if (
+                    str(
+                      it.label,
+                    )
+                      == "touying:hidden"
+                  ) {
+                    fields.numbering = none
+                    fields.outlined = false
+                    fields.bookmarked = false
+                  }
+                  if (
+                    str(
+                      it.label,
+                    )
+                      == "touying:unnumbered"
+                  ) {
+                    fields.numbering = none
+                  }
+                  if (
+                    str(
+                      it.label,
+                    )
+                      == "touying:unoutlined"
+                  ) {
+                    fields.outlined = false
+                  }
+                  if (
+                    str(
+                      it.label,
+                    )
+                      == "touying:unbookmarked"
+                  ) {
+                    fields.bookmarked = false
+                  }
+                  utils.label-it(
+                    heading(
+                      ..fields,
+                      it.body,
+                    ),
                     it.label,
                   )
-                    == "touying:unnumbered"
-                ) {
-                  fields.numbering = none
+                } else {
+                  it
                 }
-                if (
-                  str(
-                    it.label,
-                  )
-                    == "touying:unoutlined"
-                ) {
-                  fields.outlined = false
-                }
-                if (
-                  str(
-                    it.label,
-                  )
-                    == "touying:unbookmarked"
-                ) {
-                  fields.bookmarked = false
-                }
-                utils.label-it(
-                  heading(
-                    ..fields,
-                    it.body,
-                  ),
-                  it.label,
-                )
               } else {
                 it
-              }
-            } else {
-              it
-            })
+              },
+            )
           headings.sum(
             default: none,
           )
@@ -3768,9 +3806,11 @@ input_file: tests/fixtures/packages/touying/core.typ
         self,
       )
     }
-    [#metadata((
-        kind: "touying-new-subslide",
-      )) <touying-metadata>]
+    [#metadata(
+        (
+          kind: "touying-new-subslide",
+        ),
+      ) <touying-metadata>]
     if (
       self.at(
         "enable-frozen-states-and-counters",
@@ -3791,28 +3831,36 @@ input_file: tests/fixtures/packages/touying/core.typ
             .update(
               self
                 .frozen-states
-                .map(s => s.get()),
+                .map(
+                  s => s.get(),
+                ),
             )
           utils
             .saved-default-frozen-states
             .update(
               self
                 .default-frozen-states
-                .map(s => s.get()),
+                .map(
+                  s => s.get(),
+                ),
             )
           utils
             .saved-frozen-counters
             .update(
               self
                 .frozen-counters
-                .map(s => s.get()),
+                .map(
+                  s => s.get(),
+                ),
             )
           utils
             .saved-default-frozen-counters
             .update(
               self
                 .default-frozen-counters
-                .map(s => s.get()),
+                .map(
+                  s => s.get(),
+                ),
             )
         }
       } else {
@@ -3825,15 +3873,17 @@ input_file: tests/fixtures/packages/touying/core.typ
                 .saved-frozen-states
                 .get(),
             )
-            .map(pair => pair
-              .at(
-                0,
-              )
-              .update(
-                pair.at(
-                  1,
+            .map(
+              pair => pair
+                .at(
+                  0,
+                )
+                .update(
+                  pair.at(
+                    1,
+                  ),
                 ),
-              ))
+            )
             .sum(
               default: none,
             )
@@ -3844,15 +3894,17 @@ input_file: tests/fixtures/packages/touying/core.typ
                 .saved-default-frozen-states
                 .get(),
             )
-            .map(pair => pair
-              .at(
-                0,
-              )
-              .update(
-                pair.at(
-                  1,
+            .map(
+              pair => pair
+                .at(
+                  0,
+                )
+                .update(
+                  pair.at(
+                    1,
+                  ),
                 ),
-              ))
+            )
             .sum(
               default: none,
             )
@@ -3863,15 +3915,17 @@ input_file: tests/fixtures/packages/touying/core.typ
                 .saved-frozen-counters
                 .get(),
             )
-            .map(pair => pair
-              .at(
-                0,
-              )
-              .update(
-                pair.at(
-                  1,
+            .map(
+              pair => pair
+                .at(
+                  0,
+                )
+                .update(
+                  pair.at(
+                    1,
+                  ),
                 ),
-              ))
+            )
             .sum(
               default: none,
             )
@@ -3882,15 +3936,17 @@ input_file: tests/fixtures/packages/touying/core.typ
                 .saved-default-frozen-counters
                 .get(),
             )
-            .map(pair => pair
-              .at(
-                0,
-              )
-              .update(
-                pair.at(
-                  1,
+            .map(
+              pair => pair
+                .at(
+                  0,
+                )
+                .update(
+                  pair.at(
+                    1,
+                  ),
                 ),
-              ))
+            )
             .sum(
               default: none,
             )
@@ -3916,9 +3972,11 @@ input_file: tests/fixtures/packages/touying/core.typ
   let page-preamble(
     self,
   ) = {
-    [#metadata((
-        kind: "touying-new-page",
-      )) <touying-metadata>]
+    [#metadata(
+        (
+          kind: "touying-new-page",
+        ),
+      ) <touying-metadata>]
     // 1. slide counter part
     //    if freeze-slide-counter is false, then update the slide-counter
     if (
@@ -4135,16 +4193,18 @@ input_file: tests/fixtures/packages/touying/core.typ
   },
   composer: auto,
   ..bodies,
-) = touying-slide-wrapper(self => {
-  touying-slide(
-    self: self,
-    config: config,
-    repeat: repeat,
-    setting: setting,
-    composer: composer,
-    ..bodies,
-  )
-})
+) = touying-slide-wrapper(
+  self => {
+    touying-slide(
+      self: self,
+      config: config,
+      repeat: repeat,
+      setting: setting,
+      composer: composer,
+      ..bodies,
+    )
+  },
+)
 
 
 /// Touying empty slide function.
@@ -4178,13 +4238,15 @@ input_file: tests/fixtures/packages/touying/core.typ
   },
   composer: auto,
   ..bodies,
-) = touying-slide-wrapper(self => {
-  touying-slide(
-    self: self,
-    config: config,
-    repeat: repeat,
-    setting: setting,
-    composer: composer,
-    ..bodies,
-  )
-})
+) = touying-slide-wrapper(
+  self => {
+    touying-slide(
+      self: self,
+      config: config,
+      repeat: repeat,
+      setting: setting,
+      composer: composer,
+      ..bodies,
+    )
+  },
+)

@@ -1,6 +1,6 @@
 ---
 source: tests/src/unit.rs
-input_file: tests/fixtures/unit/code/args/arg-flavor.typ
+input_file: tests/fixtures/unit/code/params-flavor.typ
 ---
 #let my-f(
   arg1,

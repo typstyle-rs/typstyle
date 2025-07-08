@@ -189,17 +189,16 @@ input_file: tests/fixtures/packages/codly.typ
   position,
   length,
 ) = {
-  state(
-    "codly-skips",
-    (),
-  ).update(skips => {
-    if skips == none {
-      skips = ()
-    }
+  state("codly-skips", ()).update(
+    skips => {
+      if skips == none {
+        skips = ()
+      }
 
-    skips.push((position, length))
-    skips
-  })
+      skips.push((position, length))
+      skips
+    },
+  )
 }
 
 
@@ -417,9 +416,9 @@ input_file: tests/fixtures/packages/codly.typ
   }
 
   // Filter the highlights to only keep the relevant ones.
-  let highlights = highlights.filter(x => (
-    x.line == (it.number - 1)
-  ))
+  let highlights = highlights.filter(
+    x => x.line == (it.number - 1),
+  )
   let highlighted = it.body
 
   // Smart indentation code.
@@ -723,12 +722,14 @@ input_file: tests/fixtures/packages/codly.typ
           )
           hl.tag
         }
-        place(hide[#figure(
-            kind: "codly-referencer",
-            supplement: none,
-          )[#box(referenced)#box(
-              str(block-label),
-            )]#hl.label])
+        place(
+          hide[#figure(
+              kind: "codly-referencer",
+              supplement: none,
+            )[#box(referenced)#box(
+                str(block-label),
+              )]#hl.label],
+        )
       } else {
         none
       }
@@ -749,7 +750,9 @@ input_file: tests/fixtures/packages/codly.typ
             baseline: highlight-inset,
             collection.join() + label,
           )
-          children.push([#content<codly-highlight>])
+          children.push(
+            [#content<codly-highlight>],
+          )
         } else {
           let col = collection.join()
           let height-col = measure(
@@ -1082,16 +1085,18 @@ input_file: tests/fixtures/packages/codly.typ
     ).get()
   })
 
-  let padding = __codly-inset((
-    __codly-args.inset.type_check
-  )(if "inset" in extra {
-    extrainset
-  } else {
-    state(
-      "codly-inset",
-      __codly-args.inset.default,
-    ).get()
-  }))
+  let padding = __codly-inset(
+    (__codly-args.inset.type_check)(
+      if "inset" in extra {
+        extrainset
+      } else {
+        state(
+          "codly-inset",
+          __codly-args.inset.default,
+        ).get()
+      },
+    ),
+  )
 
   let breakable = (
     __codly-args.breakable.type_check
@@ -1334,12 +1339,14 @@ input_file: tests/fixtures/packages/codly.typ
 
   // Get the height of an individual line.
   let line-height = (
-    measure(raw.line(
-      1,
-      1,
-      "Hello, World!",
-      [Hello, World!],
-    )).height
+    measure(
+      raw.line(
+        1,
+        1,
+        "Hello, World!",
+        [Hello, World!],
+      ),
+    ).height
       + padding.top
       + padding.bottom
   )
@@ -1430,20 +1437,22 @@ input_file: tests/fixtures/packages/codly.typ
             .default,
         ).get()
       })
-      let padding = __codly-inset((
-        __codly-args
-          .lang-inset
-          .type_check
-      )(if "lang-inset" in extra {
-        extra.lang-inset
-      } else {
-        state(
-          "codly-lang-inset",
+      let padding = __codly-inset(
+        (
           __codly-args
             .lang-inset
-            .default,
-        ).get()
-      }))
+            .type_check
+        )(if "lang-inset" in extra {
+          extra.lang-inset
+        } else {
+          state(
+            "codly-lang-inset",
+            __codly-args
+              .lang-inset
+              .default,
+          ).get()
+        }),
+      )
 
       let lang-stroke = (
         __codly-args
@@ -1540,20 +1549,22 @@ input_file: tests/fixtures/packages/codly.typ
         ).get()
       })
 
-      let padding = __codly-inset((
-        __codly-args
-          .lang-inset
-          .type_check
-      )(if "lang-inset" in extra {
-        extra.lang-inset
-      } else {
-        state(
-          "codly-lang-inset",
+      let padding = __codly-inset(
+        (
           __codly-args
             .lang-inset
-            .default,
-        ).get()
-      }))
+            .type_check
+        )(if "lang-inset" in extra {
+          extra.lang-inset
+        } else {
+          state(
+            "codly-lang-inset",
+            __codly-args
+              .lang-inset
+              .default,
+          ).get()
+        }),
+      )
 
       let lang-stroke = (
         __codly-args
@@ -1747,12 +1758,14 @@ input_file: tests/fixtures/packages/codly.typ
         } else {
           num
         }
-        place(hide[#figure(
-            kind: "codly-referencer",
-            supplement: none,
-          )[#box(referenced)#box(
-              str(block-label),
-            )]#current-annot.label])
+        place(
+          hide[#figure(
+              kind: "codly-referencer",
+              supplement: none,
+            )[#box(referenced)#box(
+                str(block-label),
+              )]#current-annot.label],
+        )
       } else {
         none
       }
@@ -1855,15 +1868,17 @@ input_file: tests/fixtures/packages/codly.typ
       if header != none {
         items.push(l)
       } else {
-        items.push(grid(
-          columns: (
-            1fr,
-            lb.width
-              + padding.left
-              + padding.right,
+        items.push(
+          grid(
+            columns: (
+              1fr,
+              lb.width
+                + padding.left
+                + padding.right,
+            ),
+            l, language-block-final,
           ),
-          l, language-block-final,
-        ))
+        )
       }
     }
   }
@@ -1957,33 +1972,37 @@ input_file: tests/fixtures/packages/codly.typ
     {
       if is-complex-fill {
         // We use place to draw the fill on a separate layer.
-        place(grid(
-          columns: if has-annotations {
-            (1fr, annot-width)
-          } else {
-            (1fr,)
-          },
-          stroke: none,
-          inset: padding
-            .pairs()
-            .map(((k, x)) => (
-              k,
-              x * 1.5,
-            ))
-            .to-dict(),
-          fill: (x, y) => if zebra-color
-            != none
-            and calc.rem(y, 2) == 0 {
-            zebra-color
-          } else {
-            fill
-          },
-          ..header,
-          ..it.lines.map(line => hide(
-            line,
-          )),
-          ..footer,
-        ))
+        place(
+          grid(
+            columns: if has-annotations {
+              (1fr, annot-width)
+            } else {
+              (1fr,)
+            },
+            stroke: none,
+            inset: padding
+              .pairs()
+              .map(((k, x)) => (
+                k,
+                x * 1.5,
+              ))
+              .to-dict(),
+            fill: (
+              x,
+              y,
+            ) => if zebra-color != none
+              and calc.rem(y, 2) == 0 {
+              zebra-color
+            } else {
+              fill
+            },
+            ..header,
+            ..it.lines.map(line => hide(
+              line,
+            )),
+            ..footer,
+          ),
+        )
       }
       if numbers-format != none {
         grid(
