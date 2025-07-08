@@ -716,16 +716,18 @@ input_file: tests/fixtures/packages/touying/utils.typ
   ) {
     let headings = query(
       heading,
-    ).filter(h => (
-      h
-        .location()
-        .page()
-        <= current-page
-        and h.level
-          <= depth
-        and h.level
-          == level
-    ))
+    ).filter(
+      h => (
+        h
+          .location()
+          .page()
+          <= current-page
+          and h.level
+            <= depth
+          and h.level
+            == level
+      ),
+    )
     return headings.at(
       -1,
       default: none,
@@ -733,14 +735,16 @@ input_file: tests/fixtures/packages/touying/utils.typ
   }
   let headings = query(
     heading,
-  ).filter(h => (
-    h
-      .location()
-      .page()
-      <= current-page
-      and h.level
-        <= depth
-  ))
+  ).filter(
+    h => (
+      h
+        .location()
+        .page()
+        <= current-page
+        and h.level
+          <= depth
+    ),
+  )
   if (
     headings
       == ()
@@ -1058,12 +1062,14 @@ input_file: tests/fixtures/packages/touying/utils.typ
               .split(
                 "\n",
               )
-              .map(l => (
-                "\n"
-                  + indent
-                    * " "
-                  + l
-              ))
+              .map(
+                l => (
+                  "\n"
+                    + indent
+                      * " "
+                    + l
+                ),
+              )
               .sum(
                 default: "",
               )
@@ -1435,117 +1441,119 @@ input_file: tests/fixtures/packages/touying/utils.typ
         - before-pos.y
     )
 
-    layout(container-size => {
-      // Helper function to more easily grab absolute units
-      let get-pts(
-        body,
-        w-or-h,
-      ) = {
-        let dim = if (
-          w-or-h
-            == "w"
-        ) {
-          container-size.width
-        } else {
-          container-size.height
-        }
-        _size-to-pt(
+    layout(
+      container-size => {
+        // Helper function to more easily grab absolute units
+        let get-pts(
           body,
-          dim,
+          w-or-h,
+        ) = {
+          let dim = if (
+            w-or-h
+              == "w"
+          ) {
+            container-size.width
+          } else {
+            container-size.height
+          }
+          _size-to-pt(
+            body,
+            dim,
+          )
+        }
+
+        // Provide a sensible initial width, which will define initial scale parameters.
+        // Note this is different from the post-scale width, which is a limiting factor
+        // on the allowable scaling ratio
+        let boxed-content = _limit-content-width(
+          width: prescale-width,
+          body,
+          container-size,
         )
-      }
 
-      // Provide a sensible initial width, which will define initial scale parameters.
-      // Note this is different from the post-scale width, which is a limiting factor
-      // on the allowable scaling ratio
-      let boxed-content = _limit-content-width(
-        width: prescale-width,
-        body,
-        container-size,
-      )
+        // post-scaling width
+        let mutable-width = width
+        if (
+          width
+            == none
+        ) {
+          mutable-width = container-size.width
+        }
+        mutable-width = get-pts(
+          mutable-width,
+          "w",
+        )
 
-      // post-scaling width
-      let mutable-width = width
-      if (
-        width
-          == none
-      ) {
-        mutable-width = container-size.width
-      }
-      mutable-width = get-pts(
-        mutable-width,
-        "w",
-      )
-
-      let size = measure(
-        boxed-content,
-      )
-      if (
-        size.height
-          == 0pt
-          or size.width
+        let size = measure(
+          boxed-content,
+        )
+        if (
+          size.height
             == 0pt
-      ) {
-        return body
-      }
-      let h-ratio = (
-        available-height
-          / size.height
-      )
-      let w-ratio = (
-        mutable-width
-          / size.width
-      )
-      let ratio = (
-        calc.min(
-          h-ratio,
-          w-ratio,
+            or size.width
+              == 0pt
+        ) {
+          return body
+        }
+        let h-ratio = (
+          available-height
+            / size.height
         )
-          * 100%
-      )
+        let w-ratio = (
+          mutable-width
+            / size.width
+        )
+        let ratio = (
+          calc.min(
+            h-ratio,
+            w-ratio,
+          )
+            * 100%
+        )
 
-      if (
-        (
-          shrink
-            and (
-              ratio
-                < 100%
-            )
-        )
-          or (
-            grow
+        if (
+          (
+            shrink
               and (
                 ratio
-                  > 100%
+                  < 100%
               )
           )
-      ) {
-        let new-width = (
-          size.width
-            * ratio
-        )
-        v(
-          -available-height,
-        )
-        // If not boxed, the content can overflow to the next page even though it will
-        // fit. This is because scale doesn't update the layout information.
-        // Boxing in a container without clipping will inform typst that content
-        // will indeed fit in the remaining space
-        box(
-          width: new-width,
-          height: available-height,
-          scale(
-            x: ratio,
-            y: ratio,
-            origin: top
-              + left,
-            boxed-content,
-          ),
-        )
-      } else {
-        body
-      }
-    })
+            or (
+              grow
+                and (
+                  ratio
+                    > 100%
+                )
+            )
+        ) {
+          let new-width = (
+            size.width
+              * ratio
+          )
+          v(
+            -available-height,
+          )
+          // If not boxed, the content can overflow to the next page even though it will
+          // fit. This is because scale doesn't update the layout information.
+          // Boxing in a container without clipping will inform typst that content
+          // will indeed fit in the remaining space
+          box(
+            width: new-width,
+            height: available-height,
+            scale(
+              x: ratio,
+              y: ratio,
+              origin: top
+                + left,
+              boxed-content,
+            ),
+          )
+        } else {
+          body
+        }
+      },
+    )
   }
 }
 
@@ -1567,63 +1575,65 @@ input_file: tests/fixtures/packages/touying/utils.typ
   width,
   content,
 ) = {
-  layout(layout-size => {
-    let content-size = measure(
-      content,
-    )
-    let content-width = content-size.width
-    let width = _size-to-pt(
-      width,
-      layout-size.width,
-    )
-    if (
-      content-width
-        != 0pt
-        and (
-          (
-            shrink
-              and (
-                width
-                  < content-width
-              )
-          )
-            or (
-              grow
+  layout(
+    layout-size => {
+      let content-size = measure(
+        content,
+      )
+      let content-width = content-size.width
+      let width = _size-to-pt(
+        width,
+        layout-size.width,
+      )
+      if (
+        content-width
+          != 0pt
+          and (
+            (
+              shrink
                 and (
                   width
-                    > content-width
+                    < content-width
                 )
             )
+              or (
+                grow
+                  and (
+                    width
+                      > content-width
+                  )
+              )
+          )
+      ) {
+        let ratio = (
+          width
+            / content-width
+            * 100%
         )
-    ) {
-      let ratio = (
-        width
-          / content-width
-          * 100%
-      )
-      // The first box keeps content from prematurely wrapping
-      let scaled = scale(
+        // The first box keeps content from prematurely wrapping
+        let scaled = scale(
+          box(
+            content,
+            width: content-width,
+          ),
+          origin: top
+            + left,
+          x: ratio,
+          y: ratio,
+        )
+        // The second box lets typst know the post-scaled dimensions, since `scale`
+        // doesn't update layout information
         box(
-          content,
-          width: content-width,
-        ),
-        origin: top
-          + left,
-        x: ratio,
-        y: ratio,
-      )
-      // The second box lets typst know the post-scaled dimensions, since `scale`
-      // doesn't update layout information
-      box(
-        scaled,
-        width: width,
-        height: content-size.height
-          * ratio,
-      )
-    } else {
-      content
-    }
-  })
+          scaled,
+          width: width,
+          height: content-size.height
+            * ratio,
+        )
+      } else {
+        content
+      }
+    },
+  )
 }
 
 
@@ -1664,70 +1674,72 @@ input_file: tests/fixtures/packages/touying/utils.typ
     )
   }
 
-  let to-display = layout(layout-size => {
-    context {
-      let body-size = measure(
-        body,
-      )
-      let bounding-width = calc.min(
-        body-size.width,
-        layout-size.width,
-      )
-      let wrapped-body-size = measure(
-        box(
+  let to-display = layout(
+    layout-size => {
+      context {
+        let body-size = measure(
           body,
-          width: bounding-width,
-        ),
-      )
-      let named = cover-args.named()
-      if (
-        "width"
-          not in named
-      ) {
-        named.insert(
-          "width",
-          wrapped-body-size.width,
         )
-      }
-      if (
-        "height"
-          not in named
-      ) {
-        named.insert(
-          "height",
-          wrapped-body-size.height,
+        let bounding-width = calc.min(
+          body-size.width,
+          layout-size.width,
         )
-      }
-      if (
-        "outset"
-          not in named
-      ) {
-        // This outset covers the tops of tall letters and the bottoms of letters with
-        // descenders. Alternatively, we could use
-        // `set text(top-edge: "bounds", bottom-edge: "bounds")` to get the same effect,
-        // but this changes text alignment and also misaligns bullets in enums/lists.
-        // In contrast, `outset` preserves spacing and alignment at the cost of adding
-        // a slight, visible border when the covered object is right next to the edge
-        // of a color change.
-        named.insert(
-          "outset",
-          (
-            top: 0.15em,
-            bottom: 0.25em,
+        let wrapped-body-size = measure(
+          box(
+            body,
+            width: bounding-width,
+          ),
+        )
+        let named = cover-args.named()
+        if (
+          "width"
+            not in named
+        ) {
+          named.insert(
+            "width",
+            wrapped-body-size.width,
+          )
+        }
+        if (
+          "height"
+            not in named
+        ) {
+          named.insert(
+            "height",
+            wrapped-body-size.height,
+          )
+        }
+        if (
+          "outset"
+            not in named
+        ) {
+          // This outset covers the tops of tall letters and the bottoms of letters with
+          // descenders. Alternatively, we could use
+          // `set text(top-edge: "bounds", bottom-edge: "bounds")` to get the same effect,
+          // but this changes text alignment and also misaligns bullets in enums/lists.
+          // In contrast, `outset` preserves spacing and alignment at the cost of adding
+          // a slight, visible border when the covered object is right next to the edge
+          // of a color change.
+          named.insert(
+            "outset",
+            (
+              top: 0.15em,
+              bottom: 0.25em,
+            ),
+          )
+        }
+        stack(
+          spacing: -wrapped-body-size.height,
+          body,
+          rect(
+            fill: fill,
+            ..named,
+            ..cover-args.pos(),
           ),
         )
       }
-      stack(
-        spacing: -wrapped-body-size.height,
-        body,
-        rect(
-          fill: fill,
-          ..named,
-          ..cover-args.pos(),
-        ),
-      )
-    }
-  })
+    },
+  )
   if inline {
     box(
       to-display,
@@ -1824,7 +1836,9 @@ input_file: tests/fixtures/packages/touying/utils.typ
     .split(
       ",",
     )
-    .map(p => p.trim())
+    .map(
+      p => p.trim(),
+    )
   let parse-part(
     part,
   ) = {
@@ -1955,10 +1969,12 @@ input_file: tests/fixtures/packages/touying/utils.typ
     )
       == array
   ) {
-    visible-subslides.any(s => check-visible(
-      idx,
-      s,
-    ))
+    visible-subslides.any(
+      s => check-visible(
+        idx,
+        s,
+      ),
+    )
   } else if (
     type(
       visible-subslides,
@@ -2047,9 +2063,11 @@ input_file: tests/fixtures/packages/touying/utils.typ
       == array
   ) {
     calc.max(
-      ..visible-subslides.map(s => last-required-subslide(
-        s,
-      )),
+      ..visible-subslides.map(
+        s => last-required-subslide(
+          s,
+        ),
+      ),
     )
   } else if (
     type(
@@ -2201,22 +2219,32 @@ input_file: tests/fixtures/packages/touying/utils.typ
     subslides-contents
   }
 
-  let subslides = subslides-contents.map(it => it.first())
-  let contents = subslides-contents.map(it => it.last())
+  let subslides = subslides-contents.map(
+    it => it.first(),
+  )
+  let contents = subslides-contents.map(
+    it => it.last(),
+  )
   if stretch {
     context {
-      let sizes = contents.map(c => measure(
-        c,
-      ))
+      let sizes = contents.map(
+        c => measure(
+          c,
+        ),
+      )
       let max-width = calc.max(
-        ..sizes.map(sz => {
-          sz.width
-        }),
+        ..sizes.map(
+          sz => {
+            sz.width
+          },
+        ),
       )
       let max-height = calc.max(
-        ..sizes.map(sz => {
-          sz.height
-        }),
+        ..sizes.map(
+          sz => {
+            sz.height
+          },
+        ),
       )
       for (
         subslides,

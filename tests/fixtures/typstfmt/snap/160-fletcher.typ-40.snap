@@ -2,47 +2,57 @@
 source: tests/src/unit.rs
 input_file: tests/fixtures/typstfmt/160-fletcher.typ
 ---
-#figure(fletcher.diagram(
-  node-outset: .5em,
-  node-stroke: .075em,
+#figure(
+  fletcher.diagram(
+    node-outset: .5em,
+    node-stroke: .075em,
 
-  node(
-    (+1, 0),
-    [variable],
-    radius: 3em,
-  ), // test
-  node(
-    (+1.25, .75),
-    [const],
-    radius: 3em,
-  ), // this is the second test
+    node(
+      (+1, 0),
+      [variable],
+      radius: 3em,
+    ), // test
+    node(
+      (+1.25, .75),
+      [const],
+      radius: 3em,
+    ), // this is the second test
 
-  edge((0, 0), (+1, 0), "=>"),
-  edge((0.25, .75), (+1, 0), "->"),
-  edge((0.25, .75), (+1.25, .75), "=>"),
+    edge((0, 0), (+1, 0), "=>"),
+    edge((0.25, .75), (+1, 0), "->"),
+    edge(
+      (0.25, .75),
+      (+1.25, .75),
+      "=>",
+    ),
 
-  node(
-    (+0, 0),
-    [pointer to \ variable],
-    radius: 3em,
-  ),
-  node(
-    (-1, 0),
-    [pointer to \ pointer to \ variable],
-    radius: 3em,
-  ),
-  node(
-    (-.75, .75),
-    [pointer to \ pointer to \ const],
-    radius: 3em,
-  ),
-  node(
-    (+0.25, .75),
-    [pointer to \ const],
-    radius: 3em,
-  ),
+    node(
+      (+0, 0),
+      [pointer to \ variable],
+      radius: 3em,
+    ),
+    node(
+      (-1, 0),
+      [pointer to \ pointer to \ variable],
+      radius: 3em,
+    ),
+    node(
+      (-.75, .75),
+      [pointer to \ pointer to \ const],
+      radius: 3em,
+    ),
+    node(
+      (+0.25, .75),
+      [pointer to \ const],
+      radius: 3em,
+    ),
 
-  edge((-1, 0), (+0, 0), "=>"),
-  edge((-.75, .75), (+0, 0), "-X->"),
-  edge((-.75, .75), (+0.25, .75), "=>"),
-))
+    edge((-1, 0), (+0, 0), "=>"),
+    edge((-.75, .75), (+0, 0), "-X->"),
+    edge(
+      (-.75, .75),
+      (+0.25, .75),
+      "=>",
+    ),
+  ),
+)

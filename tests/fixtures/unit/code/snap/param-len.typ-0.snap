@@ -2,21 +2,31 @@
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/code/param-len.typ
 ---
-#let get-page-dim-writer() = locate(w_loc => {})
+#let get-page-dim-writer() = locate(
+  w_loc => {},
+)
 #let get-page-dim-writer(
   a,
-) = locate(w_loc => {})
+) = locate(
+  w_loc => {},
+)
 #let get-page-dim-writer(
   a,
   b,
-) = locate(w_loc => {})
+) = locate(
+  w_loc => {},
+)
 #let get-page-dim-writer(
   a,
   b,
   c,
-) = locate(w_loc => {})
+) = locate(
+  w_loc => {},
+)
 #let get-page-dim-writer(
   a,
   b,
   c,
-) = locate(w_loc => {})
+) = locate(
+  w_loc => {},
+)

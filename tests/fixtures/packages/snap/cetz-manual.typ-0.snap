@@ -38,17 +38,19 @@ input_file: tests/fixtures/packages/cetz-manual.typ
 #set par(
   justify: true,
 )
-#set heading(numbering: (
-  ..num,
-) => if num
-  .pos()
-  .len()
-  < 4 {
-  numbering(
-    "1.1",
+#set heading(
+  numbering: (
     ..num,
-  )
-})
+  ) => if num
+    .pos()
+    .len()
+    < 4 {
+    numbering(
+      "1.1",
+      ..num,
+    )
+  },
+)
 #show link: set text(
   blue,
 )
@@ -361,7 +363,9 @@ Marks are arrow tips that can be added to the end of path based elements that su
                 [],
               ),
             )
-            .join([, ]),
+            .join(
+              [, ],
+            ),
           cetz.canvas(
             cetz
               .draw
@@ -1396,12 +1400,14 @@ The palette library provides some predefined palettes.
           )
             == 0
         ) {
-          move-to((
-            rel: (
-              0,
-              -.5,
+          move-to(
+            (
+              rel: (
+                0,
+                -.5,
+              ),
             ),
-          ))
+          )
         }
         rect(
           (),

@@ -158,9 +158,9 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
   )
 
   // Initialise row and column sizes
-  let cell-sizes = bounding-dims.map(n => (
-    (0pt,) * n
-  ))
+  let cell-sizes = bounding-dims.map(
+    n => (0pt,) * n,
+  )
 
   // Expand cells to fit rects
   for rect in rects {
@@ -642,10 +642,12 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
       node = measure-node-size(node)
       node
     })
-    let edges = edges.map(edge => resolve-edge-options(
-      edge,
-      options,
-    ))
+    let edges = edges.map(
+      edge => resolve-edge-options(
+        edge,
+        options,
+      ),
+    )
 
 
     // try resolving node uv coordinates. this resolves to NaN coords if the coord depends on physical lengths
@@ -688,9 +690,9 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
         .join()
         + ()
     ) // coerce none to ()
-    vertices-affecting-grid = vertices-affecting-grid.filter(vert => {
-      not is-nan-vector(vert)
-    })
+    vertices-affecting-grid = vertices-affecting-grid.filter(
+      vert => not is-nan-vector(vert),
+    )
 
 
     // determine diagram's elastic grid layout

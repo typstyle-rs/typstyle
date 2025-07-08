@@ -431,31 +431,32 @@ impl<'a> ListStylist<'a> {
                 let last = docs.pop().unwrap();
                 let inner = if docs.is_empty() {
                     // only one item
-                    let last = if sty.add_trailing_sep_single {
+                    let only = if sty.add_trailing_sep_single {
                         last + sep.clone()
                     } else {
                         last
                     };
-                    let compact = last.clone();
-                    let loose = (arena.line_() + last + sep.clone()).nest(2) + arena.line_();
-                    compact.partial_union(loose)
+                    let expanded =
+                        (arena.line_() + only.clone() + sep.clone()).nest(2) + arena.line_();
+
+                    only.partial_union(expanded)
                 } else {
-                    // NOTE: we can't pad here, since this can appear in inline chains.
-                    let compact = arena.intersperse(
-                        docs.iter().map(|doc| doc.clone().flatten()),
-                        sep.clone() + arena.space(),
-                    ) + sep.clone()
-                        + arena.space()
-                        + last.clone();
-                    let loose = (arena.line_()
-                        + arena.intersperse(docs.clone(), sep.clone() + arena.line())
-                        + sep.clone()
-                        + arena.line()
+                    let compact = arena.concat(
+                        docs.iter()
+                            .map(|doc| doc.clone().flatten() + sep.clone() + arena.space()),
+                    ) + last.clone();
+
+                    let expanded = (arena.line_()
+                        + arena.concat(
+                            docs.iter()
+                                .map(|doc| doc.clone() + sep.clone() + arena.line()),
+                        )
                         + last
-                        + sep.clone()
-                        + arena.line_())
-                    .nest(2);
-                    compact.partial_union(loose)
+                        + sep.clone())
+                    .nest(2)
+                        + arena.line_();
+
+                    compact.partial_union(expanded)
                 };
                 enclose_fitted(inner)
             }

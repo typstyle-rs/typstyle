@@ -120,15 +120,19 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
           ).map(
             str.trim,
           )
-          args.push((
-            name,
-            value,
-          ))
+          args.push(
+            (
+              name,
+              value,
+            ),
+          )
         } else {
           arg = arg.trim()
-          args.push((
-            arg,
-          ))
+          args.push(
+            (
+              arg,
+            ),
+          )
         }
         arg = ""
         ignore-char = true
@@ -163,15 +167,19 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
           ).map(
             str.trim,
           )
-          args.push((
-            name,
-            value,
-          ))
+          args.push(
+            (
+              name,
+              value,
+            ),
+          )
         } else {
           arg = arg.trim()
-          args.push((
-            arg,
-          ))
+          args.push(
+            (
+              arg,
+            ),
+          )
         }
         // arg = ""
       }
@@ -351,18 +359,22 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
 }
 
 #assert.eq(
-  parse-description-and-types((
-    "asd",
-  )),
+  parse-description-and-types(
+    (
+      "asd",
+    ),
+  ),
   (
     description: "asd",
     types: none,
   ),
 )
 #assert.eq(
-  parse-description-and-types((
-    "->int",
-  )),
+  parse-description-and-types(
+    (
+      "->int",
+    ),
+  ),
   (
     description: "",
     types: (
@@ -371,9 +383,11 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
   ),
 )
 #assert.eq(
-  parse-description-and-types((
-    " -> int",
-  )),
+  parse-description-and-types(
+    (
+      " -> int",
+    ),
+  ),
   (
     description: "",
     types: (
@@ -382,9 +396,11 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
   ),
 )
 #assert.eq(
-  parse-description-and-types((
-    "abcdefg -> int",
-  )),
+  parse-description-and-types(
+    (
+      "abcdefg -> int",
+    ),
+  ),
   (
     description: "abcdefg",
     types: (
@@ -393,10 +409,12 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
   ),
 )
 #assert.eq(
-  parse-description-and-types((
-    "abcdefg",
-    "-> int",
-  )),
+  parse-description-and-types(
+    (
+      "abcdefg",
+      "-> int",
+    ),
+  ),
   (
     description: "abcdefg",
     types: (
@@ -603,19 +621,23 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
     ) {
       state
         .params
-        .push((
-          name: args.first(),
-          desc-lines: state.unmatched-description,
-        ))
+        .push(
+          (
+            name: args.first(),
+            desc-lines: state.unmatched-description,
+          ),
+        )
       state.unmatched-description = ()
       state.params += args
         .slice(
           1,
         )
-        .map(arg => (
-          name: arg,
-          desc-lines: (),
-        ))
+        .map(
+          arg => (
+            name: arg,
+            desc-lines: (),
+          ),
+        )
       state.unfinished-param = ""
     }
   }
@@ -758,11 +780,13 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
         name
           != none
       ) {
-        definitions.push((
-          name: name,
-          description: desc-lines,
-          args: args,
-        ))
+        definitions.push(
+          (
+            name: name,
+            description: desc-lines,
+            args: args,
+          ),
+        )
         if (
           curry-info
             != none
@@ -864,14 +888,18 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
   )
   (
     description: module-description,
-    functions: definitions.filter(x => (
-      "args"
-        in x
-    )),
-    variables: definitions.filter(x => (
-      "args"
-        not in x
-    )),
+    functions: definitions.filter(
+      x => (
+        "args"
+          in x
+      ),
+    ),
+    variables: definitions.filter(
+      x => (
+        "args"
+          not in x
+      ),
+    ),
   )
 }
 #{

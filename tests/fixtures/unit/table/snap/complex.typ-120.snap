@@ -184,7 +184,9 @@ input_file: tests/fixtures/unit/table/complex.typ
 #table(
   columns: (auto, 1fr, auto),
   inset: (x: 12pt, y: 6pt),
-  fill: gradient.linear(..color.map.rainbow.slice(0, 3)),
+  fill: gradient.linear(
+    ..color.map.rainbow.slice(0, 3),
+  ),
   stroke: (
     thickness: 0.5pt,
     dash: "dotted",

@@ -567,9 +567,9 @@ input_file: tests/fixtures/packages/tablex.typ
     init_function = () => element
   }
 
-  range(
-    amount,
-  ).map(i => init_function())
+  range(amount).map(
+    i => init_function(),
+  )
 }
 
 // Default 'x' to a certain value if it is equal to the forbidden value
@@ -1161,9 +1161,9 @@ input_file: tests/fixtures/packages/tablex.typ
 
 // Fetches an entire column of cells (all positions with the given x).
 #let grid-get-column(grid, x) = {
-  range(
-    grid-count-rows(grid),
-  ).map(y => grid-at(grid, x, y))
+  range(grid-count-rows(grid)).map(
+    y => grid-at(grid, x, y),
+  )
 }
 
 // Expand grid to the given coords (add the missing cells)
@@ -2045,14 +2045,16 @@ input_file: tests/fixtures/packages/tablex.typ
             pcell.colspan > 1
               and all-frac-columns.len()
                 > 0
-              and all-frac-columns.all(i => (
-                pcell.x <= i
-                  and i
-                    < (
-                      pcell.x
-                        + pcell.colspan
-                    )
-              ))
+              and all-frac-columns.all(
+                i => (
+                  pcell.x <= i
+                    and i
+                      < (
+                        pcell.x
+                          + pcell.colspan
+                      )
+                ),
+              )
           )
           if (
             cell-spans-all-frac-columns
@@ -2910,14 +2912,13 @@ input_file: tests/fixtures/packages/tablex.typ
   stroke-auto: 1pt,
   styles: none,
 ) = (
-  calc.max(
-    0pt,
-    ..lines.map(l => stroke-len(
+  calc.max(0pt, ..lines.map(
+    l => stroke-len(
       l.stroke,
       stroke-auto: stroke-auto,
       styles: styles,
-    )),
-  )
+    ),
+  ))
 )
 
 #let _largest-stroke-among-hlines-at-y(
@@ -3383,50 +3384,54 @@ input_file: tests/fixtures/packages/tablex.typ
 // NOTE: This function cannot differentiate between the actual page
 // and a possible box or block where the component using this function
 // could be contained in.
-#let get-page-dim-writer() = locate(w_loc => {
-  let table_id = _tablex-table-counter.at(
-    w_loc,
-  )
-  let page_dim_state = get-page-dim-state(
-    table_id,
-  )
+#let get-page-dim-writer() = locate(
+  w_loc => {
+    let table_id = _tablex-table-counter.at(
+      w_loc,
+    )
+    let page_dim_state = get-page-dim-state(
+      table_id,
+    )
 
-  place(top + left, locate(loc => {
-    page_dim_state.update(s => {
-      if s.top_left != none {
-        s
-      } else {
-        let pos = loc.position()
-        let width = s.width - pos.x
-        let height = s.width - pos.y
-        (
-          width: width,
-          height: height,
-          top_left: pos,
-          bottom_right: s.bottom_right,
-        )
-      }
-    })
-  }))
+    place(top + left, locate(loc => {
+      page_dim_state.update(s => {
+        if s.top_left != none {
+          s
+        } else {
+          let pos = loc.position()
+          let width = s.width - pos.x
+          let height = s.width - pos.y
+          (
+            width: width,
+            height: height,
+            top_left: pos,
+            bottom_right: s.bottom_right,
+          )
+        }
+      })
+    }))
 
-  place(bottom + right, locate(loc => {
-    page_dim_state.update(s => {
-      if s.bottom_right != none {
-        s
-      } else {
-        let pos = loc.position()
-        let width = s.width + pos.x
-        let height = s.width + pos.y
-        (
-          width: width,
-          height: height,
-          top_left: s.top_left,
-          bottom_right: pos,
-        )
-      }
-    })
-  }))
-})
+    place(bottom + right, locate(
+      loc => {
+        page_dim_state.update(s => {
+          if s.bottom_right != none {
+            s
+          } else {
+            let pos = loc.position()
+            let width = s.width + pos.x
+            let height = s.width + pos.y
+            (
+              width: width,
+              height: height,
+              top_left: s.top_left,
+              bottom_right: pos,
+            )
+          }
+        })
+      },
+    ))
+  },
+)
 
 // Draws a row group using locate() and a block().
 #let draw-row-group(
@@ -3520,9 +3525,9 @@ input_file: tests/fixtures/packages/tablex.typ
             and not is-header
         ) {
           if repeat-header != false {
-            header-pages-state.update(l => (
-              l + (page,)
-            ))
+            header-pages-state.update(
+              l => l + (page,),
+            )
             if (
               (repeat-header == true)
                 or (
@@ -4003,19 +4008,24 @@ input_file: tests/fixtures/packages/tablex.typ
             box: cell_box,
           ))
 
-        let hlines = hlines.filter(h => (
-          this_row_group
-            .hlines
-            .filter(
-              is-same-hline.with(h),
-            )
-            .len()
-            == 0
-        ))
+        let hlines = hlines.filter(
+          h => (
+            this_row_group
+              .hlines
+              .filter(
+                is-same-hline.with(h),
+              )
+              .len()
+              == 0
+          ),
+        )
 
-        let vlines = vlines.filter(v => (
-          v not in this_row_group.vlines
-        ))
+        let vlines = vlines.filter(
+          v => (
+            v
+              not in this_row_group.vlines
+          ),
+        )
 
         this_row_group.hlines += hlines
         this_row_group.vlines += vlines
@@ -4824,184 +4834,187 @@ input_file: tests/fixtures/packages/tablex.typ
     default: (x: false, y: false),
   )
 
-  layout(size => locate(t_loc => style(styles => {
-    let table_id = _tablex-table-counter.at(
-      t_loc,
-    )
-    let page_dimensions = get-page-dim-state(
-      table_id,
-    )
-    let page_dim_at = page_dimensions.final(
-      t_loc,
-    )
-    let t_pos = t_loc.position()
+  layout(size => locate(t_loc => style(
+    styles => {
+      let table_id = _tablex-table-counter.at(
+        t_loc,
+      )
+      let page_dimensions = get-page-dim-state(
+        table_id,
+      )
+      let page_dim_at = page_dimensions.final(
+        t_loc,
+      )
+      let t_pos = t_loc.position()
 
-    // Subtract the max width/height from current width/height to disregard margin/etc.
-    let page_width = size.width
-    let page_height = size.height
+      // Subtract the max width/height from current width/height to disregard margin/etc.
+      let page_width = size.width
+      let page_height = size.height
 
-    let max_pos = default-if-none(
-      page_dim_at.bottom_right,
-      (
-        x: t_pos.x + page_width,
-        y: t_pos.y + page_height,
-      ),
-    )
-    let min_pos = default-if-none(
-      page_dim_at.top_left,
-      t_pos,
-    )
+      let max_pos = default-if-none(
+        page_dim_at.bottom_right,
+        (
+          x: t_pos.x + page_width,
+          y: t_pos.y + page_height,
+        ),
+      )
+      let min_pos = default-if-none(
+        page_dim_at.top_left,
+        t_pos,
+      )
 
-    let items = items
-      .pos()
-      .map(table-item-convert)
+      let items = items
+        .pos()
+        .map(table-item-convert)
 
-    let gutter = parse-gutters(
-      col-gutter: column-gutter,
-      row-gutter: row-gutter,
-      gutter: gutter,
-      styles: styles,
-      page-width: page_width,
-      page-height: page_height,
-    )
+      let gutter = parse-gutters(
+        col-gutter: column-gutter,
+        row-gutter: row-gutter,
+        gutter: gutter,
+        styles: styles,
+        page-width: page_width,
+        page-height: page_height,
+      )
 
-    let validated_cols_rows = validate-cols-rows(
-      columns,
-      rows,
-      items: items.filter(
-        is-tablex-cell,
-      ),
-    )
+      let validated_cols_rows = validate-cols-rows(
+        columns,
+        rows,
+        items: items.filter(
+          is-tablex-cell,
+        ),
+      )
 
-    let columns = validated_cols_rows.columns
-    let rows = validated_cols_rows.rows
-    items += validated_cols_rows.items
+      let columns = validated_cols_rows.columns
+      let rows = validated_cols_rows.rows
+      items += validated_cols_rows.items
 
-    let col_len = columns.len()
-    let row_len = rows.len()
+      let col_len = columns.len()
+      let row_len = rows.len()
 
-    // generate cell matrix and other things
-    let grid_info = generate-grid(
-      items,
-      x_limit: col_len,
-      y_limit: row_len,
-      map-cells: map-cells,
-      fit-spans: fit-spans,
-    )
+      // generate cell matrix and other things
+      let grid_info = generate-grid(
+        items,
+        x_limit: col_len,
+        y_limit: row_len,
+        map-cells: map-cells,
+        fit-spans: fit-spans,
+      )
 
-    let table_grid = grid_info.grid
-    let hlines = grid_info.hlines
-    let vlines = grid_info.vlines
-    let items = grid_info.items
+      let table_grid = grid_info.grid
+      let hlines = grid_info.hlines
+      let vlines = grid_info.vlines
+      let items = grid_info.items
 
-    // When there are more rows than the user specified, we ensure they have
-    // the same size as the last specified row.
-    let last-row-size = if (
-      rows.len() == 0
-    ) { auto } else { rows.last() }
-    for _ in range(
-      grid_info.new_row_count - row_len,
-    ) {
-      rows.push(
-        last-row-size,
-      ) // add new rows (due to extra cells)
-    }
+      // When there are more rows than the user specified, we ensure they have
+      // the same size as the last specified row.
+      let last-row-size = if (
+        rows.len() == 0
+      ) { auto } else { rows.last() }
+      for _ in range(
+        grid_info.new_row_count
+          - row_len,
+      ) {
+        rows.push(
+          last-row-size,
+        ) // add new rows (due to extra cells)
+      }
 
-    let col_len = columns.len()
-    let row_len = rows.len()
+      let col_len = columns.len()
+      let row_len = rows.len()
 
-    let auto_lines_res = generate-autolines(
-      auto-lines: auto-lines,
-      auto-hlines: auto-hlines,
-      auto-vlines: auto-vlines,
-      hlines: hlines,
-      vlines: vlines,
-      col_len: col_len,
-      row_len: row_len,
-    )
+      let auto_lines_res = generate-autolines(
+        auto-lines: auto-lines,
+        auto-hlines: auto-hlines,
+        auto-vlines: auto-vlines,
+        hlines: hlines,
+        vlines: vlines,
+        col_len: col_len,
+        row_len: row_len,
+      )
 
-    hlines += auto_lines_res.new_hlines
-    vlines += auto_lines_res.new_vlines
+      hlines += auto_lines_res.new_hlines
+      vlines += auto_lines_res.new_vlines
 
-    let parsed_lines = _parse-lines(
-      hlines,
-      vlines,
-      styles: styles,
-      page-width: page_width,
-      page-height: page_height,
-    )
-    hlines = parsed_lines.hlines
-    vlines = parsed_lines.vlines
+      let parsed_lines = _parse-lines(
+        hlines,
+        vlines,
+        styles: styles,
+        page-width: page_width,
+        page-height: page_height,
+      )
+      hlines = parsed_lines.hlines
+      vlines = parsed_lines.vlines
 
-    let mapped_grid = apply-maps(
-      grid: table_grid,
-      hlines: hlines,
-      vlines: vlines,
-      map-hlines: map-hlines,
-      map-vlines: map-vlines,
-      map-rows: map-rows,
-      map-cols: map-cols,
-    )
+      let mapped_grid = apply-maps(
+        grid: table_grid,
+        hlines: hlines,
+        vlines: vlines,
+        map-hlines: map-hlines,
+        map-vlines: map-vlines,
+        map-rows: map-rows,
+        map-cols: map-cols,
+      )
 
-    table_grid = mapped_grid.grid
-    hlines = mapped_grid.hlines
-    vlines = mapped_grid.vlines
+      table_grid = mapped_grid.grid
+      hlines = mapped_grid.hlines
+      vlines = mapped_grid.vlines
 
-    // re-parse just in case
-    let parsed_lines = _parse-lines(
-      hlines,
-      vlines,
-      styles: styles,
-      page-width: page_width,
-      page-height: page_height,
-    )
-    hlines = parsed_lines.hlines
-    vlines = parsed_lines.vlines
+      // re-parse just in case
+      let parsed_lines = _parse-lines(
+        hlines,
+        vlines,
+        styles: styles,
+        page-width: page_width,
+        page-height: page_height,
+      )
+      hlines = parsed_lines.hlines
+      vlines = parsed_lines.vlines
 
-    // convert auto to actual size
-    let updated_cols_rows = determine-auto-column-row-sizes(
-      grid: table_grid,
-      page_width: page_width,
-      page_height: page_height,
-      styles: styles,
-      columns: columns,
-      rows: rows,
-      inset: inset,
-      align: align,
-      gutter: gutter,
-      fit-spans: fit-spans,
-    )
+      // convert auto to actual size
+      let updated_cols_rows = determine-auto-column-row-sizes(
+        grid: table_grid,
+        page_width: page_width,
+        page_height: page_height,
+        styles: styles,
+        columns: columns,
+        rows: rows,
+        inset: inset,
+        align: align,
+        gutter: gutter,
+        fit-spans: fit-spans,
+      )
 
-    let columns = updated_cols_rows.columns
-    let rows = updated_cols_rows.rows
-    let gutter = updated_cols_rows.gutter
+      let columns = updated_cols_rows.columns
+      let rows = updated_cols_rows.rows
+      let gutter = updated_cols_rows.gutter
 
-    let row_groups = generate-row-groups(
-      grid: table_grid,
-      columns: columns,
-      rows: rows,
-      stroke: stroke,
-      inset: inset,
-      gutter: gutter,
-      fill: fill,
-      align: align,
-      hlines: hlines,
-      vlines: vlines,
-      styles: styles,
-      repeat-header: repeat-header,
-      header-hlines-have-priority: header-hlines-have-priority,
-      header-rows: header-rows,
-      rtl: rtl,
-      min-pos: min_pos,
-      max-pos: max_pos,
-      table-loc: t_loc,
-      table-id: table_id,
-    )
+      let row_groups = generate-row-groups(
+        grid: table_grid,
+        columns: columns,
+        rows: rows,
+        stroke: stroke,
+        inset: inset,
+        gutter: gutter,
+        fill: fill,
+        align: align,
+        hlines: hlines,
+        vlines: vlines,
+        styles: styles,
+        repeat-header: repeat-header,
+        header-hlines-have-priority: header-hlines-have-priority,
+        header-rows: header-rows,
+        rtl: rtl,
+        min-pos: min_pos,
+        max-pos: max_pos,
+        table-loc: t_loc,
+        table-id: table_id,
+      )
 
-    grid(columns: (
-        auto,
-      ), rows: auto, ..row_groups)
-  })))
+      grid(columns: (
+          auto,
+        ), rows: auto, ..row_groups)
+    },
+  )))
 }
 
 // Same as table but defaults to lines off

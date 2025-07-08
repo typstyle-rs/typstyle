@@ -2,8 +2,79 @@
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/code/args/flavor.typ
 ---
-#table(
-  stroke: none,
-  [arg1],
-  [arg2],
+#arguments(red)
+#arguments(red)
+#arguments(
+  red,
+)
+#arguments(fill: red)
+#arguments(
+  fill: red,
+)
+#arguments(red, stroke: blue)
+#arguments(red, stroke: blue)
+#arguments(
+  red,
+  stroke: blue,
+  yellow,
+)
+#arguments(red, stroke: blue, green)
+#arguments(stroke: blue, red)
+#arguments(
+  stroke: blue,
+  red,
+)
+
+#arguments([])
+#arguments(
+  [],
+)
+#arguments({})
+#arguments({})
+#arguments(())
+#arguments(
+  (),
+)
+#arguments(())
+#arguments(
+  (:),
+)
+
+#arguments(context {})
+#arguments(
+  context {},
+)
+#arguments(
+  context {},
+)
+#arguments(context "text")
+#arguments(
+  context "text",
+)
+
+#arguments(_ => [1])
+#arguments(
+  _ => [2],
+)
+
+#arguments(arguments())
+#arguments(
+  arguments(),
+)
+#arguments(arguments((1, 2, 3, 4, 5)))
+#arguments(
+  arguments((1, 2, 3, 4, 5)),
+)
+#arguments(arguments(
+  (1, 2, 3, 4, 5),
+))
+
+#arguments(1, {
+  2
+})
+#arguments(
+  1,
+  {
+    2
+  },
 )

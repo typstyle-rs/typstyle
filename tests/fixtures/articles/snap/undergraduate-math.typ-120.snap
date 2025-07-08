@@ -111,10 +111,12 @@ The original version is available at #link("https://gitlab.com/jim.hefferon/unde
 //    [??], [Unavailable until typst #sys.version.],
 //  )
 // ) <unavailable>
-#figure(table(
-  columns: (1fr, 2fr),
-  [!!], [Tricky. A simpler method is needed.],
-)) <tricky>
+#figure(
+  table(
+    columns: (1fr, 2fr),
+    [!!], [Tricky. A simpler method is needed.],
+  ),
+) <tricky>
 // #figure(
 //   table(
 //     columns: (1fr, 2fr),
