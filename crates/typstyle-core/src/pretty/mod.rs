@@ -65,6 +65,17 @@ impl<'a> PrettyPrinter<'a> {
     }
 }
 
+/// Utilities
+impl<'a> PrettyPrinter<'a> {
+    pub(crate) fn indent(&'a self, doc: ArenaDoc<'a>) -> ArenaDoc<'a> {
+        doc.nest(self.config.tab_spaces as isize)
+    }
+
+    pub(crate) fn block_indent(&'a self, doc: ArenaDoc<'a>) -> ArenaDoc<'a> {
+        self.indent(self.arena.line_() + doc) + self.arena.line_()
+    }
+}
+
 impl<'a> PrettyPrinter<'a> {
     fn check_disabled(&'a self, node: &'a SyntaxNode) -> Option<ArenaDoc<'a>> {
         if self.attr_store.is_format_disabled(node) {

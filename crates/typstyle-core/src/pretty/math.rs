@@ -161,8 +161,7 @@ impl<'a> PrettyPrinter<'a> {
         });
         let open = self.convert_expr(ctx, math_delimited.open());
         let close = self.convert_expr(ctx, math_delimited.close());
-        ((open_space + body).nest(self.config.tab_spaces as isize) + close_space)
-            .enclose(open, close)
+        (self.indent(open_space + body) + close_space).enclose(open, close)
     }
 
     pub(super) fn convert_math_attach(

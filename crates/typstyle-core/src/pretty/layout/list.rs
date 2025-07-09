@@ -316,7 +316,6 @@ impl<'a> ListStylist<'a> {
 
         let is_single = self.real_item_count == 1;
         let sep = arena.text(sty.separator);
-        let indent = self.printer.config.tab_spaces;
         let fold_style = if self.has_line_comment {
             FoldStyle::Never
         } else {
@@ -369,7 +368,7 @@ impl<'a> ListStylist<'a> {
                     }
                 }
                 if !sty.no_indent {
-                    inner = inner.nest(indent as isize);
+                    inner = self.printer.indent(inner);
                 }
                 inner.enclose(delim.0, delim.1)
             }
@@ -431,30 +430,27 @@ impl<'a> ListStylist<'a> {
                 let last = docs.pop().unwrap();
                 let inner = if docs.is_empty() {
                     // only one item
-                    let only = if sty.add_trailing_sep_single {
-                        last + sep.clone()
+                    let compact = if sty.add_trailing_sep_single {
+                        last.clone() + sep.clone()
                     } else {
-                        last
+                        last.clone()
                     };
-                    let expanded =
-                        (arena.line_() + only.clone() + sep.clone()).nest(2) + arena.line_();
+                    let expanded = self.printer.block_indent(last + sep.clone());
 
-                    only.partial_union(expanded)
+                    compact.partial_union(expanded)
                 } else {
                     let compact = arena.concat(
                         docs.iter()
                             .map(|doc| doc.clone().flatten() + sep.clone() + arena.space()),
                     ) + last.clone();
 
-                    let expanded = (arena.line_()
-                        + arena.concat(
+                    let expanded = self.printer.block_indent(
+                        arena.concat(
                             docs.iter()
                                 .map(|doc| doc.clone() + sep.clone() + arena.line()),
-                        )
-                        + last
-                        + sep.clone())
-                    .nest(2)
-                        + arena.line_();
+                        ) + last
+                            + sep.clone(),
+                    );
 
                     compact.partial_union(expanded)
                 };
@@ -523,7 +519,7 @@ impl<'a> ListStylist<'a> {
                     }
                 }
                 if !sty.no_indent {
-                    inner = inner.nest(indent as isize);
+                    inner = self.printer.indent(inner);
                 }
                 enclose_fitted(inner)
             }

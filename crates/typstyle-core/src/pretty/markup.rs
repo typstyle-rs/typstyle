@@ -36,9 +36,11 @@ impl<'a> PrettyPrinter<'a> {
         ctx: Context,
         content_block: ContentBlock<'a>,
     ) -> ArenaDoc<'a> {
-        let content = self
-            .convert_markup_impl(ctx, content_block.body(), MarkupScope::ContentBlock)
-            .nest(self.config.tab_spaces as isize);
+        let content = self.indent(self.convert_markup_impl(
+            ctx,
+            content_block.body(),
+            MarkupScope::ContentBlock,
+        ));
         content.group().brackets()
     }
 
@@ -116,7 +118,7 @@ impl<'a> PrettyPrinter<'a> {
     ) -> ArenaDoc<'a> {
         let node = term_item.to_untyped();
         let mut seen_term = false;
-        self.convert_flow_like(ctx, node, |ctx, child, _| match child.kind() {
+        let body = self.convert_flow_like(ctx, node, |ctx, child, _| match child.kind() {
             SyntaxKind::TermMarker => FlowItem::spaced(self.arena.text(child.text().as_str())),
             SyntaxKind::Colon => {
                 seen_term = true;
@@ -147,12 +149,12 @@ impl<'a> PrettyPrinter<'a> {
                 }
             }
             _ => FlowItem::none(),
-        })
-        .nest(self.config.tab_spaces as isize)
+        });
+        self.indent(body)
     }
 
     fn convert_list_item_like(&'a self, ctx: Context, item: &'a SyntaxNode) -> ArenaDoc<'a> {
-        self.convert_flow_like(ctx, item, |ctx, child, _| match child.kind() {
+        let body = self.convert_flow_like(ctx, item, |ctx, child, _| match child.kind() {
             SyntaxKind::ListMarker | SyntaxKind::EnumMarker | SyntaxKind::TermMarker => {
                 FlowItem::spaced(self.arena.text(child.text().as_str()))
             }
@@ -173,8 +175,8 @@ impl<'a> PrettyPrinter<'a> {
                 ))
             }
             _ => FlowItem::none(),
-        })
-        .nest(self.config.tab_spaces as isize)
+        });
+        self.indent(body)
     }
 
     fn convert_markup_impl(

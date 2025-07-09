@@ -43,12 +43,7 @@ impl<'a> PrettyPrinter<'a> {
             (Mode::CodeCont, ("(", ")"))
         };
         let ctx = ctx.with_mode(mode);
-        optional_paren(
-            &self.arena,
-            self.convert_expr(ctx, expr),
-            self.config.tab_spaces,
-            delims,
-        )
+        self.optional_paren(&self.arena, self.convert_expr(ctx, expr), delims)
     }
 
     /// Parenthesize the body if necessary.
@@ -66,20 +61,20 @@ impl<'a> PrettyPrinter<'a> {
         // - If without paren, the entire expression is in one line, thus safe.
         // - If with paren, surely safe.
         let ctx = ctx.with_mode(Mode::CodeCont);
-        optional_paren(&self.arena, body(ctx), self.config.tab_spaces, ("(", ")"))
+        self.optional_paren(&self.arena, body(ctx), ("(", ")"))
     }
-}
 
-/// Wrap the body with parentheses if the body is layouted on multiple lines.
-fn optional_paren<'a>(
-    arena: &'a Arena<'a>,
-    body: ArenaDoc<'a>,
-    indent: usize,
-    delims: (&'static str, &'static str),
-) -> ArenaDoc<'a> {
-    let open = (arena.text(delims.0) + arena.hardline()).when_group_break();
-    let close = (arena.hardline() + arena.text(delims.1)).when_group_break();
-    ((open + body).nest(indent as isize) + close).group()
+    /// Wrap the body with parentheses if the body is layouted on multiple lines.
+    fn optional_paren(
+        &'a self,
+        arena: &'a Arena<'a>,
+        body: ArenaDoc<'a>,
+        delims: (&'static str, &'static str),
+    ) -> ArenaDoc<'a> {
+        let open = arena.text(delims.0).when_group_break();
+        let close = arena.text(delims.1).when_group_break();
+        (open + self.block_indent(body) + close).group()
+    }
 }
 
 /// Checks if parentheses are needed for an expression that may span multiple lines.
