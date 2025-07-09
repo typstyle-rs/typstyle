@@ -141,7 +141,7 @@ impl<'a> PrettyPrinter<'a> {
                 self.convert_arg(ctx, child)
             })
             .print_doc();
-        inner.nest(self.config.tab_spaces as isize).parens()
+        self.indent(inner).parens()
     }
 
     /// Args in math do not have trailing content args.
@@ -214,10 +214,7 @@ impl<'a> PrettyPrinter<'a> {
             }
         });
         if self.attr_store.is_multiline(args.to_untyped()) {
-            ((self.arena.line_() + inner).nest(self.config.tab_spaces as isize)
-                + self.arena.line_())
-            .group()
-            .parens()
+            self.block_indent(inner).group().parens()
         } else {
             inner.parens()
         }

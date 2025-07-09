@@ -71,10 +71,7 @@ impl<'a> PrettyPrinter<'a> {
             };
         }
         let doc = collector.collect();
-        doc.enclose(self.arena.line_(), self.arena.line_())
-            .group()
-            .nest(self.config.tab_spaces as isize)
-            .parens()
+        self.block_indent(doc).group().parens()
     }
 }
 
