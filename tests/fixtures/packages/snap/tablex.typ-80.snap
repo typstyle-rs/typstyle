@@ -566,9 +566,7 @@ input_file: tests/fixtures/packages/tablex.typ
     return 0pt // page has 'auto' size => % should return 0
   }
 
-  (
-    ((len / 1%) / 100) * page-size + 0pt
-  ) // e.g. 100% / 1% = 100; / 100 = 1; 1 * page-size
+  ((len / 1%) / 100) * page-size + 0pt // e.g. 100% / 1% = 100; / 100 = 1; 1 * page-size
 }
 
 // Convert a fraction type length to pt
@@ -1457,10 +1455,7 @@ input_file: tests/fixtures/packages/tablex.typ
           )
         }
 
-        let pcell = get-parent-cell(
-          cell,
-          grid: grid,
-        ) // in case this is a colspan
+        let pcell = get-parent-cell(cell, grid: grid) // in case this is a colspan
         let last-auto-col = get-colspan-last-auto-col(pcell, columns: columns)
 
         let fit-this-span = if (
@@ -1522,10 +1517,7 @@ input_file: tests/fixtures/packages/tablex.typ
             align_default: auto,
           )
 
-          let width = measure(
-            cell-box,
-            styles,
-          ).width // + 2*cell_inset // the box already considers inset
+          let width = measure(cell-box, styles).width // + 2*cell_inset // the box already considers inset
 
           // here, we are excluding from the width of this cell
           // at this column all width that was already covered by
@@ -1749,10 +1741,7 @@ input_file: tests/fixtures/packages/tablex.typ
           )
         }
 
-        let pcell = get-parent-cell(
-          cell,
-          grid: grid,
-        ) // in case this is a rowspan
+        let pcell = get-parent-cell(cell, grid: grid) // in case this is a rowspan
         let last-auto-row = get-rowspan-last-auto-row(pcell, rows: rows)
 
         let fit-this-span = if (
@@ -1787,10 +1776,7 @@ input_file: tests/fixtures/packages/tablex.typ
           // measure the cell's actual height,
           // with its calculated width
           // and with other constraints
-          let height = measure(
-            cell-box,
-            styles,
-          ).height // + 2*cell_inset (box already considers inset)
+          let height = measure(cell-box, styles).height // + 2*cell_inset (box already considers inset)
 
           // here, we are excluding from the height of this cell
           // at this row all height that was already covered by
@@ -2225,18 +2211,12 @@ input_file: tests/fixtures/packages/tablex.typ
 
   if start == parent-start {
     // starts where its parent starts
-    expansion.at(0) = default-if-auto(
-      line.expand.at(0),
-      0pt,
-    ) // => expand to the left
+    expansion.at(0) = default-if-auto(line.expand.at(0), 0pt) // => expand to the left
   }
 
   if end == parent-end {
     // ends where its parent ends
-    expansion.at(1) = default-if-auto(
-      line.expand.at(1),
-      0pt,
-    ) // => expand to the right
+    expansion.at(1) = default-if-auto(line.expand.at(1), 0pt) // => expand to the right
   }
 
   expansion
@@ -2288,9 +2268,7 @@ input_file: tests/fixtures/packages/tablex.typ
       stroke-auto: stroke-auto,
       styles: styles,
     )
-    left-expand += (
-      largest-stroke(default-if-auto-or-none(start, 0)) / 2
-    ) // expand to the left to close stroke gap
+    left-expand += largest-stroke(default-if-auto-or-none(start, 0)) / 2 // expand to the left to close stroke gap
     right-expand += (
       largest-stroke(default-if-auto-or-none(end, columns.len())) / 2
     ) // close stroke gap to the right
@@ -2399,9 +2377,7 @@ input_file: tests/fixtures/packages/tablex.typ
       stroke-auto: stroke-auto,
       styles: styles,
     )
-    top-expand += (
-      largest-stroke(default-if-auto-or-none(start, 0)) / 2
-    ) // close stroke gap to the top
+    top-expand += largest-stroke(default-if-auto-or-none(start, 0)) / 2 // close stroke gap to the top
     bottom-expand += (
       largest-stroke(default-if-auto-or-none(end, rows.len())) / 2
     ) // close stroke gap to the bottom
@@ -2933,14 +2909,8 @@ input_file: tests/fixtures/packages/tablex.typ
     }
 
     current_row += 1
-    row_group_add_counter = calc.max(
-      0,
-      row_group_add_counter - 1,
-    ) // one row added
-    header_rows_count = calc.max(
-      0,
-      header_rows_count - 1,
-    ) // ensure at least the amount of requested header rows was added
+    row_group_add_counter = calc.max(0, row_group_add_counter - 1) // one row added
+    header_rows_count = calc.max(0, header_rows_count - 1) // ensure at least the amount of requested header rows was added
 
     // added all pertaining rows to the group
     // now we can draw it
@@ -2985,10 +2955,7 @@ input_file: tests/fixtures/packages/tablex.typ
 
       if is_header {
         // this is now the header group.
-        first_row_group = (
-          row_group: row-group,
-          content: content,
-        ) // 'content' to repeat later
+        first_row_group = (row_group: row-group, content: content) // 'content' to repeat later
       }
 
       (content,)

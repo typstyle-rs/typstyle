@@ -73,9 +73,7 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     )
   }
 
-  (node.post)(
-    result,
-  ) // post-process (e.g., hide)
+  (node.post)(result) // post-process (e.g., hide)
 
   // Draw debug stuff
   if debug >= 1 {
@@ -507,8 +505,7 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
         arc-radius: 0 * radius,
         start: θs.at(i - 1) - 90deg,
         delta: wrap-angle-180(Δθ),
-        line-shift: 0
-          * radius, // distance from vertex to beginning of arc
+        line-shift: 0 * radius, // distance from vertex to beginning of arc
       )
     } else {
       // distance from vertex to center of curvature
@@ -525,9 +522,7 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
         start: θs.at(i - 1) - 90deg,
         delta: wrap-angle-180(Δθ),
         line-shift: radius
-          * calc.tan(
-            Δθ / 2,
-          ), // distance from vertex to beginning of arc
+          * calc.tan(Δθ / 2), // distance from vertex to beginning of arc
       )
     }
   }
@@ -930,9 +925,7 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
           ),
         debug: debug,
       )
-      (edge.post)(
-        obj,
-      ) // post-process (e.g., hide)
+      (edge.post)(obj) // post-process (e.g., hide)
     },
   )
 }
@@ -987,9 +980,7 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
           + (final-vertices: anchors),
         debug: debug,
       )
-      (edge.post)(
-        obj,
-      ) // post-process (e.g., hide)
+      (edge.post)(obj) // post-process (e.g., hide)
     },
   )
 }
@@ -1011,15 +1002,8 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
   )
 
   let end-segments = (
-    edge
-      .final-vertices
-      .slice(
-        0,
-        2,
-      ), // first two vertices
-    edge
-      .final-vertices
-      .slice(-2), // last two vertices
+    edge.final-vertices.slice(0, 2), // first two vertices
+    edge.final-vertices.slice(-2), // last two vertices
   )
 
   let dummy-lines = end-segments.map(
@@ -1059,9 +1043,7 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
         edge,
         debug: debug,
       )
-      (edge.post)(
-        obj,
-      ) // post-process (e.g., hide)
+      (edge.post)(obj) // post-process (e.g., hide)
     },
   )
 }

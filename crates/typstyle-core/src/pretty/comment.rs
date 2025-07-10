@@ -13,10 +13,10 @@ enum CommentStyle {
     Bullet,
 }
 
-/// Convert either line comment or block comment.
+/// Convert either line comment or block comment. Line comments are converted as line suffixes.
 pub fn comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
     if node.kind() == SyntaxKind::LineComment {
-        line_comment(arena, node)
+        line_comment(arena, node).as_line_suffix()
     } else if node.kind() == SyntaxKind::BlockComment {
         block_comment(arena, node)
     } else {

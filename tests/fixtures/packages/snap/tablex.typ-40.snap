@@ -752,9 +752,7 @@ input_file: tests/fixtures/packages/tablex.typ
     return 0pt // page has 'auto' size => % should return 0
   }
 
-  (
-    ((len / 1%) / 100) * page-size + 0pt
-  ) // e.g. 100% / 1% = 100; / 100 = 1; 1 * page-size
+  ((len / 1%) / 100) * page-size + 0pt // e.g. 100% / 1% = 100; / 100 = 1; 1 * page-size
 }
 
 // Convert a fraction type length to pt
@@ -1377,9 +1375,7 @@ input_file: tests/fixtures/packages/tablex.typ
           "Invalid line received (must be hline or vline).",
         )
       }
-      items.at(
-        i,
-      ) = item // override item with the new x / y coord set
+      items.at(i) = item // override item with the new x / y coord set
       continue
     }
 
@@ -1679,10 +1675,7 @@ input_file: tests/fixtures/packages/tablex.typ
     type(align_default)
       == _function-type
   ) {
-    align_default(
-      cell.x,
-      cell.y,
-    ) // column, row
+    align_default(cell.x, cell.y) // column, row
   } else {
     align_default
   }
@@ -1690,10 +1683,7 @@ input_file: tests/fixtures/packages/tablex.typ
   let fill_default = if (
     type(fill_default) == _function-type
   ) {
-    fill_default(
-      cell.x,
-      cell.y,
-    ) // row, column
+    fill_default(cell.x, cell.y) // row, column
   } else {
     fill_default
   }
@@ -2800,14 +2790,9 @@ input_file: tests/fixtures/packages/tablex.typ
       )
 
       let hline_hasnt_already_ended = (
-        h.end
-          in (
-            auto,
-            none,
-          ) // always goes towards the right
+        h.end in (auto, none) // always goes towards the right
           or h.end
-            >= cell.x
-              + cell.colspan // ends at or after this cell
+            >= cell.x + cell.colspan // ends at or after this cell
       )
 
       (
@@ -2851,14 +2836,9 @@ input_file: tests/fixtures/packages/tablex.typ
       )
 
       let vline_hasnt_already_ended = (
-        v.end
-          in (
-            auto,
-            none,
-          ) // always goes towards the bottom
+        v.end in (auto, none) // always goes towards the bottom
           or v.end
-            >= cell.y
-              + cell.rowspan // ends at or after this cell
+            >= cell.y + cell.rowspan // ends at or after this cell
       )
 
       (
@@ -3498,9 +3478,7 @@ input_file: tests/fixtures/packages/tablex.typ
       page - table-loc.page() + 1
     )
 
-    let at_top = (
-      pos.y == min-pos.y
-    ) // to guard against re-draw issues
+    let at_top = pos.y == min-pos.y // to guard against re-draw issues
     let header_pages = header-pages-state.at(
       loc,
     )
@@ -4914,9 +4892,7 @@ input_file: tests/fixtures/packages/tablex.typ
         grid_info.new_row_count
           - row_len,
       ) {
-        rows.push(
-          last-row-size,
-        ) // add new rows (due to extra cells)
+        rows.push(last-row-size) // add new rows (due to extra cells)
       }
 
       let col_len = columns.len()
