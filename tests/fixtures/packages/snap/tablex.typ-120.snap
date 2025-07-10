@@ -1085,12 +1085,7 @@ input_file: tests/fixtures/packages/tablex.typ
       } else {
         let index = grid-index-at(px, py)
 
-        grid.items.at(index) = occupied(
-          x: px,
-          y: py,
-          parent_x: this_x,
-          parent_y: this_y,
-        ) // indicate this position's parent cell (to join them later)
+        grid.items.at(index) = occupied(x: px, y: py, parent_x: this_x, parent_y: this_y) // indicate this position's parent cell (to join them later)
       }
     }
 
@@ -2625,10 +2620,7 @@ input_file: tests/fixtures/packages/tablex.typ
 
     current_row += 1
     row_group_add_counter = calc.max(0, row_group_add_counter - 1) // one row added
-    header_rows_count = calc.max(
-      0,
-      header_rows_count - 1,
-    ) // ensure at least the amount of requested header rows was added
+    header_rows_count = calc.max(0, header_rows_count - 1) // ensure at least the amount of requested header rows was added
 
     // added all pertaining rows to the group
     // now we can draw it

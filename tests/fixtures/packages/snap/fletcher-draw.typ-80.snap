@@ -344,9 +344,7 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     let dir = if Δθ > 0deg { +1 } else { -1 } // +1 if ccw, -1 if cw
 
 
-    let θ-normal = (
-      θs.at(i - 1) + Δθ / 2 + 90deg
-    ) // direction to center of curvature
+    let θ-normal = θs.at(i - 1) + Δθ / 2 + 90deg // direction to center of curvature
 
     let radius = edge.corner-radius
     // radius *= 90deg/calc.max(calc.abs(Δθ), 45deg) // visual adjustment so that tighter bends have smaller radii
@@ -377,8 +375,7 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
         arc-radius: radius,
         start: θs.at(i - 1) - 90deg,
         delta: wrap-angle-180(Δθ),
-        line-shift: radius
-          * calc.tan(Δθ / 2), // distance from vertex to beginning of arc
+        line-shift: radius * calc.tan(Δθ / 2), // distance from vertex to beginning of arc
       )
     }
   }

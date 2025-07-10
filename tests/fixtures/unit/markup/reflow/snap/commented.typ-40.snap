@@ -4,8 +4,7 @@ input_file: tests/fixtures/unit/markup/reflow/commented.typ
 ---
 /// typstyle: wrap_text
 
-This is a paragraph with
-// an inline comment that shouldn't break
+This is a paragraph with // an inline comment that shouldn't break
 the flow of text or create a new line.
 The formatter should handle
 // multiple comments spread across
@@ -17,8 +16,7 @@ Here's text with
 *strong text* and $"math" "equations"$
 to ensure /* multi-line
           block comments */ don't
-interfere with text flow or
-// inline elements.
+interfere with text flow or // inline elements.
 
 Testing comments near special
 characters: a + b // comment after plus
@@ -30,5 +28,4 @@ A complex case mixing everything: *bold
 text* // comment after strong
 `code block` /* block comment */ with
 $"math"$ // final comment
-and #text(red)[colored text]
-// with formatting
+and #text(red)[colored text] // with formatting
