@@ -22,9 +22,6 @@ on:
         required: false
         type: boolean
         default: false
-    secrets:
-      GITHUB_TOKEN:
-        required: true
 
 jobs:
   benchmark:
@@ -45,15 +42,22 @@ jobs:
         with:
           path: target/criterion
           key: criterion-${{ inputs.branch_type }}-${{ inputs.git_ref }}
-          restore-keys: |
-            criterion-${{ inputs.branch_type }}-
+          # No restore-keys - benchmarks must match exact commits for accuracy
 
       - name: Check for cached benchmark
         id: check-cache
         run: |
+          # Check cache status and validate cached data
           if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ] && [ "${{ inputs.force_rerun }}" != "true" ]; then
-            echo "Found cached benchmark results and not forcing rerun"
-            echo "cache-hit=true" >> $GITHUB_OUTPUT
+            # Validate that cached data is complete and valid
+            if [ -d "target/criterion" ] && [ -n "$(ls -A target/criterion 2>/dev/null)" ]; then
+              echo "Found valid cached benchmark results"
+              echo "Using cache from key: ${{ steps.bench-cache.outputs.cache-matched-key }}"
+              echo "cache-hit=true" >> $GITHUB_OUTPUT
+            else
+              echo "Cache hit but data incomplete, will re-run benchmark"
+              echo "cache-hit=false" >> $GITHUB_OUTPUT
+            fi
           else
             if [ "${{ inputs.force_rerun }}" == "true" ]; then
               echo "Forcing benchmark rerun (cache ignored)"
@@ -75,16 +79,6 @@ jobs:
         run: |
           echo "Running ${{ inputs.branch_type }} branch benchmark..."
           cargo bench --workspace -- --save-baseline ${{ inputs.branch_type }}
-
-      # Verify benchmark data exists before upload
-      - name: Verify benchmark data
-        run: |
-          if [ ! -d "target/criterion" ] || [ -z "$(ls -A target/criterion 2>/dev/null)" ]; then
-            echo "❌ No benchmark data found in target/criterion"
-            exit 1
-          fi
-          echo "✅ Benchmark data verified"
-          ls -la target/criterion/
 
       # Always upload artifacts for reliable cross-job data transfer
       - name: Upload benchmark results

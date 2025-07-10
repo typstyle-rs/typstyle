@@ -41,8 +41,6 @@ jobs:
       git_ref: ${{ github.event.pull_request.base.sha }}
       repository: ${{ github.event.pull_request.base.repo.full_name }}
       force_rerun: ${{ github.event.inputs.force_rerun || false }}
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   bench-pr:
     name: Benchmark PR branch
@@ -54,8 +52,6 @@ jobs:
       git_ref: ${{ github.event.pull_request.head.ref }}
       repository: ${{ github.event.pull_request.head.repo.full_name }}
       force_rerun: ${{ github.event.inputs.force_rerun || false }}
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   compare:
     name: Compare and comment benchmark results
