@@ -7,6 +7,12 @@ on:
       - "crates/typstyle-core/**"
       - ".github/workflows/bench-pr.yml"
   workflow_dispatch:
+    inputs:
+      force_rerun:
+        description: 'Force re-run benchmarks even if cache exists'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   pre_job:
@@ -51,11 +57,15 @@ jobs:
       - name: Check for cached benchmark
         id: check-cache
         run: |
-          if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ]; then
-            echo "Found cached benchmark results"
+          if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ] && [ "${{ github.event.inputs.force_rerun }}" != "true" ]; then
+            echo "Found cached benchmark results and not forcing rerun"
             echo "cache-hit=true" >> $GITHUB_OUTPUT
           else
-            echo "No cached benchmark results found"
+            if [ "${{ github.event.inputs.force_rerun }}" == "true" ]; then
+              echo "Forcing benchmark rerun (cache ignored)"
+            else
+              echo "No cached benchmark results found"
+            fi
             echo "cache-hit=false" >> $GITHUB_OUTPUT
           fi
 
@@ -101,11 +111,15 @@ jobs:
       - name: Check for cached benchmark
         id: check-cache
         run: |
-          if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ]; then
-            echo "Found cached benchmark results"
+          if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ] && [ "${{ github.event.inputs.force_rerun }}" != "true" ]; then
+            echo "Found cached benchmark results and not forcing rerun"
             echo "cache-hit=true" >> $GITHUB_OUTPUT
           else
-            echo "No cached benchmark results found"
+            if [ "${{ github.event.inputs.force_rerun }}" == "true" ]; then
+              echo "Forcing benchmark rerun (cache ignored)"
+            else
+              echo "No cached benchmark results found"
+            fi
             echo "cache-hit=false" >> $GITHUB_OUTPUT
           fi
 
