@@ -65,7 +65,9 @@ impl<'a> PlainStylist<'a> {
                 }
                 SyntaxKind::LineComment => {
                     self.is_multiline = true;
-                    PlainItem::LineComment(self.printer.convert_comment(ctx, child))
+                    PlainItem::LineComment(
+                        self.printer.convert_comment(ctx, child).as_line_suffix(),
+                    )
                 }
                 SyntaxKind::BlockComment => {
                     PlainItem::BlockComment(self.printer.convert_comment(ctx, child))

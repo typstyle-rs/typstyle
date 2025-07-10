@@ -223,9 +223,7 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
       } else if child.value.class == "edge" {
         let edge = child.value
         edge.vertices.at(0) = map-auto(edge.vertices.at(0), (x, y))
-        if edge.label != none {
-          edge.label = $edge.label$
-        } // why is this needed?
+        if edge.label != none { edge.label = $edge.label$ } // why is this needed?
         edge.vertices.at(-1) = map-auto(edge.vertices.at(-1), (rel: (1, 0)))
         edge.node-index = none
         edges.push(edge)
@@ -264,9 +262,7 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
     error("Unexpected named argument(s) #..0.", args.named().keys())
   }
 
-  let positional-args = (
-    args.pos().flatten().join() + []
-  ) // join to ensure sequence
+  let positional-args = args.pos().flatten().join() + [] // join to ensure sequence
   let objects = positional-args.children
 
   let nodes = ()
