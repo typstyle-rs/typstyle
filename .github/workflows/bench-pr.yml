@@ -130,7 +130,9 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
 
       - name: Install critcmp
-        uses: taiki-e/install-action@critcmp
+        uses: taiki-e/install-action@v2
+        with:
+          tool: critcmp
 
       - name: Download base benchmark results
         uses: actions/download-artifact@v4
