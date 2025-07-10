@@ -2,7 +2,7 @@ name: Benchmark for PR
 # This workflow runs benchmarks in parallel jobs with rust-cache for persistence.
 # Base and PR benchmarks run in parallel, then results are compared in a final job.
 on:
-  pull_request_target:
+  pull_request:
     paths:
       - "crates/typstyle-core/**"
       - ".github/workflows/bench-pr.yml"
