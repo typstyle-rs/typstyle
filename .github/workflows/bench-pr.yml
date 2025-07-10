@@ -37,19 +37,21 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      # Use rust-cache for base branch benchmarks
       - uses: Swatinem/rust-cache@v2
+
+      - name: Cache criterion benchmark data
+        uses: actions/cache@v4
+        id: bench-cache
         with:
-          cache-targets: "true"
-          cache-directories: |
-            target/criterion
-          prefix-key: "bench-base"
-          key: ${{ github.event.pull_request.base.sha }}
+          path: target/criterion
+          key: criterion-base-${{ github.event.pull_request.base.sha }}
+          restore-keys: |
+            criterion-base-
 
       - name: Check for cached benchmark
         id: check-cache
         run: |
-          if [ -d "target/criterion" ] && [ -n "$(ls -A target/criterion 2>/dev/null)" ]; then
+          if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ]; then
             echo "Found cached benchmark results"
             echo "cache-hit=true" >> $GITHUB_OUTPUT
           else
@@ -85,19 +87,21 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
-      # Use rust-cache for PR branch benchmarks
       - uses: Swatinem/rust-cache@v2
+
+      - name: Cache criterion benchmark data
+        uses: actions/cache@v4
+        id: bench-cache
         with:
-          cache-targets: "true"
-          cache-directories: |
-            target/criterion
-          prefix-key: "bench-pr"
-          key: ${{ github.event.pull_request.head.sha }}
+          path: target/criterion
+          key: criterion-pr-${{ github.event.pull_request.head.sha }}
+          restore-keys: |
+            criterion-pr-
 
       - name: Check for cached benchmark
         id: check-cache
         run: |
-          if [ -d "target/criterion" ] && [ -n "$(ls -A target/criterion 2>/dev/null)" ]; then
+          if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ]; then
             echo "Found cached benchmark results"
             echo "cache-hit=true" >> $GITHUB_OUTPUT
           else
