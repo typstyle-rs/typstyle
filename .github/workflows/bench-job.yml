@@ -1,0 +1,95 @@
+name: Reusable Benchmark Job
+# Reusable workflow for running benchmarks with caching
+
+on:
+  workflow_call:
+    inputs:
+      branch_type:
+        description: "Type of branch (base or pr)"
+        required: true
+        type: string
+      git_ref:
+        description: "Git reference to checkout"
+        required: true
+        type: string
+      repository:
+        description: "Repository to checkout from"
+        required: false
+        type: string
+        default: ""
+      force_rerun:
+        description: "Force re-run benchmarks even if cache exists"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  benchmark:
+    name: Benchmark ${{ inputs.branch_type }} branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repository || github.repository }}
+          ref: ${{ inputs.git_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Check cache first before installing Rust
+      - name: Cache criterion benchmark data
+        uses: actions/cache@v4
+        id: bench-cache
+        with:
+          path: target/criterion
+          key: criterion-${{ inputs.branch_type }}-${{ inputs.git_ref }}
+          restore-keys: |
+            criterion-${{ inputs.branch_type }}-
+
+      - name: Check for cached benchmark
+        id: check-cache
+        run: |
+          if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ] && [ "${{ inputs.force_rerun }}" != "true" ]; then
+            echo "Found cached benchmark results and not forcing rerun"
+            echo "cache-hit=true" >> $GITHUB_OUTPUT
+          else
+            if [ "${{ inputs.force_rerun }}" == "true" ]; then
+              echo "Forcing benchmark rerun (cache ignored)"
+            else
+              echo "No cached benchmark results found"
+            fi
+            echo "cache-hit=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Only install Rust and dependencies if we need to run benchmarks
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.check-cache.outputs.cache-hit != 'true'
+
+      - uses: Swatinem/rust-cache@v2
+        if: steps.check-cache.outputs.cache-hit != 'true'
+
+      - name: Run benchmark
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        run: |
+          echo "Running ${{ inputs.branch_type }} branch benchmark..."
+          cargo bench --workspace -- --save-baseline ${{ inputs.branch_type }}
+
+      # Verify benchmark data exists before upload
+      - name: Verify benchmark data
+        run: |
+          if [ ! -d "target/criterion" ] || [ -z "$(ls -A target/criterion 2>/dev/null)" ]; then
+            echo "❌ No benchmark data found in target/criterion"
+            exit 1
+          fi
+          echo "✅ Benchmark data verified"
+          ls -la target/criterion/
+
+      # Always upload artifacts for reliable cross-job data transfer
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-${{ inputs.branch_type }}-${{ inputs.git_ref }}
+          path: target/criterion
+          retention-days: 7

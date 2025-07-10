@@ -1,6 +1,8 @@
 name: Benchmark for PR
-# This workflow runs benchmarks in parallel jobs with rust-cache for persistence.
-# Base and PR benchmarks run in parallel, then results are compared in a final job.
+# This workflow runs benchmarks in parallel jobs with caching for performance.
+# Base benchmarks use the upstream repository to ensure base revision exists.
+# PR benchmarks use the fork repository for the head revision.
+# Results are compared in a final job using artifacts for reliable data transfer.
 on:
   pull_request:
     paths:
@@ -31,120 +33,29 @@ jobs:
 
   bench-base:
     name: Benchmark base branch
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/bench-job.yml
     needs: pre_job
     if: needs.pre_job.outputs.should_skip != 'true'
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.base.sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      # Check cache first before installing Rust
-      - name: Cache criterion benchmark data
-        uses: actions/cache@v4
-        id: bench-cache
-        with:
-          path: target/criterion
-          key: criterion-base-${{ github.event.pull_request.base.sha }}
-          restore-keys: |
-            criterion-base-
-
-      - name: Check for cached benchmark
-        id: check-cache
-        run: |
-          if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ] && [ "${{ github.event.inputs.force_rerun }}" != "true" ]; then
-            echo "Found cached benchmark results and not forcing rerun"
-            echo "cache-hit=true" >> $GITHUB_OUTPUT
-          else
-            if [ "${{ github.event.inputs.force_rerun }}" == "true" ]; then
-              echo "Forcing benchmark rerun (cache ignored)"
-            else
-              echo "No cached benchmark results found"
-            fi
-            echo "cache-hit=false" >> $GITHUB_OUTPUT
-          fi
-
-      # Only install Rust and dependencies if we need to run benchmarks
-      - uses: dtolnay/rust-toolchain@stable
-        if: steps.check-cache.outputs.cache-hit != 'true'
-
-      - uses: Swatinem/rust-cache@v2
-        if: steps.check-cache.outputs.cache-hit != 'true'
-
-      - name: Run base benchmark
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        run: |
-          echo "Running base branch benchmark..."
-          cargo bench --workspace -- --save-baseline base
-
-      # Always upload artifacts for reliable cross-job data transfer
-      - name: Upload base benchmark results
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmark-base-${{ github.event.pull_request.base.sha }}
-          path: target/criterion
-          retention-days: 7
+    with:
+      branch_type: base
+      git_ref: ${{ github.event.pull_request.base.sha }}
+      repository: ${{ github.event.pull_request.base.repo.full_name }}
+      force_rerun: ${{ github.event.inputs.force_rerun || false }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   bench-pr:
     name: Benchmark PR branch
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/bench-job.yml
     needs: pre_job
     if: needs.pre_job.outputs.should_skip != 'true'
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.ref }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      # Check cache first before installing Rust
-      - name: Cache criterion benchmark data
-        uses: actions/cache@v4
-        id: bench-cache
-        with:
-          path: target/criterion
-          key: criterion-pr-${{ github.event.pull_request.head.sha }}
-          restore-keys: |
-            criterion-pr-
-
-      - name: Check for cached benchmark
-        id: check-cache
-        run: |
-          if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ] && [ "${{ github.event.inputs.force_rerun }}" != "true" ]; then
-            echo "Found cached benchmark results and not forcing rerun"
-            echo "cache-hit=true" >> $GITHUB_OUTPUT
-          else
-            if [ "${{ github.event.inputs.force_rerun }}" == "true" ]; then
-              echo "Forcing benchmark rerun (cache ignored)"
-            else
-              echo "No cached benchmark results found"
-            fi
-            echo "cache-hit=false" >> $GITHUB_OUTPUT
-          fi
-
-      # Only install Rust and dependencies if we need to run benchmarks
-      - uses: dtolnay/rust-toolchain@stable
-        if: steps.check-cache.outputs.cache-hit != 'true'
-
-      - uses: Swatinem/rust-cache@v2
-        if: steps.check-cache.outputs.cache-hit != 'true'
-
-      - name: Run PR benchmark
-        if: steps.check-cache.outputs.cache-hit != 'true'
-        run: |
-          echo "Running PR branch benchmark..."
-          cargo bench --workspace -- --save-baseline pr
-
-      # Always upload artifacts for reliable cross-job data transfer
-      - name: Upload PR benchmark results
-        uses: actions/upload-artifact@v4
-        with:
-          name: benchmark-pr-${{ github.event.pull_request.head.sha }}
-          path: target/criterion
-          retention-days: 7
+    with:
+      branch_type: pr
+      git_ref: ${{ github.event.pull_request.head.ref }}
+      repository: ${{ github.event.pull_request.head.repo.full_name }}
+      force_rerun: ${{ github.event.inputs.force_rerun || false }}
+    secrets:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   compare:
     name: Compare and comment benchmark results
