@@ -41,10 +41,7 @@ jobs:
           ref: ${{ github.event.pull_request.base.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: dtolnay/rust-toolchain@stable
-
-      - uses: Swatinem/rust-cache@v2
-
+      # Check cache first before installing Rust
       - name: Cache criterion benchmark data
         uses: actions/cache@v4
         id: bench-cache
@@ -69,12 +66,20 @@ jobs:
             echo "cache-hit=false" >> $GITHUB_OUTPUT
           fi
 
+      # Only install Rust and dependencies if we need to run benchmarks
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.check-cache.outputs.cache-hit != 'true'
+
+      - uses: Swatinem/rust-cache@v2
+        if: steps.check-cache.outputs.cache-hit != 'true'
+
       - name: Run base benchmark
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: |
           echo "Running base branch benchmark..."
           cargo bench --workspace -- --save-baseline base
 
+      # Always upload artifacts for reliable cross-job data transfer
       - name: Upload base benchmark results
         uses: actions/upload-artifact@v4
         with:
@@ -95,10 +100,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: dtolnay/rust-toolchain@stable
-
-      - uses: Swatinem/rust-cache@v2
-
+      # Check cache first before installing Rust
       - name: Cache criterion benchmark data
         uses: actions/cache@v4
         id: bench-cache
@@ -123,12 +125,20 @@ jobs:
             echo "cache-hit=false" >> $GITHUB_OUTPUT
           fi
 
+      # Only install Rust and dependencies if we need to run benchmarks
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.check-cache.outputs.cache-hit != 'true'
+
+      - uses: Swatinem/rust-cache@v2
+        if: steps.check-cache.outputs.cache-hit != 'true'
+
       - name: Run PR benchmark
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: |
           echo "Running PR branch benchmark..."
           cargo bench --workspace -- --save-baseline pr
 
+      # Always upload artifacts for reliable cross-job data transfer
       - name: Upload PR benchmark results
         uses: actions/upload-artifact@v4
         with:
