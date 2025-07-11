@@ -97,8 +97,9 @@ fn test_one_check_quiet() {
     ----- stdout -----
     --- a.typ
     +++ a.typ
-    @@ -1,1 +1,1 @@
+    @@ -1 +1 @@
     -#let a  =  0
+    \ No newline at end of file
     +#let a = 0
 
     ----- stderr -----
@@ -247,7 +248,7 @@ fn test_two_1_check() {
     ----- stdout -----
     --- b.typ
     +++ b.typ
-    @@ -1,1 +1,1 @@
+    @@ -1 +1 @@
     -#let b  =  1
     +#let b = 1
 
@@ -269,12 +270,12 @@ fn test_two_2_check() {
     ----- stdout -----
     --- a.typ
     +++ a.typ
-    @@ -1,1 +1,1 @@
+    @@ -1 +1 @@
     -#let a  =  0
     +#let a = 0
     --- b.typ
     +++ b.typ
-    @@ -1,1 +1,1 @@
+    @@ -1 +1 @@
     -#let b  =  1
     +#let b = 1
 
@@ -318,12 +319,12 @@ fn test_cwd_check() {
     ----- stdout -----
     --- b.typ
     +++ b.typ
-    @@ -1,1 +1,1 @@
+    @@ -1 +1 @@
     -#let b  =  1
     +#let b = 1
     --- d/c.typ
     +++ d/c.typ
-    @@ -1,1 +1,1 @@
+    @@ -1 +1 @@
     -#let c  =  2
     +#let c = 2
 
@@ -392,17 +393,17 @@ fn test_many_check() {
     ----- stdout -----
     --- b.typ
     +++ b.typ
-    @@ -1,1 +1,1 @@
+    @@ -1 +1 @@
     -#let b  =  1
     +#let b = 1
     --- d/c.typ
     +++ d/c.typ
-    @@ -1,1 +1,1 @@
+    @@ -1 +1 @@
     -#let c  =  2
     +#let c = 2
     --- d/d/e.typ
     +++ d/d/e.typ
-    @@ -1,1 +1,1 @@
+    @@ -1 +1 @@
     -#let d  =  3
     +#let d = 3
 
@@ -423,8 +424,9 @@ fn test_check_unified_diff_single_line() {
     ----- stdout -----
     --- single.typ
     +++ single.typ
-    @@ -1,1 +1,1 @@
+    @@ -1 +1 @@
     -#let x=1+2
+    \ No newline at end of file
     +#let x = 1 + 2
 
     ----- stderr -----
@@ -447,6 +449,7 @@ fn test_check_unified_diff_multiline() {
     @@ -1,2 +1,2 @@
     -#let x=1
     -#let y=2+3
+    \ No newline at end of file
     +#let x = 1
     +#let y = 2 + 3
 
