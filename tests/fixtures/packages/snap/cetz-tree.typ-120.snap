@@ -47,10 +47,7 @@ input_file: tests/fixtures/packages/cetz-tree.typ
 
   if draw-edge == auto {
     draw-edge = (source-name, target-name, target-node) => {
-      let (a, b) = (
-        source-name + "." + direction,
-        target-name + "." + opposite-dir.at(direction),
-      )
+      let (a, b) = (source-name + "." + direction, target-name + "." + opposite-dir.at(direction))
 
       draw.line(a, b)
       /*
@@ -88,10 +85,7 @@ input_file: tests/fixtures/packages/cetz-tree.typ
         draw.content((), [?], name: "content")
       }
       if draw-node == "rect" {
-        draw.rect(
-          (rel: (-.1, .1), to: "content.top-left"),
-          (rel: (.1, -.1), to: "content.bottom-right"),
-        )
+        draw.rect((rel: (-.1, .1), to: "content.top-left"), (rel: (.1, -.1), to: "content.bottom-right"))
       }
     }
   }
