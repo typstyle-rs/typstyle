@@ -37,10 +37,7 @@ input_file: tests/fixtures/unit/table/empty.typ
 )
 
 // Grid with spread args
-#grid(..(
-    columns: 2,
-    rows: auto,
-  ))
+#grid(..(columns: 2, rows: auto))
 
 // Mixed named and spread args
 #table(stroke: none, ..(columns: 3))
@@ -48,10 +45,7 @@ input_file: tests/fixtures/unit/table/empty.typ
 // Complex empty table
 #table(
   columns: (1fr, auto), align: center,
-  inset: 5pt, stroke: (
-    thickness: 1pt,
-    dash: "dotted",
-  ),
+  inset: 5pt, stroke: (thickness: 1pt, dash: "dotted"),
   ..(fill: rgb("eee"))
 )
 

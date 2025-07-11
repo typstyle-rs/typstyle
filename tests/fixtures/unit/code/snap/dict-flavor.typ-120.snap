@@ -1,11 +1,7 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/code/dict-flavor.typ
-snapshot_kind: text
 ---
 #{
-  (
-    key1: "123",
-    key2: "456",
-  )
+  (key1: "123", key2: "456")
 }

@@ -13,11 +13,7 @@ input_file: tests/fixtures/unit/code/args/flavor.typ
 )
 #arguments(red, stroke: blue)
 #arguments(red, stroke: blue)
-#arguments(
-  red,
-  stroke: blue,
-  yellow,
-)
+#arguments(red, stroke: blue, yellow)
 #arguments(red, stroke: blue, green)
 #arguments(stroke: blue, red)
 #arguments(
@@ -41,9 +37,7 @@ input_file: tests/fixtures/unit/code/args/flavor.typ
 )
 
 #arguments(context {})
-#arguments(
-  context {},
-)
+#arguments(context {})
 #arguments(
   context {},
 )

@@ -7,7 +7,7 @@ use super::{
         list::{ListStyle, ListStylist},
     },
     prelude::*,
-    style::FoldStyle,
+    style::{is_multiline_flavored, FoldStyle},
     util::is_comment_node,
     Context, Mode, PrettyPrinter,
 };
@@ -51,7 +51,7 @@ impl<'a> PrettyPrinter<'a> {
 
         let fold_style = if !is_block || ctx.break_suppressed {
             FoldStyle::Always
-        } else if self.attr_store.is_multiline(equation.to_untyped()) {
+        } else if is_multiline_flavored(equation.to_untyped()) {
             FoldStyle::Never
         } else {
             FoldStyle::Fit
