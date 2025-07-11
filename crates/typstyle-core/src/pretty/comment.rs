@@ -91,7 +91,7 @@ fn align_multiline_simple<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'
         }
         doc += line.trim_start();
     }
-    doc.hang(1)
+    doc.nest(1).align()
 }
 
 #[cfg(test)]

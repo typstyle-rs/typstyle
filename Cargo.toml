@@ -85,3 +85,4 @@ debug = true
 
 [patch.crates-io]
 # tinymist-world = { git = "https://github.com/Myriad-Dreamin/tinymist", rev = "84569fb98c4eeea65d91677c31d803718143fc10" }
+prettyless = { git = "https://github.com/typstyle-rs/prettyless", rev = "b5fce423d153a56fc8f94e317be12140f5016a27" }
