@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.13.14 - [2025-07-11]
 
 We now employ [prettyless](https://github.com/typstyle-rs/prettyless) as the layout engine. It provides more features to support us to adopt better layout logic.
 
