@@ -1,0 +1,69 @@
+name: Benchmark Comment
+# This workflow posts benchmark results as PR comments.
+# It runs with pull_request_target to have write permissions for forks.
+
+on:
+  workflow_run:
+    workflows: ["Benchmark for PR"]
+    types:
+      - completed
+
+jobs:
+  comment:
+    name: Post benchmark results
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    permissions:
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Download benchmark comparison
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          name: benchmark-comparison
+          run_id: ${{ github.event.workflow_run.id }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read benchmark results
+        id: results
+        run: |
+          if [ -f benchmark-results.md ]; then
+            echo "BENCHMARK_COMMENT<<EOF" >> $GITHUB_OUTPUT
+            cat benchmark-results.md >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "No benchmark results found"
+            exit 1
+          fi
+
+      - name: Get PR number
+        id: pr
+        run: |
+          # Extract PR number from workflow_run event using jq
+          PR_NUMBER=$(echo '${{ toJSON(github.event.workflow_run.pull_requests) }}' | jq -r '.[0].number // empty')
+          if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+            echo "number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "Found PR #${PR_NUMBER}"
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "No PR found in workflow_run event"
+          fi
+
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        if: steps.pr.outputs.found == 'true'
+        with:
+          issue-number: ${{ steps.pr.outputs.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "### 📊 Benchmark Performance Report"
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: steps.pr.outputs.found == 'true'
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ steps.pr.outputs.number }}
+          body: ${{ steps.results.outputs.BENCHMARK_COMMENT }}
+          edit-mode: replace
