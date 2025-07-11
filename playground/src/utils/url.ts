@@ -7,6 +7,31 @@ export interface PlaygroundState {
 }
 
 /**
+ * Unicode-safe base64 encoding
+ */
+function unicodeToBase64(str: string): string {
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(str);
+  const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join(
+    "",
+  );
+  return btoa(binary);
+}
+
+/**
+ * Unicode-safe base64 decoding
+ */
+function base64ToUnicode(base64: string): string {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  const decoder = new TextDecoder();
+  return decoder.decode(bytes);
+}
+
+/**
  * Compresses a string using a simple run-length encoding approach
  * combined with URL-safe base64 encoding for sharing.
  */
@@ -15,8 +40,8 @@ export function compressForUrl(data: string): string {
     // Convert to JSON string first
     const jsonString = JSON.stringify(data);
 
-    // Simple compression by encoding as base64
-    const base64 = btoa(jsonString);
+    // Unicode-safe base64 encoding
+    const base64 = unicodeToBase64(jsonString);
 
     // Make it URL-safe by replacing characters
     return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
@@ -39,8 +64,8 @@ export function decompressFromUrl(compressed: string): string {
       base64 += "=";
     }
 
-    // Decode from base64
-    const jsonString = atob(base64);
+    // Unicode-safe base64 decoding
+    const jsonString = base64ToUnicode(base64);
 
     // Parse back to original data
     return JSON.parse(jsonString);
