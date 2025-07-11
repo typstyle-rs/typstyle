@@ -60,8 +60,7 @@ export function ShareModal({
               ></path>
             </svg>
             <span className="text-sm">
-              Large content was uploaded to pastebin (shz.al) for sharing. Link
-              expires in 7 days.
+              Large content was uploaded to pastebin (shz.al) for sharing.
             </span>
           </div>
         )}
@@ -71,6 +70,8 @@ export function ShareModal({
             type="text"
             value={shareUrl}
             readOnly
+            placeholder="Share link"
+            title="Share link"
             className="input input-bordered flex-1 text-sm"
             onClick={(e) => e.currentTarget.select()}
           />

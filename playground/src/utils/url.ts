@@ -19,7 +19,6 @@ async function uploadToPastebin(content: string): Promise<string | null> {
   try {
     const formData = new FormData();
     formData.append("c", content);
-    formData.append("e", "7d"); // 7 days expiration
 
     const response = await fetch(PASTEBIN_API, {
       method: "POST",
