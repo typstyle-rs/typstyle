@@ -41,10 +41,8 @@ jobs:
         run: |
           # Use GitHub's built-in hashFiles function for simpler and more reliable hashing
           CONTENT_HASH="${{ hashFiles('crates/typstyle-core/**/*.rs', 'Cargo.lock') }}"
-          CACHE_KEY="criterion-${CONTENT_HASH:0:16}"
           echo "content-hash=${CONTENT_HASH:0:16}" >> $GITHUB_OUTPUT
-          echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
-          echo "Generated cache key: ${CACHE_KEY}"
+          echo "Generated content hash: ${CONTENT_HASH:0:16}"
 
       # Cache criterion benchmark data using content-based keys
       - name: Cache criterion benchmark data
@@ -52,7 +50,7 @@ jobs:
         id: bench-cache
         with:
           path: target/criterion
-          key: ${{ steps.cache-key.outputs.cache-key }}
+          key: criterion-${{ inputs.branch_type }}-${{ steps.cache-key.outputs.content-hash }}
           # No restore-keys - benchmarks must match exact content for accuracy
 
       - name: Check for cached benchmark
