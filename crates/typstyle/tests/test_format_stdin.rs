@@ -71,6 +71,11 @@ fn test_stdin_check() {
     success: false
     exit_code: 1
     ----- stdout -----
+    --- stdin
+    +++ stdin
+    @@ -1,1 +1,1 @@
+    -#let  x  = (1+2)
+    +#let x = (1 + 2)
 
     ----- stderr -----
     ");

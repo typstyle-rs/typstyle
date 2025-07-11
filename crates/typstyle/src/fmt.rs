@@ -10,7 +10,8 @@ use std::{
 
 use anyhow::{bail, Context, Result};
 use itertools::Itertools;
-use log::{debug, error, info, warn};
+use log::{debug, error, warn};
+use similar::{ChangeTag, TextDiff};
 use typst_syntax::Source;
 use typstyle_core::{Config, Typstyle};
 use walkdir::{DirEntry, WalkDir};
@@ -158,7 +159,9 @@ fn format_one(
                 write_back(input.unwrap(), res)?;
             } else if args.check {
                 if let Some(path) = input {
-                    info!("Would reformat: {}", fs::relativize_path(path));
+                    print_unified_diff(&unformatted, res, &fs::relativize_path(path));
+                } else {
+                    print_unified_diff(&unformatted, res, "stdin");
                 }
             } else {
                 print!("{res}");
@@ -272,4 +275,40 @@ fn resolve_typst_files(input: &[PathBuf]) -> Vec<PathBuf> {
         files.sort_unstable();
     }
     files
+}
+
+fn print_unified_diff(original: &str, formatted: &str, filename: &str) {
+    let diff = TextDiff::from_lines(original, formatted);
+    
+    println!("--- {}", filename);
+    println!("+++ {}", filename);
+    
+    // Get the unified diff representation
+    for (i, group) in diff.grouped_ops(3).iter().enumerate() {
+        if i > 0 {
+            println!(""); // Add spacing between hunks
+        }
+        
+        let first = group.first().unwrap();
+        let last = group.last().unwrap();
+        let old_start = first.old_range().start;
+        let old_len = last.old_range().end - old_start;
+        let new_start = first.new_range().start;
+        let new_len = last.new_range().end - new_start;
+        
+        println!("@@ -{},{} +{},{} @@", 
+                 old_start + 1, old_len,
+                 new_start + 1, new_len);
+                 
+        for op in group {
+            for change in diff.iter_changes(op) {
+                let sign = match change.tag() {
+                    ChangeTag::Delete => "-",
+                    ChangeTag::Insert => "+", 
+                    ChangeTag::Equal => " ",
+                };
+                print!("{}{}", sign, change);
+            }
+        }
+    }
 }

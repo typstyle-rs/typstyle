@@ -95,6 +95,11 @@ fn test_one_check_quiet() {
     success: false
     exit_code: 1
     ----- stdout -----
+    --- a.typ
+    +++ a.typ
+    @@ -1,1 +1,1 @@
+    -#let a  =  0
+    +#let a = 0
 
     ----- stderr -----
     ");
@@ -240,7 +245,11 @@ fn test_two_1_check() {
     success: false
     exit_code: 1
     ----- stdout -----
-    Would reformat: b.typ
+    --- b.typ
+    +++ b.typ
+    @@ -1,1 +1,1 @@
+    -#let b  =  1
+    +#let b = 1
 
     ----- stderr -----
     ");
@@ -258,8 +267,16 @@ fn test_two_2_check() {
     success: false
     exit_code: 1
     ----- stdout -----
-    Would reformat: a.typ
-    Would reformat: b.typ
+    --- a.typ
+    +++ a.typ
+    @@ -1,1 +1,1 @@
+    -#let a  =  0
+    +#let a = 0
+    --- b.typ
+    +++ b.typ
+    @@ -1,1 +1,1 @@
+    -#let b  =  1
+    +#let b = 1
 
     ----- stderr -----
     ");
@@ -299,8 +316,16 @@ fn test_cwd_check() {
     success: false
     exit_code: 1
     ----- stdout -----
-    Would reformat: b.typ
-    Would reformat: d/c.typ
+    --- b.typ
+    +++ b.typ
+    @@ -1,1 +1,1 @@
+    -#let b  =  1
+    +#let b = 1
+    --- d/c.typ
+    +++ d/c.typ
+    @@ -1,1 +1,1 @@
+    -#let c  =  2
+    +#let c = 2
 
     ----- stderr -----
     ");
@@ -365,9 +390,65 @@ fn test_many_check() {
     success: false
     exit_code: 1
     ----- stdout -----
-    Would reformat: b.typ
-    Would reformat: d/c.typ
-    Would reformat: d/d/e.typ
+    --- b.typ
+    +++ b.typ
+    @@ -1,1 +1,1 @@
+    -#let b  =  1
+    +#let b = 1
+    --- d/c.typ
+    +++ d/c.typ
+    @@ -1,1 +1,1 @@
+    -#let c  =  2
+    +#let c = 2
+    --- d/d/e.typ
+    +++ d/d/e.typ
+    @@ -1,1 +1,1 @@
+    -#let d  =  3
+    +#let d = 3
+
+    ----- stderr -----
+    ");
+
+    assert!(space.all_unmodified());
+}
+
+#[test]
+fn test_check_unified_diff_single_line() {
+    let mut space = Workspace::new();
+    space.write_tracked("single.typ", "#let x=1+2");
+
+    typstyle_cmd_snapshot!(space.cli().args(["single.typ", "--check"]), @r"
+    success: false
+    exit_code: 1
+    ----- stdout -----
+    --- single.typ
+    +++ single.typ
+    @@ -1,1 +1,1 @@
+    -#let x=1+2
+    +#let x = 1 + 2
+
+    ----- stderr -----
+    ");
+
+    assert!(space.all_unmodified());
+}
+
+#[test]
+fn test_check_unified_diff_multiline() {
+    let mut space = Workspace::new();
+    space.write_tracked("multi.typ", "#let x=1\n#let y=2+3");
+
+    typstyle_cmd_snapshot!(space.cli().args(["multi.typ", "--check"]), @r"
+    success: false
+    exit_code: 1
+    ----- stdout -----
+    --- multi.typ
+    +++ multi.typ
+    @@ -1,2 +1,2 @@
+    -#let x=1
+    -#let y=2+3
+    +#let x = 1
+    +#let y = 2 + 3
 
     ----- stderr -----
     ");
