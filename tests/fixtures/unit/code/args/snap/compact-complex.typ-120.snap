@@ -30,13 +30,7 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 })
 
 // Mixing positional and named arguments
-#f(
-  "pos1",
-  name1: [named1],
-  "pos2",
-  name2: [named2],
-  "pos3",
-)
+#f("pos1", name1: [named1], "pos2", name2: [named2], "pos3")
 
 // Function calls with only named arguments
 #f(
@@ -327,16 +321,11 @@ input_file: tests/fixtures/unit/code/args/compact-complex.typ
 )
 
 // Increasing complexity pattern
-#f(
-  "simple",
-  [slightly more complex],
-  block(width: 80%)[even more complex],
-  grid(
-    columns: 3,
-    [A], [B], [C],
-    [D], [E], [F],
-  ),
-)
+#f("simple", [slightly more complex], block(width: 80%)[even more complex], grid(
+  columns: 3,
+  [A], [B], [C],
+  [D], [E], [F],
+))
 
 // Heavy arguments with similar structures
 #f(

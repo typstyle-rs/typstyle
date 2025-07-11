@@ -29,9 +29,7 @@ input_file: tests/fixtures/unit/code/chain/call.typ
   (1,).rev().map(((n, c)) => f(n, c, 1))
 }
 
-#{
-  padding.pairs().map((k, x) => (k, x * 1.5)).to-dict()
-}
+#{ padding.pairs().map((k, x) => (k, x * 1.5)).to-dict() }
 #{
   let hlines_below_header = first-row-group-long-long
     .row_group-long-long-long-long

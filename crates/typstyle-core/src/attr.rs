@@ -20,10 +20,6 @@ pub struct Attributes {
     /// Indicates whether the node text contains a linebreak.
     /// Currently, it is only used for equations.
     pub(self) is_multiline: bool,
-
-    /// Indicates whether the node has a multiline "flavor",
-    /// determined by the first space child containing a linebreak.
-    pub(self) is_multiline_flavor: bool,
 }
 
 /// A storage structure that manages formatting attributes for syntax nodes.
@@ -71,20 +67,9 @@ impl AttrStore {
         self.check_node_attr(node, |attr| attr.is_multiline)
     }
 
-    /// Checks if a given syntax node has a multiline flavor.
-    pub fn is_multiline_flavor(&self, node: &SyntaxNode) -> bool {
-        self.check_node_attr(node, |attr| attr.is_multiline_flavor)
-    }
-
     /// Checks if formatting is explicitly disabled for a given syntax node.
     pub fn is_format_disabled(&self, node: &SyntaxNode) -> bool {
         self.check_node_attr(node, |attr| attr.is_format_disabled)
-    }
-
-    /// Checks if a node is unformattable, defined as having formatting disabled
-    /// or containing a comment.
-    pub fn is_unformattable(&self, node: &SyntaxNode) -> bool {
-        self.check_node_attr(node, |attr| attr.is_format_disabled || attr.has_comment)
     }
 
     fn check_node_attr(&self, node: &SyntaxNode, pred: impl FnOnce(&Attributes) -> bool) -> bool {
@@ -100,18 +85,12 @@ impl AttrStore {
     fn compute_multiline_impl(&mut self, node: &SyntaxNode) -> (bool, bool) {
         let mut is_multiline = false;
         let mut has_multiline_str = false;
-        let mut seen_space = false;
         for child in node.children() {
             match child.kind() {
                 SyntaxKind::Space => {
                     if child.text().has_linebreak() {
                         is_multiline = true;
-                        if !seen_space {
-                            // Decide multiline flavor based on the first space
-                            self.attrs_mut_of(node).is_multiline_flavor = true;
-                        }
                     }
-                    seen_space = true;
                 }
                 SyntaxKind::BlockComment => {
                     is_multiline |= child.text().has_linebreak();

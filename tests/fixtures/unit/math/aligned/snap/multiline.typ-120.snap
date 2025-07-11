@@ -21,9 +21,7 @@ $
 $
 
 // Alignment points on separate lines
-$
-  "Left side" & = "Right side" & "Comment"
-$
+$ "Left side" & = "Right side" & "Comment" $
 
 // Long expressions with operation breaks
 $

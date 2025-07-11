@@ -1,5 +1,28 @@
 # Changelog
 
+## Unreleased
+
+- Feature: Improved flavor detection for list-like syntaxes.
+  Previously, flavor detection checked only if the first space contained a linebreak, which could be counter-intuitive due to linebreaks or spaces within child expressions.
+  Now, a list-like syntax is considered multiline if there is a space containing a linebreak before its first child expression.
+
+  For example, the following code was viewed as multiline-flavored due to the linebreak before `)`. Now it is fixed and can properly use the compact layout.
+  ```typst
+  #f(it => it
+  )
+  ```
+
+  The flavor detection of equations is now consistent with others. For example,
+  ```typst
+  $ a
+  $
+  ```
+  The equation above was regarded as multiline-flavored due to the line break before the closing `$`. Now it will be formatted to
+  ```typst
+  $ a $
+  ```
+  This change enables switching equations between inline and block by altering the direct space after the opening `$`.
+
 ## v0.13.16 - [2025-07-19]
 
 - Due to ci configuration issues, we failed to publish v0.13.15. This release is a re-publish of v0.13.15 with the correct version number.
@@ -12,7 +35,7 @@
   ```bash
   typstyle file.typ --diff
   ```
-  
+
   Output:
   ```diff
   --- file.typ
@@ -30,7 +53,7 @@
   ```typst
   #let result = (x + y) / 2 + 1  // This comment stays on same line
   ```
-  
+
   But it will be formatted to this in previous versions. Note that the comment was moved to a new line, which is not ideal for inline comments.
   ```typst
   // line width = 40

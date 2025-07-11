@@ -37,10 +37,7 @@ input_file: tests/fixtures/unit/table/empty.typ
 )
 
 // Grid with spread args
-#grid(..(
-    columns: 2,
-    rows: auto,
-  ))
+#grid(..(columns: 2, rows: auto))
 
 // Mixed named and spread args
 #table(stroke: none, ..(columns: 3))
