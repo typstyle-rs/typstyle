@@ -35,14 +35,25 @@ jobs:
           ref: ${{ inputs.git_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Check cache first before installing Rust
+      # Generate cache key from code content for smart caching
+      - name: Generate cache key from code content
+        id: cache-key
+        run: |
+          # Use GitHub's built-in hashFiles function for simpler and more reliable hashing
+          CONTENT_HASH="${{ hashFiles('crates/typstyle-core/**/*.rs', 'Cargo.lock') }}"
+          CACHE_KEY="criterion-${CONTENT_HASH:0:16}"
+          echo "content-hash=${CONTENT_HASH:0:16}" >> $GITHUB_OUTPUT
+          echo "cache-key=${CACHE_KEY}" >> $GITHUB_OUTPUT
+          echo "Generated cache key: ${CACHE_KEY}"
+
+      # Cache criterion benchmark data using content-based keys
       - name: Cache criterion benchmark data
         uses: actions/cache@v4
         id: bench-cache
         with:
           path: target/criterion
-          key: criterion-${{ inputs.branch_type }}-${{ inputs.git_ref }}
-          # No restore-keys - benchmarks must match exact commits for accuracy
+          key: ${{ steps.cache-key.outputs.cache-key }}
+          # No restore-keys - benchmarks must match exact content for accuracy
 
       - name: Check for cached benchmark
         id: check-cache
@@ -84,6 +95,7 @@ jobs:
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-${{ inputs.branch_type }}-${{ inputs.git_ref }}
+          name: benchmark-${{ inputs.branch_type }}
           path: target/criterion
-          retention-days: 7
+          retention-days: 1
+          if-no-files-found: error

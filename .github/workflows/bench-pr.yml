@@ -40,7 +40,7 @@ jobs:
       branch_type: base
       git_ref: ${{ github.event.pull_request.base.sha }}
       repository: ${{ github.event.pull_request.base.repo.full_name }}
-      force_rerun: ${{ github.event.inputs.force_rerun || false }}
+      force_rerun: ${{ github.event.inputs.force_rerun }}
 
   bench-pr:
     name: Benchmark PR branch
@@ -51,7 +51,7 @@ jobs:
       branch_type: pr
       git_ref: ${{ github.event.pull_request.head.ref }}
       repository: ${{ github.event.pull_request.head.repo.full_name }}
-      force_rerun: ${{ github.event.inputs.force_rerun || false }}
+      force_rerun: ${{ github.event.inputs.force_rerun }}
 
   compare:
     name: Compare and comment benchmark results
@@ -72,13 +72,13 @@ jobs:
       - name: Download base benchmark results
         uses: actions/download-artifact@v4
         with:
-          name: benchmark-base-${{ github.event.pull_request.base.sha }}
+          name: benchmark-base
           path: base-results
 
       - name: Download PR benchmark results
         uses: actions/download-artifact@v4
         with:
-          name: benchmark-pr-${{ github.event.pull_request.head.sha }}
+          name: benchmark-pr
           path: pr-results
 
       - name: Prepare benchmark data for comparison
