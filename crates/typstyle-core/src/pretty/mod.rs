@@ -97,12 +97,12 @@ impl<'a> PrettyPrinter<'a> {
             return self.arena.text(text.to_string());
         }
         // When the text spans multiple lines, we should split it to ensure proper fitting.
-        let doc = self.arena.intersperse(
-            node.clone().into_text().lines().map(str::to_string),
-            self.arena.hardline(),
-        );
         self.arena
-            .on_nesting(move |l| doc.clone().nest(-(l as isize)).into_doc())
+            .intersperse(
+                node.clone().into_text().lines().map(str::to_string),
+                self.arena.hardline(),
+            )
+            .dedent_to_root()
     }
 
     /// For leaf only.
