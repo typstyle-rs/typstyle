@@ -5,9 +5,14 @@ import { DarkModeIcon, GitHubIcon, LightModeIcon, ShareIcon } from "./ui/Icons";
 interface HeaderProps {
   onSampleSelect: (content: string) => void;
   onShareClick: () => void;
+  isGeneratingShare?: boolean;
 }
 
-export function Header({ onSampleSelect, onShareClick }: HeaderProps) {
+export function Header({
+  onSampleSelect,
+  onShareClick,
+  isGeneratingShare = false,
+}: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
   return (
     <div className="navbar min-h-12 bg-base-200 shadow">
@@ -28,8 +33,13 @@ export function Header({ onSampleSelect, onShareClick }: HeaderProps) {
           onClick={onShareClick}
           className="btn btn-ghost btn-circle"
           title="Share this playground"
+          disabled={isGeneratingShare}
         >
-          <ShareIcon />
+          {isGeneratingShare ? (
+            <span className="loading loading-spinner loading-sm"></span>
+          ) : (
+            <ShareIcon />
+          )}
         </button>
 
         {/* GitHub Repo Link */}

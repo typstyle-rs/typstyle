@@ -6,6 +6,62 @@ export interface PlaygroundState {
   activeOutput: OutputType;
 }
 
+// Maximum URL length before using pastebin (browsers generally support 2000+ chars safely)
+const MAX_URL_LENGTH = 2000;
+
+// shz.al API base URL
+const PASTEBIN_API = "https://shz.al";
+
+/**
+ * Upload content to shz.al pastebin
+ */
+async function uploadToPastebin(content: string): Promise<string | null> {
+  try {
+    const formData = new FormData();
+    formData.append("c", content);
+    formData.append("e", "7d"); // 7 days expiration
+
+    const response = await fetch(PASTEBIN_API, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result = await response.json();
+    if (result.url) {
+      // Extract the paste ID from the URL (e.g., "https://shz.al/abcd" -> "abcd")
+      const urlParts = result.url.split("/");
+      return urlParts[urlParts.length - 1];
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error uploading to pastebin:", error);
+    return null;
+  }
+}
+
+/**
+ * Fetch content from shz.al pastebin
+ */
+async function fetchFromPastebin(pasteId: string): Promise<string | null> {
+  try {
+    const response = await fetch(`${PASTEBIN_API}/${pasteId}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.text();
+  } catch (error) {
+    console.error("Error fetching from pastebin:", error);
+    return null;
+  }
+}
+
 /**
  * Unicode-safe base64 encoding
  */
@@ -128,26 +184,82 @@ export function decodePlaygroundState(encoded: string): PlaygroundState | null {
 
 /**
  * Generates a shareable URL for the current playground state
+ * Automatically uses pastebin if URL becomes too long
  */
-export function generateShareUrl(state: PlaygroundState): string {
+export async function generateShareUrl(
+  state: PlaygroundState,
+): Promise<{ url: string; usedPastebin: boolean }> {
   const encoded = encodePlaygroundState(state);
-  if (!encoded) return window.location.href;
+  if (!encoded) return { url: window.location.href, usedPastebin: false };
 
-  const url = new URL(window.location.href);
-  url.searchParams.set("share", encoded);
-  return url.toString();
+  // Try normal URL encoding first
+  const baseUrl = new URL(window.location.href);
+  baseUrl.searchParams.delete("share");
+  baseUrl.searchParams.delete("paste");
+  baseUrl.searchParams.set("share", encoded);
+  const normalUrl = baseUrl.toString();
+
+  // If URL is within acceptable length, use it
+  if (normalUrl.length <= MAX_URL_LENGTH) {
+    return { url: normalUrl, usedPastebin: false };
+  }
+
+  // URL is too long, upload to pastebin
+  const stateString = JSON.stringify({
+    c: state.sourceCode,
+    f: state.formatOptions,
+    o: state.activeOutput,
+  });
+
+  const pasteId = await uploadToPastebin(stateString);
+  if (!pasteId) {
+    // Fallback to normal URL if pastebin fails
+    return { url: normalUrl, usedPastebin: false };
+  }
+
+  // Create pastebin URL
+  const pastebinUrl = new URL(window.location.href);
+  pastebinUrl.searchParams.delete("share");
+  pastebinUrl.searchParams.delete("paste");
+  pastebinUrl.searchParams.set("paste", pasteId);
+
+  return { url: pastebinUrl.toString(), usedPastebin: true };
 }
 
 /**
  * Extracts playground state from the current URL
+ * Supports both direct encoding and pastebin URLs
  */
-export function getStateFromUrl(): PlaygroundState | null {
+export async function getStateFromUrl(): Promise<PlaygroundState | null> {
   const url = new URL(window.location.href);
+
+  // Check for direct share parameter first
   const shareParam = url.searchParams.get("share");
+  if (shareParam) {
+    return decodePlaygroundState(shareParam);
+  }
 
-  if (!shareParam) return null;
+  // Check for pastebin parameter
+  const pasteParam = url.searchParams.get("paste");
+  if (pasteParam) {
+    const content = await fetchFromPastebin(pasteParam);
+    if (!content) return null;
 
-  return decodePlaygroundState(shareParam);
+    try {
+      const parsed = JSON.parse(content);
+      // Handle the compact format from pastebin
+      return {
+        sourceCode: parsed.c || "",
+        formatOptions: parsed.f || {},
+        activeOutput: parsed.o || "formatted",
+      };
+    } catch (error) {
+      console.error("Error parsing pastebin content:", error);
+      return null;
+    }
+  }
+
+  return null;
 }
 
 /**
