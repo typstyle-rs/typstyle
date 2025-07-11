@@ -24,7 +24,7 @@ jobs:
           run_id: ${{ github.event.workflow_run.id }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Read benchmark results
+      - name: Read benchmark results and PR info
         id: results
         run: |
           if [ -f benchmark-results.md ]; then
@@ -39,15 +39,14 @@ jobs:
       - name: Get PR number
         id: pr
         run: |
-          # Extract PR number from workflow_run event using jq
-          PR_NUMBER=$(echo '${{ toJSON(github.event.workflow_run.pull_requests) }}' | jq -r '.[0].number // empty')
-          if [ -n "$PR_NUMBER" ] && [ "$PR_NUMBER" != "null" ]; then
+          if [ -f pr-info/PR_NUMBER ]; then
+            PR_NUMBER=$(cat pr-info/PR_NUMBER)
             echo "number=${PR_NUMBER}" >> $GITHUB_OUTPUT
             echo "found=true" >> $GITHUB_OUTPUT
-            echo "Found PR #${PR_NUMBER}"
+            echo "Found PR #${PR_NUMBER} from artifact"
           else
             echo "found=false" >> $GITHUB_OUTPUT
-            echo "No PR found in workflow_run event"
+            echo "No PR number found in artifact"
           fi
 
       - name: Find existing comment

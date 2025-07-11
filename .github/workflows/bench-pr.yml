@@ -107,9 +107,17 @@ jobs:
           echo "Generated benchmark comparison report"
           cat benchmark-results.md
 
-      - name: Upload benchmark comparison
+      - name: Save PR number
+        run: |
+          mkdir -p ./pr-info
+          echo ${{ github.event.number }} > ./pr-info/PR_NUMBER
+          echo "Saved PR number: ${{ github.event.number }}"
+
+      - name: Upload benchmark comparison and PR info
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-comparison
-          path: benchmark-results.md
-          retention-days: 1
+          path: |
+            benchmark-results.md
+            pr-info/
+          retention-days: 7
