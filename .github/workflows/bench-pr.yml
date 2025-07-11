@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       force_rerun:
-        description: 'Force re-run benchmarks even if cache exists'
+        description: "Force re-run benchmarks even if cache exists"
         required: false
         default: false
         type: boolean
