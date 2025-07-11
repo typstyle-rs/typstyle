@@ -1,6 +1,0 @@
-{
-  "name": "typstyle-wasm",
-  "version": "0.1.0",
-  "main": "typstyle_wasm.js",
-  "type": "module"
-}
