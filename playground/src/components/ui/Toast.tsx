@@ -109,7 +109,7 @@ export function Toast({
   };
 
   return (
-    <div className="toast toast-top toast-end z-50">
+    <div className="toast z-50">
       <div className={`alert ${getAlertClass()}`}>
         {getIcon()}
         <span>{message}</span>

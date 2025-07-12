@@ -25,7 +25,17 @@ export function ShareModal({ shareState, onCopy, onClose }: ShareModalProps) {
       onClick={handleOverlayClick}
     >
       <div className="bg-base-100 rounded-lg p-6 max-w-md w-full mx-4">
-        <h2 className="text-xl font-bold mb-4">Share Playground</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Share Playground</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="btn btn-ghost btn-circle"
+            title="Close"
+          >
+            ✕
+          </button>
+        </div>
 
         <p className="text-sm text-base-content/70 mb-4">
           Copy this link to share your current playground state:
@@ -70,12 +80,6 @@ export function ShareModal({ shareState, onCopy, onClose }: ShareModalProps) {
             }`}
           >
             {shareState.copied ? "Copied!" : "Copy"}
-          </button>
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="btn">
-            Close
           </button>
         </div>
       </div>
