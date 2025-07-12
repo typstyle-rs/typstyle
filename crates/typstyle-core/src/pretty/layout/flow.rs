@@ -74,7 +74,7 @@ impl<'a> FlowStylist<'a> {
             if !self.at_line_start {
                 self.space_after = true;
             }
-            self.push_doc(doc, true, false);
+            self.push_doc(doc.as_line_suffix(), true, false);
         }
     }
 

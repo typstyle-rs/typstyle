@@ -108,7 +108,11 @@ impl<'a> ChainStylist<'a> {
                         self.items.push(if can_attach {
                             ChainItem::Attached(doc)
                         } else {
-                            ChainItem::Comment(doc)
+                            ChainItem::Comment(if child.kind() == SyntaxKind::BlockComment {
+                                doc
+                            } else {
+                                doc.as_line_suffix()
+                            })
                         });
                         self.has_comment = true;
                     } else if child.kind() == SyntaxKind::Space {
