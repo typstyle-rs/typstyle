@@ -1,6 +1,10 @@
 name: Reusable Benchmark Job
 # Reusable workflow for running benchmarks with caching
 
+permissions:
+  contents: read
+  actions: read
+
 on:
   workflow_call:
     inputs:
@@ -49,7 +53,9 @@ jobs:
         uses: actions/cache@v4
         id: bench-cache
         with:
-          path: target/criterion
+          path: |
+            target/criterion
+            target/bloat
           key: criterion-${{ inputs.branch_type }}-${{ steps.cache-key.outputs.content-hash }}
           # No restore-keys - benchmarks must match exact content for accuracy
 
@@ -59,8 +65,8 @@ jobs:
           # Check cache status and validate cached data
           if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ] && [ "${{ inputs.force_rerun }}" != "true" ]; then
             # Validate that cached data is complete and valid
-            if [ -d "target/criterion" ] && [ -n "$(ls -A target/criterion 2>/dev/null)" ]; then
-              echo "Found valid cached benchmark results"
+            if [ -d "target/criterion" ] && [ -n "$(ls -A target/criterion 2>/dev/null)" ] && [ -f "target/bloat/bloat-${{ inputs.branch_type }}.json" ] && [ -f "target/bloat/size-${{ inputs.branch_type }}.bytes" ]; then
+              echo "Found valid cached benchmark and bloat results"
               echo "Using cache from key: ${{ steps.bench-cache.outputs.cache-matched-key }}"
               echo "cache-hit=true" >> $GITHUB_OUTPUT
             else
@@ -80,6 +86,12 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         if: steps.check-cache.outputs.cache-hit != 'true'
 
+      - name: Install cargo-bloat
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-bloat
+
       - uses: Swatinem/rust-cache@v2
         if: steps.check-cache.outputs.cache-hit != 'true'
 
@@ -89,11 +101,38 @@ jobs:
           echo "Running ${{ inputs.branch_type }} branch benchmark..."
           cargo bench --workspace -- --save-baseline ${{ inputs.branch_type }}
 
+      - name: Build release binary and collect bloat data
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        run: |
+          echo "Building release binary for ${{ inputs.branch_type }} branch..."
+          BINARY_NAME="typstyle"
+          cargo build --release --bin $BINARY_NAME
+
+          if [ -f "target/release/$BINARY_NAME" ]; then
+            # Create bloat data directory
+            mkdir -p target/bloat
+
+            # Get binary size and save for comparison
+            BINARY_SIZE=$(stat -c%s target/release/$BINARY_NAME 2>/dev/null || stat -f%z target/release/$BINARY_NAME)
+            BINARY_SIZE_HUMAN=$(numfmt --to=iec-i --suffix=B $BINARY_SIZE)
+            echo "$BINARY_SIZE" > target/bloat/size-${{ inputs.branch_type }}.bytes
+
+            # Generate cargo-bloat report in JSON format
+            cargo bloat --release --crates --bin $BINARY_NAME --message-format json > target/bloat/bloat-${{ inputs.branch_type }}.json 2>/dev/null || echo "{}" > target/bloat/bloat-${{ inputs.branch_type }}.json
+
+            echo "Binary size: $BINARY_SIZE_HUMAN ($BINARY_SIZE bytes)"
+            echo "Cargo-bloat analysis completed"
+          else
+            echo "Warning: Release binary not found at target/release/$BINARY_NAME"
+          fi
+
       # Always upload artifacts for reliable cross-job data transfer
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-${{ inputs.branch_type }}
-          path: target/criterion
+          path: |
+            target/criterion
+            target/bloat
           retention-days: 1
           if-no-files-found: error
