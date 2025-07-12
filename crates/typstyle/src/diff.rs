@@ -59,6 +59,31 @@ impl std::fmt::Display for CodeDiff<'_> {
         let mut unified = self.diff.unified_diff();
         unified.missing_newline_hint(self.missing_newline_hint);
 
+        // Individual hunks (section of changes)
+        for hunk in unified.iter_hunks() {
+            writeln!(f, "{}", hunk.header())?;
+
+            // individual lines
+            for change in hunk.iter_changes() {
+                let value = change.value().show_nonprinting();
+                match change.tag() {
+                    ChangeTag::Equal => write!(f, " {value}")?,
+                    ChangeTag::Delete => write!(f, "{}{}", "-".red(), value.red())?,
+                    ChangeTag::Insert => write!(f, "{}{}", "+".green(), value.green())?,
+                }
+
+                if !self.diff.newline_terminated() {
+                    writeln!(f)?;
+                } else if change.missing_newline() {
+                    if self.missing_newline_hint {
+                        writeln!(f, "{}", "\n\\ No newline at end of file".red())?;
+                    } else {
+                        writeln!(f)?;
+                    }
+                }
+            }
+        }
+
         Ok(())
     }
 }
