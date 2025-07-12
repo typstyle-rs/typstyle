@@ -10,7 +10,7 @@ use std::{
 
 use anyhow::{bail, Context, Result};
 use itertools::Itertools;
-use log::{debug, error, warn};
+use log::{debug, error, info, warn};
 use typst_syntax::Source;
 use typstyle_core::{Config, Typstyle};
 use walkdir::{DirEntry, WalkDir};
@@ -169,7 +169,7 @@ fn format_one(
                 write_back(input.unwrap(), res)?;
             } else if args.check {
                 if let Some(path) = input {
-                    println!("Would reformat: {}", fs::relativize_path(path));
+                    info!("Would reformat: {}", fs::relativize_path(path));
                 } else {
                     // For stdin, we don't output anything in check mode
                     // just rely on the exit code

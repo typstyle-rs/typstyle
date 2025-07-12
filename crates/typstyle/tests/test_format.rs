@@ -95,7 +95,6 @@ fn test_one_check_quiet() {
     success: false
     exit_code: 1
     ----- stdout -----
-    Would reformat: a.typ
 
     ----- stderr -----
     ");
