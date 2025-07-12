@@ -119,7 +119,7 @@ jobs:
             # Calculate change indicators
             if [ $DIFF -eq 0 ]; then
               DIFF_TEXT="no change"
-              EMOJI="🟰"
+              EMOJI="="
             elif [ $DIFF -gt 0 ]; then
               DIFF_HUMAN=$(numfmt --to=iec-i --suffix=B $DIFF)
               DIFF_PERCENT=$(echo "scale=2; $DIFF * 100.0 / $BASE_SIZE" | bc -l)
