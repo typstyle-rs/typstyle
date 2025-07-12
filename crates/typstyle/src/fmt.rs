@@ -11,13 +11,13 @@ use std::{
 use anyhow::{bail, Context, Result};
 use itertools::Itertools;
 use log::{debug, error, warn};
-use similar::TextDiff;
 use typst_syntax::Source;
 use typstyle_core::{Config, Typstyle};
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{
     cli::{CliArguments, DebugArgs, StyleArgs},
+    diff::SourceDiff,
     fs, ExitStatus,
 };
 
@@ -154,7 +154,7 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
 /// - `Ok(FormatStatus::Unchanged)` if the file was unchanged or contained errors.
 /// - `Err` if reading from or writing to the file fails.
 fn format_one(
-    input: Option<&PathBuf>,
+    input: Option<&Path>,
     typstyle: &Typstyle,
     args: &CliArguments,
 ) -> Result<FormatResult> {
@@ -175,11 +175,7 @@ fn format_one(
                     // just rely on the exit code
                 }
             } else if args.diff {
-                if let Some(path) = input {
-                    print_unified_diff(&unformatted, res, &fs::relativize_path(path));
-                } else {
-                    print_unified_diff(&unformatted, res, "stdin");
-                }
+                print_unified_diff(&unformatted, res, input);
             } else {
                 print!("{res}");
             }
@@ -243,7 +239,7 @@ fn format_debug(content: &str, typstyle: &Typstyle, args: &DebugArgs) -> FormatR
     }
 }
 
-fn get_input(input: Option<&PathBuf>) -> Result<String> {
+fn get_input(input: Option<&Path>) -> Result<String> {
     match input {
         Some(path) => std::fs::read_to_string(path)
             .with_context(|| format!("failed to read {}", path.display())),
@@ -294,8 +290,13 @@ fn resolve_typst_files(input: &[PathBuf]) -> Vec<PathBuf> {
     files
 }
 
-fn print_unified_diff(original: &str, formatted: &str, filename: &str) {
-    let diff = TextDiff::from_lines(original, formatted);
-    let mut unified = diff.unified_diff();
-    print!("{}", unified.context_radius(3).header(filename, filename));
+fn print_unified_diff(original: &str, modified: &str, path: Option<&Path>) {
+    print!(
+        "{}",
+        SourceDiff {
+            original,
+            modified,
+            path,
+        }
+    );
 }

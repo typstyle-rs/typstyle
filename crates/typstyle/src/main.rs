@@ -1,4 +1,5 @@
 mod cli;
+mod diff;
 mod fmt;
 mod fs;
 mod logging;
