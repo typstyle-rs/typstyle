@@ -71,12 +71,6 @@ fn test_stdin_check() {
     success: false
     exit_code: 1
     ----- stdout -----
-    --- stdin
-    +++ stdin
-    @@ -1 +1 @@
-    -#let  x  = (1+2)
-    \ No newline at end of file
-    +#let x = (1 + 2)
 
     ----- stderr -----
     ");
@@ -90,12 +84,11 @@ fn test_stdin_diff() {
     success: false
     exit_code: 1
     ----- stdout -----
-    --- stdin
-    +++ stdin
     @@ -1 +1 @@
     -#let  x  = (1+2)
     \ No newline at end of file
     +#let x = (1 + 2)
+
 
     ----- stderr -----
     ");
