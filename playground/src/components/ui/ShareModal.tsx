@@ -1,27 +1,14 @@
-import { useState } from "react";
-import { copyToClipboard } from "@/utils";
+import type { ShareState } from "@/hooks/useShareManager";
 
 interface ShareModalProps {
-  isOpen: boolean;
+  shareState: ShareState;
+  onCopy: () => Promise<boolean>;
   onClose: () => void;
-  shareUrl: string;
-  usedPastebin?: boolean;
 }
 
-export function ShareModal({
-  isOpen,
-  onClose,
-  shareUrl,
-  usedPastebin = false,
-}: ShareModalProps) {
-  const [copied, setCopied] = useState(false);
-
+export function ShareModal({ shareState, onCopy, onClose }: ShareModalProps) {
   const handleCopy = async () => {
-    const success = await copyToClipboard(shareUrl);
-    if (success) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    await onCopy();
   };
 
   const handleOverlayClick = (e: React.MouseEvent) => {
@@ -30,11 +17,11 @@ export function ShareModal({
     }
   };
 
-  if (!isOpen) return null;
+  if (!shareState.isOpen) return null;
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-40"
       onClick={handleOverlayClick}
     >
       <div className="bg-base-100 rounded-lg p-6 max-w-md w-full mx-4">
@@ -44,7 +31,7 @@ export function ShareModal({
           Copy this link to share your current playground state:
         </p>
 
-        {usedPastebin && (
+        {shareState.usedPastebin && (
           <div className="alert alert-info mb-4">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -68,7 +55,7 @@ export function ShareModal({
         <div className="flex gap-2 mb-4">
           <input
             type="text"
-            value={shareUrl}
+            value={shareState.url}
             readOnly
             placeholder="Share link"
             title="Share link"
@@ -78,14 +65,16 @@ export function ShareModal({
           <button
             type="button"
             onClick={handleCopy}
-            className={`btn ${copied ? "btn-success" : "btn-primary"}`}
+            className={`btn ${
+              shareState.copied ? "btn-success" : "btn-primary"
+            }`}
           >
-            {copied ? "Copied!" : "Copy"}
+            {shareState.copied ? "Copied!" : "Copy"}
           </button>
         </div>
 
         <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="btn btn-ghost">
+          <button type="button" onClick={onClose} className="btn">
             Close
           </button>
         </div>

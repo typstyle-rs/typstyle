@@ -62,41 +62,26 @@ async function fetchFromPastebin(pasteId: string): Promise<string | null> {
 }
 
 /**
- * Unicode-safe base64 encoding
+ * Unicode-safe base64 encoding using native browser APIs
  */
 function unicodeToBase64(str: string): string {
-  const encoder = new TextEncoder();
-  const bytes = encoder.encode(str);
-  const binary = Array.from(bytes, (byte) => String.fromCharCode(byte)).join(
-    "",
-  );
-  return btoa(binary);
+  return btoa(unescape(encodeURIComponent(str)));
 }
 
 /**
- * Unicode-safe base64 decoding
+ * Unicode-safe base64 decoding using native browser APIs
  */
 function base64ToUnicode(base64: string): string {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  const decoder = new TextDecoder();
-  return decoder.decode(bytes);
+  return decodeURIComponent(escape(atob(base64)));
 }
 
 /**
- * Compresses a string using a simple run-length encoding approach
- * combined with URL-safe base64 encoding for sharing.
+ * Compresses a string using URL-safe base64 encoding for sharing.
  */
 export function compressForUrl(data: string): string {
   try {
-    // Convert to JSON string first
-    const jsonString = JSON.stringify(data);
-
     // Unicode-safe base64 encoding
-    const base64 = unicodeToBase64(jsonString);
+    const base64 = unicodeToBase64(data);
 
     // Make it URL-safe by replacing characters
     return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
@@ -120,10 +105,7 @@ export function decompressFromUrl(compressed: string): string {
     }
 
     // Unicode-safe base64 decoding
-    const jsonString = base64ToUnicode(base64);
-
-    // Parse back to original data
-    return JSON.parse(jsonString);
+    return base64ToUnicode(base64);
   } catch (error) {
     console.error("Error decompressing data from URL:", error);
     return "";
@@ -262,27 +244,16 @@ export async function getStateFromUrl(): Promise<PlaygroundState | null> {
 }
 
 /**
- * Copies text to the clipboard
+ * Copies text to the clipboard using modern API
  */
 export async function copyToClipboard(text: string): Promise<boolean> {
   try {
     if (navigator.clipboard && window.isSecureContext) {
       await navigator.clipboard.writeText(text);
       return true;
-    } else {
-      // Fallback for older browsers
-      const textArea = document.createElement("textarea");
-      textArea.value = text;
-      textArea.style.position = "fixed";
-      textArea.style.opacity = "0";
-      document.body.appendChild(textArea);
-      textArea.focus();
-      textArea.select();
-
-      const successful = document.execCommand("copy");
-      document.body.removeChild(textArea);
-      return successful;
     }
+    // For modern browsers, fallback should rarely be needed
+    throw new Error("Clipboard API not available");
   } catch (error) {
     console.error("Error copying to clipboard:", error);
     return false;

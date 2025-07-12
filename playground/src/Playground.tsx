@@ -5,10 +5,11 @@ import { SettingsPanel } from "./components/forms/SettingsPanel";
 import { Header } from "./components/Header";
 import { MainLayout } from "./components/MainLayout";
 import { ShareModal } from "./components/ui/ShareModal";
+import { ToastContainer } from "./components/ui/ToastContainer";
 import { DEFAULT_FORMAT_OPTIONS } from "./constants";
-import { useScreenSize, useTypstFormatter } from "./hooks";
+import { useScreenSize, useShareManager, useTypstFormatter } from "./hooks";
 import type { FormatOptions, OutputType } from "./types";
-import { generateShareUrl, getStateFromUrl } from "./utils";
+import { getStateFromUrl } from "./utils";
 
 function Playground() {
   const [sourceCode, setSourceCode] = useState("");
@@ -16,14 +17,11 @@ function Playground() {
     DEFAULT_FORMAT_OPTIONS,
   );
   const [activeOutput, setActiveOutput] = useState<OutputType>("formatted");
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
-  const [isGeneratingShare, setIsGeneratingShare] = useState(false);
-  const [usedPastebin, setUsedPastebin] = useState(false);
 
   // Custom hooks
   const screenSize = useScreenSize();
   const formatter = useTypstFormatter(sourceCode, formatOptions, activeOutput);
+  const shareManager = useShareManager();
 
   // Load state from URL on component mount
   useEffect(() => {
@@ -60,31 +58,16 @@ function Playground() {
   };
 
   const handleShareClick = async () => {
-    setIsGeneratingShare(true);
     const playgroundState = {
       sourceCode,
       formatOptions,
       activeOutput,
     };
-
-    try {
-      const result = await generateShareUrl(playgroundState);
-      setShareUrl(result.url);
-      setUsedPastebin(result.usedPastebin);
-      setIsShareModalOpen(true);
-    } catch (error) {
-      console.error("Error generating share URL:", error);
-      // Fallback to current URL
-      setShareUrl(window.location.href);
-      setUsedPastebin(false);
-      setIsShareModalOpen(true);
-    } finally {
-      setIsGeneratingShare(false);
-    }
+    await shareManager.generateShare(playgroundState);
   };
 
   const handleShareModalClose = () => {
-    setIsShareModalOpen(false);
+    shareManager.closeModal();
   };
 
   const optionsPanel = (
@@ -132,7 +115,7 @@ function Playground() {
       <Header
         onSampleSelect={handleSampleSelect}
         onShareClick={handleShareClick}
-        isGeneratingShare={isGeneratingShare}
+        isGeneratingShare={shareManager.shareState.isGenerating}
       />
 
       <MainLayout
@@ -148,12 +131,17 @@ function Playground() {
       {/* Global floating error card */}
       <FloatingErrorCard error={formatter.error} />
 
+      {/* Toast notifications */}
+      <ToastContainer
+        toasts={shareManager.toasts}
+        onDismiss={shareManager.dismissToast}
+      />
+
       {/* Share Modal */}
       <ShareModal
-        isOpen={isShareModalOpen}
+        shareState={shareManager.shareState}
+        onCopy={shareManager.copyShareUrl}
         onClose={handleShareModalClose}
-        shareUrl={shareUrl}
-        usedPastebin={usedPastebin}
       />
     </div>
   );
