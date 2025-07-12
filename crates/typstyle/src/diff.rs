@@ -1,7 +1,11 @@
 // Borrowed from https://github.com/astral-sh/ruff/blob/main/crates/ruff_linter/src/source_kind.rs
 
+use std::{borrow::Cow, path::Path};
+
 use colored::Colorize;
 use similar::{ChangeTag, TextDiff};
+
+use crate::fs;
 
 pub struct SourceDiff<'a> {
     pub original: &'a str,
@@ -14,7 +18,6 @@ impl std::fmt::Display for SourceDiff<'_> {
         let mut diff = CodeDiff::new(self.original, self.modified);
 
         let relative_path = self.path.map(fs::relativize_path);
-
         if let Some(relative_path) = &relative_path {
             diff.header(relative_path, relative_path);
         }
@@ -84,11 +87,9 @@ impl std::fmt::Display for CodeDiff<'_> {
         Ok(())
     }
 }
-use std::{borrow::Cow, path::Path};
 
-use crate::fs;
-
-pub(crate) trait ShowNonprinting {
+// Borrowed from https://github.com/astral-sh/ruff/blob/main/crates/ruff_linter/src/text_helpers.rs
+trait ShowNonprinting {
     fn show_nonprinting(&self) -> Cow<'_, str>;
 }
 
