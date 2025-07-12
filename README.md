@@ -45,6 +45,7 @@ Arguments:
 Options:
   -i, --inplace  Format the file in place
       --check    Run in 'check' mode. Exits with 0 if input is formatted correctly. Exits with a non-zero status code if formatting is required
+      --diff     Run in 'diff' mode. Shows unified diff of what formatting changes would be made. Exits with 0 if input is formatted correctly. Exits with a non-zero status code if formatting is required
   -h, --help     Print help
   -V, --version  Print version
 

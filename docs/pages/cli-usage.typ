@@ -53,6 +53,11 @@ typstyle --inplace file.typ
 typstyle --check src/
 ```
 
+```bash
+# Like --check, but shows unified diff of what formatting changes would be made
+typstyle --diff src/
+```
+
 === Format Configuration
 
 ==== Line Width
