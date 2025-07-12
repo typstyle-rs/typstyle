@@ -16,7 +16,7 @@ export function useToast() {
     (message: string, type: ToastType = "info") => {
       // Check if there's already a toast with the same message and type
       const existingToast = toasts.find(
-        (toast) => toast.message === message && toast.type === type
+        (toast) => toast.message === message && toast.type === type,
       );
 
       if (existingToast) {
@@ -27,7 +27,7 @@ export function useToast() {
       // Special handling for share workflow: dismiss "generated" toasts when "copied" appears
       if (message.includes("copied") && type === "success") {
         setToasts((prev) =>
-          prev.filter((toast) => !toast.message.includes("generated"))
+          prev.filter((toast) => !toast.message.includes("generated")),
         );
       }
 

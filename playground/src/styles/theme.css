@@ -55,7 +55,7 @@
   --color-accent: oklch(70% 0.2 340); /* Bright magenta-pink accent for titles */
   --color-accent-content: oklch(15% 0.05 340); /* Dark text on magenta background */
 
-  --color-neutral: oklch(45% 0.211 324.591);
+  --color-neutral: oklch(59% 0.293 322.896);
   --color-neutral-content: oklch(96% 0.02 290);
 
   --color-info: oklch(70% 0.16 220);

@@ -259,3 +259,20 @@ export async function copyToClipboard(text: string): Promise<boolean> {
     return false;
   }
 }
+
+/**
+ * Removes share parameters from the current URL to clean up the address bar
+ */
+export function cleanUrlAfterLoad(): void {
+  const url = new URL(window.location.href);
+  const hasShareParams =
+    url.searchParams.has("share") || url.searchParams.has("paste");
+
+  if (hasShareParams) {
+    url.searchParams.delete("share");
+    url.searchParams.delete("paste");
+
+    // Update the URL without triggering a page reload
+    window.history.replaceState({}, "", url.toString());
+  }
+}

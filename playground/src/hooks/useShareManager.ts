@@ -45,16 +45,13 @@ export function useShareManager() {
         }));
 
         if (result.usedPastebin) {
-          toast.success(
-            "Share link generated using pastebin for large content",
-          );
+          toast.success("Share link generated (via pastebin)");
         } else {
-          toast.success("Share link generated successfully");
+          toast.success("Share link generated");
         }
       } catch (error) {
         console.error("Error generating share URL:", error);
-        const errorMessage =
-          "Failed to generate share link. Using current URL as fallback.";
+        const errorMessage = "Failed to generate share link";
         setShareState((prev) => ({
           ...prev,
           isGenerating: false,
@@ -75,13 +72,13 @@ export function useShareManager() {
     const success = await copyToClipboard(shareState.url);
     if (success) {
       setShareState((prev) => ({ ...prev, copied: true }));
-      toast.success("Share link copied to clipboard");
+      toast.success("Copied to clipboard");
       // Reset copied state after 2 seconds
       setTimeout(() => {
         setShareState((prev) => ({ ...prev, copied: false }));
       }, 2000);
     } else {
-      toast.error("Failed to copy link to clipboard");
+      toast.error("Failed to copy to clipboard");
     }
     return success;
   }, [shareState.url, toast]);

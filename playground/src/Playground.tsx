@@ -9,7 +9,7 @@ import { ToastContainer } from "./components/ui/ToastContainer";
 import { DEFAULT_FORMAT_OPTIONS } from "./constants";
 import { useScreenSize, useShareManager, useTypstFormatter } from "./hooks";
 import type { FormatOptions, OutputType } from "./types";
-import { getStateFromUrl } from "./utils";
+import { cleanUrlAfterLoad, getStateFromUrl } from "./utils";
 
 function Playground() {
   const [sourceCode, setSourceCode] = useState("");
@@ -34,6 +34,9 @@ function Playground() {
           ...urlState.formatOptions,
         });
         setActiveOutput(urlState.activeOutput || "formatted");
+
+        // Clean the URL after successfully loading the state
+        cleanUrlAfterLoad();
       }
     };
 

@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import type { ShareState } from "@/hooks/useShareManager";
 
 interface ShareModalProps {
@@ -16,6 +17,23 @@ export function ShareModal({ shareState, onCopy, onClose }: ShareModalProps) {
       onClose();
     }
   };
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    if (!shareState.isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === "c") {
+        e.preventDefault();
+        handleCopy();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [shareState.isOpen, onClose, handleCopy]);
 
   if (!shareState.isOpen) return null;
 
@@ -78,6 +96,7 @@ export function ShareModal({ shareState, onCopy, onClose }: ShareModalProps) {
             className={`btn ${
               shareState.copied ? "btn-success" : "btn-primary"
             }`}
+            title={shareState.copied ? "Copied!" : "Copy to clipboard (Ctrl+C)"}
           >
             {shareState.copied ? "Copied!" : "Copy"}
           </button>
