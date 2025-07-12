@@ -57,6 +57,7 @@ jobs:
     name: Generate benchmark comparison
     runs-on: ubuntu-latest
     needs: [bench-base, bench-pr]
+    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
 
@@ -110,8 +111,8 @@ jobs:
       - name: Save PR number
         run: |
           mkdir -p ./pr-info
-          echo ${{ github.event.number }} > ./pr-info/PR_NUMBER
-          echo "Saved PR number: ${{ github.event.number }}"
+          echo ${{ github.event.pull_request.number }} > ./pr-info/PR_NUMBER
+          echo "Saved PR number: ${{ github.event.pull_request.number }}"
 
       - name: Upload benchmark comparison and PR info
         uses: actions/upload-artifact@v4

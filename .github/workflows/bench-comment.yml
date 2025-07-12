@@ -1,6 +1,5 @@
 name: Benchmark Comment
 # This workflow posts benchmark results as PR comments.
-# It runs with pull_request_target to have write permissions for forks.
 
 on:
   workflow_run:
@@ -12,7 +11,7 @@ jobs:
   comment:
     name: Post benchmark results
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
     permissions:
       pull-requests: write
       actions: read
