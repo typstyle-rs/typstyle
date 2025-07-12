@@ -27,12 +27,16 @@ pub(crate) enum FormatMode {
     Write,
     /// Check if the file is formatted, but do not write the formatted contents back.
     Check,
+    /// Show unified diff of what formatting changes would be made.
+    Diff,
 }
 
 impl FormatMode {
     pub(crate) fn from_cli(cli: &CliArguments) -> Self {
         if cli.check {
             FormatMode::Check
+        } else if cli.diff {
+            FormatMode::Diff
         } else {
             FormatMode::Write
         }
@@ -55,7 +59,7 @@ pub fn format_stdin(args: &CliArguments) -> Result<ExitStatus> {
     let typstyle = Typstyle::new(args.style.to_config());
 
     format_one(None, &typstyle, args).map(|res| match res {
-        FormatResult::Formatted(_) if args.check => ExitStatus::Failure,
+        FormatResult::Formatted(_) if args.check || args.diff => ExitStatus::Failure,
         _ => ExitStatus::Success,
     })
 }
@@ -115,6 +119,12 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
             summary.unchanged_count,
             duration
         ),
+        FormatMode::Diff => debug!(
+            "{} would be reformatted ({} already formatted), checked with diff in {:?}",
+            num_files(summary.format_count),
+            summary.unchanged_count,
+            duration
+        ),
     }
     if summary.error_count > 0 {
         // Syntax errors are not counted here.
@@ -125,7 +135,7 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
     }
 
     Ok(match mode {
-        FormatMode::Check if summary.format_count > 0 => ExitStatus::Failure,
+        FormatMode::Check | FormatMode::Diff if summary.format_count > 0 => ExitStatus::Failure,
         _ => ExitStatus::Success,
     })
 }
@@ -148,7 +158,7 @@ fn format_one(
     typstyle: &Typstyle,
     args: &CliArguments,
 ) -> Result<FormatResult> {
-    let use_stdout = !args.inplace && !args.check;
+    let use_stdout = !args.inplace && !args.check && !args.diff;
     let unformatted = get_input(input)?;
 
     let res = format_debug(&unformatted, typstyle, &args.debug);
@@ -158,6 +168,13 @@ fn format_one(
                 // We have already validated that the input is Some.
                 write_back(input.unwrap(), res)?;
             } else if args.check {
+                if let Some(path) = input {
+                    println!("Would reformat: {}", fs::relativize_path(path));
+                } else {
+                    // For stdin, we don't output anything in check mode
+                    // just rely on the exit code
+                }
+            } else if args.diff {
                 if let Some(path) = input {
                     print_unified_diff(&unformatted, res, &fs::relativize_path(path));
                 } else {

@@ -16,13 +16,18 @@ pub struct CliArguments {
     pub input: Vec<PathBuf>,
 
     /// Format the file in place
-    #[arg(short, long, default_value_t = false, conflicts_with = "check")]
+    #[arg(short, long, default_value_t = false, conflicts_with_all = ["check", "diff"])]
     pub inplace: bool,
 
     /// Run in 'check' mode. Exits with 0 if input is formatted correctly.
     /// Exits with a non-zero status code if formatting is required.
-    #[arg(long, default_value_t = false, global = true)]
+    #[arg(long, default_value_t = false, global = true, conflicts_with = "diff")]
     pub check: bool,
+
+    /// Run in 'diff' mode. Shows unified diff of what formatting changes would be made.
+    /// Exits with 0 if input is formatted correctly. Exits with a non-zero status code if formatting is required.
+    #[arg(long, default_value_t = false, global = true, conflicts_with = "check")]
+    pub diff: bool,
 
     #[command(flatten, next_help_heading = "Format Configuration")]
     pub style: StyleArgs,
