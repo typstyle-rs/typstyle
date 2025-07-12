@@ -10,8 +10,8 @@
   --color-base-200: oklch(96% 0.067 122.328);
   --color-base-300: oklch(93% 0.127 124.321);
   --color-base-content: oklch(45% 0.124 130.933);
-  --color-primary: oklch(80% 0.114 19.571);
-  --color-primary-content: oklch(25% 0.092 26.042);
+  --color-primary: oklch(89% 0.196 126.665);
+  --color-primary-content: oklch(45% 0.124 130.933);
   --color-secondary: oklch(81% 0.111 293.571);
   --color-secondary-content: oklch(28% 0.141 291.089);
   --color-accent: oklch(80% 0.105 251.813);
@@ -55,7 +55,7 @@
   --color-accent: oklch(70% 0.2 340); /* Bright magenta-pink accent for titles */
   --color-accent-content: oklch(15% 0.05 340); /* Dark text on magenta background */
 
-  --color-neutral: oklch(45% 0.211 324.591);
+  --color-neutral: oklch(59% 0.293 322.896);
   --color-neutral-content: oklch(96% 0.02 290);
 
   --color-info: oklch(70% 0.16 220);
