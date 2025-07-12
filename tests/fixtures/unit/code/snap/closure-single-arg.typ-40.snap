@@ -11,11 +11,9 @@ input_file: tests/fixtures/unit/code/closure-single-arg.typ
   let new_hlines = range(
     0,
     row_len + 1,
-  ).filter(
-    y => (
-      hlines.filter(h => h.y == y).len()
-        == 0
-    ),
-  )
+  ).filter(y => (
+    hlines.filter(h => h.y == y).len()
+      == 0
+  ))
   new_hlines
 }
