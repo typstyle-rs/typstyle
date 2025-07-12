@@ -374,3 +374,51 @@ fn test_many_check() {
 
     assert!(space.all_unmodified());
 }
+
+#[test]
+fn test_diff_single_line() {
+    let mut space = Workspace::new();
+    space.write_tracked("single.typ", "#let x=1+2");
+
+    typstyle_cmd_snapshot!(space.cli().args(["single.typ", "--diff"]), @r"
+    success: false
+    exit_code: 1
+    ----- stdout -----
+    --- single.typ
+    +++ single.typ
+    @@ -1 +1 @@
+    -#let x=1+2
+    \ No newline at end of file
+    +#let x = 1 + 2
+
+
+    ----- stderr -----
+    ");
+
+    assert!(space.all_unmodified());
+}
+
+#[test]
+fn test_diff_multiline() {
+    let mut space = Workspace::new();
+    space.write_tracked("multi.typ", "#let x=1\n#let y=2+3");
+
+    typstyle_cmd_snapshot!(space.cli().args(["multi.typ", "--diff"]), @r"
+    success: false
+    exit_code: 1
+    ----- stdout -----
+    --- multi.typ
+    +++ multi.typ
+    @@ -1,2 +1,2 @@
+    -#let x=1
+    -#let y=2+3
+    \ No newline at end of file
+    +#let x = 1
+    +#let y = 2 + 3
+
+
+    ----- stderr -----
+    ");
+
+    assert!(space.all_unmodified());
+}

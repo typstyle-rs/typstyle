@@ -27,6 +27,7 @@ clap.workspace = true
 clap_complete = { workspace = true, optional = true }
 itertools.workspace = true
 path-absolutize.workspace = true
+similar.workspace = true
 walkdir.workspace = true
 
 log.workspace = true

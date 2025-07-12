@@ -77,6 +77,24 @@ fn test_stdin_check() {
 }
 
 #[test]
+fn test_stdin_diff() {
+    let space: Workspace = Workspace::new();
+
+    typstyle_cmd_snapshot!(space.cli().args(["--diff"]).pass_stdin(STDIN), @r"
+    success: false
+    exit_code: 1
+    ----- stdout -----
+    @@ -1 +1 @@
+    -#let  x  = (1+2)
+    \ No newline at end of file
+    +#let x = (1 + 2)
+
+
+    ----- stderr -----
+    ");
+}
+
+#[test]
 fn test_stdin_inplace() {
     let space = Workspace::new();
 

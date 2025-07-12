@@ -55,6 +55,7 @@ console = { version = "*", default-features = false }
 insta = "1.43"
 insta-cmd = "0.6"
 libtest-mimic = "0.8.1"
+similar = "2.7"
 similar-asserts = "1.7"
 tempfile = "3"
 toml = "0.8"

@@ -17,6 +17,7 @@ use walkdir::{DirEntry, WalkDir};
 
 use crate::{
     cli::{CliArguments, DebugArgs, StyleArgs},
+    diff::SourceDiff,
     fs, ExitStatus,
 };
 
@@ -26,12 +27,16 @@ pub(crate) enum FormatMode {
     Write,
     /// Check if the file is formatted, but do not write the formatted contents back.
     Check,
+    /// Show unified diff of what formatting changes would be made.
+    Diff,
 }
 
 impl FormatMode {
     pub(crate) fn from_cli(cli: &CliArguments) -> Self {
         if cli.check {
             FormatMode::Check
+        } else if cli.diff {
+            FormatMode::Diff
         } else {
             FormatMode::Write
         }
@@ -54,7 +59,7 @@ pub fn format_stdin(args: &CliArguments) -> Result<ExitStatus> {
     let typstyle = Typstyle::new(args.style.to_config());
 
     format_one(None, &typstyle, args).map(|res| match res {
-        FormatResult::Formatted(_) if args.check => ExitStatus::Failure,
+        FormatResult::Formatted(_) if args.check || args.diff => ExitStatus::Failure,
         _ => ExitStatus::Success,
     })
 }
@@ -114,6 +119,12 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
             summary.unchanged_count,
             duration
         ),
+        FormatMode::Diff => debug!(
+            "{} would be reformatted ({} already formatted), checked with diff in {:?}",
+            num_files(summary.format_count),
+            summary.unchanged_count,
+            duration
+        ),
     }
     if summary.error_count > 0 {
         // Syntax errors are not counted here.
@@ -124,7 +135,7 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
     }
 
     Ok(match mode {
-        FormatMode::Check if summary.format_count > 0 => ExitStatus::Failure,
+        FormatMode::Check | FormatMode::Diff if summary.format_count > 0 => ExitStatus::Failure,
         _ => ExitStatus::Success,
     })
 }
@@ -143,11 +154,11 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
 /// - `Ok(FormatStatus::Unchanged)` if the file was unchanged or contained errors.
 /// - `Err` if reading from or writing to the file fails.
 fn format_one(
-    input: Option<&PathBuf>,
+    input: Option<&Path>,
     typstyle: &Typstyle,
     args: &CliArguments,
 ) -> Result<FormatResult> {
-    let use_stdout = !args.inplace && !args.check;
+    let use_stdout = !args.inplace && !args.check && !args.diff;
     let unformatted = get_input(input)?;
 
     let res = format_debug(&unformatted, typstyle, &args.debug);
@@ -159,7 +170,12 @@ fn format_one(
             } else if args.check {
                 if let Some(path) = input {
                     info!("Would reformat: {}", fs::relativize_path(path));
+                } else {
+                    // For stdin, we don't output anything in check mode
+                    // just rely on the exit code
                 }
+            } else if args.diff {
+                print_unified_diff(&unformatted, res, input);
             } else {
                 print!("{res}");
             }
@@ -223,7 +239,7 @@ fn format_debug(content: &str, typstyle: &Typstyle, args: &DebugArgs) -> FormatR
     }
 }
 
-fn get_input(input: Option<&PathBuf>) -> Result<String> {
+fn get_input(input: Option<&Path>) -> Result<String> {
     match input {
         Some(path) => std::fs::read_to_string(path)
             .with_context(|| format!("failed to read {}", path.display())),
@@ -272,4 +288,15 @@ fn resolve_typst_files(input: &[PathBuf]) -> Vec<PathBuf> {
         files.sort_unstable();
     }
     files
+}
+
+fn print_unified_diff(original: &str, modified: &str, path: Option<&Path>) {
+    print!(
+        "{}",
+        SourceDiff {
+            original,
+            modified,
+            path,
+        }
+    );
 }

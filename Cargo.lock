@@ -3751,6 +3751,7 @@ dependencies = [
  "itertools 0.14.0",
  "log",
  "path-absolutize",
+ "similar",
  "tempfile",
  "typst-syntax",
  "typstyle-core",

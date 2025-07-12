@@ -97,6 +97,7 @@ Use check mode in CI/CD to ensure code is properly formatted:
 
 ```bash
 typstyle --check src/
+typstyle --diff src/
 ```
 
 This exits with code 0 if files are properly formatted, non-zero otherwise.
