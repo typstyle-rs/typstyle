@@ -1,0 +1,67 @@
+name: Benchmark Comment
+# This workflow posts benchmark results as PR comments.
+
+on:
+  workflow_run:
+    workflows: ["Benchmark for PR"]
+    types:
+      - completed
+
+jobs:
+  comment:
+    name: Post benchmark results
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    permissions:
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Download benchmark comparison
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          name: benchmark-comparison
+          run_id: ${{ github.event.workflow_run.id }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read benchmark results and PR info
+        id: results
+        run: |
+          if [ -f benchmark-results.md ]; then
+            echo "BENCHMARK_COMMENT<<EOF" >> $GITHUB_OUTPUT
+            cat benchmark-results.md >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "No benchmark results found"
+            exit 1
+          fi
+
+      - name: Get PR number
+        id: pr
+        run: |
+          if [ -f pr-info/PR_NUMBER ]; then
+            PR_NUMBER=$(cat pr-info/PR_NUMBER)
+            echo "number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "Found PR #${PR_NUMBER} from artifact"
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "No PR number found in artifact"
+          fi
+
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: fc
+        if: steps.pr.outputs.found == 'true'
+        with:
+          issue-number: ${{ steps.pr.outputs.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "### 📊 Benchmark Performance Report"
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v4
+        if: steps.pr.outputs.found == 'true'
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ steps.pr.outputs.number }}
+          body: ${{ steps.results.outputs.BENCHMARK_COMMENT }}
+          edit-mode: replace

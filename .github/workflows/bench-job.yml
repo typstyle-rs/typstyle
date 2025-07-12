@@ -1,0 +1,99 @@
+name: Reusable Benchmark Job
+# Reusable workflow for running benchmarks with caching
+
+on:
+  workflow_call:
+    inputs:
+      branch_type:
+        description: "Type of branch (base or pr)"
+        required: true
+        type: string
+      git_ref:
+        description: "Git reference to checkout"
+        required: true
+        type: string
+      repository:
+        description: "Repository to checkout from"
+        required: false
+        type: string
+        default: ""
+      force_rerun:
+        description: "Force re-run benchmarks even if cache exists"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  benchmark:
+    name: Benchmark ${{ inputs.branch_type }} branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repository || github.repository }}
+          ref: ${{ inputs.git_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # Generate cache key from code content for smart caching
+      - name: Generate cache key from code content
+        id: cache-key
+        run: |
+          # Use GitHub's built-in hashFiles function for simpler and more reliable hashing
+          CONTENT_HASH="${{ hashFiles('crates/typstyle-core/**/*.rs', 'Cargo.lock') }}"
+          echo "content-hash=${CONTENT_HASH:0:16}" >> $GITHUB_OUTPUT
+          echo "Generated content hash: ${CONTENT_HASH:0:16}"
+
+      # Cache criterion benchmark data using content-based keys
+      - name: Cache criterion benchmark data
+        uses: actions/cache@v4
+        id: bench-cache
+        with:
+          path: target/criterion
+          key: criterion-${{ inputs.branch_type }}-${{ steps.cache-key.outputs.content-hash }}
+          # No restore-keys - benchmarks must match exact content for accuracy
+
+      - name: Check for cached benchmark
+        id: check-cache
+        run: |
+          # Check cache status and validate cached data
+          if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ] && [ "${{ inputs.force_rerun }}" != "true" ]; then
+            # Validate that cached data is complete and valid
+            if [ -d "target/criterion" ] && [ -n "$(ls -A target/criterion 2>/dev/null)" ]; then
+              echo "Found valid cached benchmark results"
+              echo "Using cache from key: ${{ steps.bench-cache.outputs.cache-matched-key }}"
+              echo "cache-hit=true" >> $GITHUB_OUTPUT
+            else
+              echo "Cache hit but data incomplete, will re-run benchmark"
+              echo "cache-hit=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            if [ "${{ inputs.force_rerun }}" == "true" ]; then
+              echo "Forcing benchmark rerun (cache ignored)"
+            else
+              echo "No cached benchmark results found"
+            fi
+            echo "cache-hit=false" >> $GITHUB_OUTPUT
+          fi
+
+      # Only install Rust and dependencies if we need to run benchmarks
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.check-cache.outputs.cache-hit != 'true'
+
+      - uses: Swatinem/rust-cache@v2
+        if: steps.check-cache.outputs.cache-hit != 'true'
+
+      - name: Run benchmark
+        if: steps.check-cache.outputs.cache-hit != 'true'
+        run: |
+          echo "Running ${{ inputs.branch_type }} branch benchmark..."
+          cargo bench --workspace -- --save-baseline ${{ inputs.branch_type }}
+
+      # Always upload artifacts for reliable cross-job data transfer
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-${{ inputs.branch_type }}
+          path: target/criterion
+          retention-days: 1
+          if-no-files-found: error
