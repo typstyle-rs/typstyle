@@ -112,15 +112,9 @@ jobs:
             # Create bloat data directory
             mkdir -p target/bloat
 
-            # Get binary size and save for comparison
-            BINARY_SIZE=$(stat -c%s target/release/$BINARY_NAME 2>/dev/null || stat -f%z target/release/$BINARY_NAME)
-            BINARY_SIZE_HUMAN=$(numfmt --to=iec-i --suffix=B $BINARY_SIZE)
-            echo "$BINARY_SIZE" > target/bloat/size-${{ inputs.branch_type }}.bytes
-
             # Generate cargo-bloat report in JSON format
             cargo bloat --release --crates --bin $BINARY_NAME --message-format json > target/bloat/bloat-${{ inputs.branch_type }}.json 2>/dev/null || echo "{}" > target/bloat/bloat-${{ inputs.branch_type }}.json
 
-            echo "Binary size: $BINARY_SIZE_HUMAN ($BINARY_SIZE bytes)"
             echo "Cargo-bloat analysis completed"
           else
             echo "Warning: Release binary not found at target/release/$BINARY_NAME"
