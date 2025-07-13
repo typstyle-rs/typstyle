@@ -130,7 +130,12 @@ def generate_bloat_diff [base_file: string, pr_file: string] {
         $base_crates | save -f base_crates.tmp
         $pr_crates | save -f pr_crates.tmp
 
-        let result = (^diff -U99 base_crates.tmp pr_crates.tmp)
+        let result = try {
+            # Note: `diff` exits with 1 in case of difference
+            ^diff -U99 base_crates.tmp pr_crates.tmp | lines | skip 2 | str join "\n"
+        } catch {
+            ""
+        }
 
         # Clean up temp files
         rm -f base_crates.tmp pr_crates.tmp
