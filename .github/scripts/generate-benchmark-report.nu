@@ -117,16 +117,25 @@ def generate_bloat_diff [base_file: string, pr_file: string] {
         $"($crate.name | fill -a l -w 25) ($crate.size | into filesize)"
     })
 
-    # Save to temp files for diff
-    $base_crates | save -f base_crates.tmp
-    $pr_crates | save -f pr_crates.tmp
-
     # Generate diff with full context
-    let diff_output = try {
-        ^diff -u base_crates.tmp pr_crates.tmp
-    } catch {
-        # If diff command fails, show the base content
-        ($base_crates | str join "\n")
+    let base_content = ($base_crates | str join "\n")
+    let pr_content = ($pr_crates | str join "\n")
+
+    let diff_output = if $base_content == $pr_content {
+        $"No changes detected in crate sizes:
+
+($base_content)"
+    } else {
+        # Save to temp files for diff
+        $base_crates | save -f base_crates.tmp
+        $pr_crates | save -f pr_crates.tmp
+
+        let result = (^diff -U99 base_crates.tmp pr_crates.tmp)
+
+        # Clean up temp files
+        rm -f base_crates.tmp pr_crates.tmp
+
+        $result
     }
 
     # Return details - always show the diff section
