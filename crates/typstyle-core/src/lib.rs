@@ -71,10 +71,6 @@ impl<'a> Formatter<'a> {
         doc.render_fmt(self.printer.config().max_width, &mut buf)
             .map_err(|_| Error::RenderError)?;
         let result = utils::strip_trailing_whitespace(&buf);
-        let result = utils::strip_trailing_whitespace(&result);
-        let result = utils::strip_trailing_whitespace(&result);
-        let result = utils::strip_trailing_whitespace(&result);
-        let result = utils::strip_trailing_whitespace(&result);
         Ok(result)
     }
 

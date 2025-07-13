@@ -132,7 +132,7 @@ def generate_bloat_diff [base_file: string, pr_file: string] {
 
         let result = try {
             # Note: `diff` exits with 1 in case of difference
-            ^diff -U99 base_crates.tmp pr_crates.tmp | lines | skip 2 | str join "\n"
+            ^diff -U5 base_crates.tmp pr_crates.tmp | lines | skip 2 | str join "\n"
         } catch {
             ""
         }

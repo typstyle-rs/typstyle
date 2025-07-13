@@ -65,7 +65,7 @@ jobs:
           # Check cache status and validate cached data
           if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ] && [ "${{ inputs.force_rerun }}" != "true" ]; then
             # Validate that cached data is complete and valid
-            if [ -d "target/criterion" ] && [ -n "$(ls -A target/criterion 2>/dev/null)" ] && [ -f "target/bloat/bloat-${{ inputs.branch_type }}.json" ] && [ -f "target/bloat/size-${{ inputs.branch_type }}.bytes" ]; then
+            if [ -d "target/criterion" ] && [ -n "$(ls -A target/criterion 2>/dev/null)" ] && [ -f "target/bloat/bloat-${{ inputs.branch_type }}.json" ]; then
               echo "Found valid cached benchmark and bloat results"
               echo "Using cache from key: ${{ steps.bench-cache.outputs.cache-matched-key }}"
               echo "cache-hit=true" >> $GITHUB_OUTPUT
