@@ -121,23 +121,17 @@ def generate_bloat_diff [base_file: string, pr_file: string] {
     $base_crates | save -f base_crates.tmp
     $pr_crates | save -f pr_crates.tmp
 
-    # Generate diff with custom headers
+    # Generate diff with full context
     let diff_output = try {
-        let raw_diff = (^diff -u base_crates.tmp pr_crates.tmp | lines)
-        # Replace the default diff headers with descriptive ones
-        let diff_body = ($raw_diff | skip 2 | str join "\n")
-        $"@@ Crate Sizes @@
-($diff_body)"
+        # Use -U999 to show full context (all unchanged lines)
+        ^diff -U999 base_crates.tmp pr_crates.tmp
     } catch {
-        ""
+        # If diff command fails, show the base content
+        ($base_crates | str join "\n")
     }
 
-    # Clean up temp files
-    rm -f base_crates.tmp pr_crates.tmp
-
-    # Return details if there are differences
-    if ($diff_output | str length) > 0 {
-        $"
+    # Return details - always show the diff section
+    $"
 
 <details>
 <summary>📦 Detailed Crate Size Diff \(cargo-bloat\)</summary>
@@ -149,7 +143,4 @@ def generate_bloat_diff [base_file: string, pr_file: string] {
 ```
 
 </details>"
-    } else {
-        ""
-    }
 }

@@ -102,7 +102,6 @@ jobs:
         run: |
           # Generate complete benchmark and binary size comparison report
           nu .github/scripts/generate-benchmark-report.nu base-results pr-results
-          # python .github/scripts/generate-benchmark-report.py base-results pr-results
 
       - name: Save PR number
         run: |
