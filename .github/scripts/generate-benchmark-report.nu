@@ -123,8 +123,7 @@ def generate_bloat_diff [base_file: string, pr_file: string] {
 
     # Generate diff with full context
     let diff_output = try {
-        # Use -U999 to show full context (all unchanged lines)
-        ^diff -U999 base_crates.tmp pr_crates.tmp
+        ^diff -u base_crates.tmp pr_crates.tmp
     } catch {
         # If diff command fails, show the base content
         ($base_crates | str join "\n")
