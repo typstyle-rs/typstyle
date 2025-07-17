@@ -1,6 +1,7 @@
 /// Configuration Options for Typstyle Printer.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(default))]
 pub struct Config {
     /// Number of spaces to use for each indentation level.
     pub tab_spaces: usize,

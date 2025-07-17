@@ -22,10 +22,9 @@ export function useTypstFormatter(
   const [error, setError] = useState<string | null>(null);
 
   const formatCode = async () => {
-    const config: typstyle.Config = {
+    const config: Partial<typstyle.Config> = {
       max_width: formatOptions.maxLineLength,
       tab_spaces: formatOptions.indentSize,
-      blank_lines_upper_bound: 2, // Default value, not exposed in UI
       collapse_markup_spaces: formatOptions.collapseMarkupSpaces,
       reorder_import_items: formatOptions.reorderImportItems,
       wrap_text: formatOptions.wrapText,

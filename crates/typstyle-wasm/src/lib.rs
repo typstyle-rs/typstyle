@@ -29,7 +29,7 @@ pub fn parse(text: &str) -> Result<String, Error> {
 #[wasm_bindgen]
 pub fn format(
     text: &str,
-    #[wasm_bindgen(unchecked_param_type = "Config")] config: JsValue,
+    #[wasm_bindgen(unchecked_param_type = "Partial<Config>")] config: JsValue,
 ) -> Result<String, Error> {
     let config = parse_config(config)?;
     let t = Typstyle::new(config);
@@ -40,7 +40,7 @@ pub fn format(
 #[wasm_bindgen]
 pub fn format_ir(
     text: &str,
-    #[wasm_bindgen(unchecked_param_type = "Config")] config: JsValue,
+    #[wasm_bindgen(unchecked_param_type = "Partial<Config>")] config: JsValue,
 ) -> Result<String, Error> {
     let config = parse_config(config)?;
     let t = Typstyle::new(config);
