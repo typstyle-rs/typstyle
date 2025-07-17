@@ -23,6 +23,7 @@ jobs:
       pull-requests: read
       issues: read
       id-token: write
+      actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -32,6 +33,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
       - name: Run Claude PR Action
         uses: anthropics/claude-code-action@main
+
         env:
           ANTHROPIC_BASE_URL: https://api.moonshot.cn/anthropic
         with:
@@ -40,3 +42,10 @@ jobs:
           claude_env: |
             ANTHROPIC_BASE_URL: https://api.moonshot.cn/anthropic
             anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          additional_permissions: |
+            actions: read
+          allowed_tools: |
+            Bash
+            Edit
+            MultiEdit
+            WebFetch
