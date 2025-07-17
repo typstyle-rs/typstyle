@@ -18,22 +18,6 @@ cargo build -p typstyle         # CLI only
 cargo build -p typstyle-core    # Core only
 ```
 
-=== WebAssembly Plugin
-
-For the embedded Typst plugin:
-```bash
-just build-plugin
-# or manually:
-cargo build -p typstyle-typlugin --release --target wasm32-unknown-unknown
-```
-
-For the WASM bindings used in the playground:
-```bash
-just build-wasm
-# or manually:
-cd crates/typstyle-wasm && wasm-pack build --target web --out-dir ../../playground/typstyle-wasm
-```
-
 == Running Tests
 
 #important[
