@@ -36,4 +36,4 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           timeout_minutes: "60"
           claude_env: |
-            ANTHROPIC_BASE_URL=${{ env.ANTHROPIC_BASE_URL }}
+            ANTHROPIC_BASE_URL=https://api.moonshot.cn/anthropic
