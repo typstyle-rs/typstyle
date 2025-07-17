@@ -9,6 +9,7 @@ on:
       - "docs/**"
       - "crates/typstyle-core/**"
       - "crates/typstyle-wasm/**"
+      - "crates/typstyle-typlugin/**"
       - ".github/workflows/gh-pages.yml"
   workflow_dispatch:
 
@@ -19,7 +20,25 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  pre_job:
+    permissions:
+      actions: write
+      contents: read
+    name: Duplicate Actions Detection
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: "true"
+          paths: '["playground/**", "docs/**", "crates/typstyle-core/**", "crates/typstyle-wasm/**", "crates/typstyle-typlugin/**", ".github/workflows/gh-pages.yml"]'
+          do_not_skip: '["workflow_dispatch"]'
+
   build-gh-pages:
+    needs: [pre_job]
+    if: needs.pre_job.outputs.should_skip != 'true'
     name: Build Docs & Playground and Prepare Artifact
     runs-on: ubuntu-latest
     permissions:

@@ -4,6 +4,23 @@ WebAssembly bindings for [Typstyle](https://github.com/typstyle-rs/typstyle), a 
 
 > ⚠️ **API Stability Warning**: The API is unstable and may change in any future version.
 
+## Installation
+
+```bash
+# For bundlers (Webpack, Vite, etc.)
+npm install @typstyle/typstyle-wasm-bundler
+```
+
+## Usage
+
+### Bundler Target
+
+```javascript
+import { format } from "@typstyle/typstyle-wasm-bundler";
+
+const formatted = format("#let x=1", {}); // Format with default config
+```
+
 ## API
 
 - `format(text: string, config: Config): string` - Format Typst code
