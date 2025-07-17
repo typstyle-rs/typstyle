@@ -32,8 +32,10 @@ jobs:
         uses: Swatinem/rust-cache@v2
       - name: Run Claude PR Action
         uses: anthropics/claude-code-action@beta
+        env:
+          ANTHROPIC_BASE_URL: "https://api.moonshot.cn/anthropic"
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           timeout_minutes: "60"
           claude_env: |
-            ANTHROPIC_BASE_URL=https://api.moonshot.cn/anthropic
+            ANTHROPIC_BASE_URL: "https://api.moonshot.cn/anthropic"
