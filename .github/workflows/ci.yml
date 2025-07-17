@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pre_job:
+    permissions:
+      actions: write
+      contents: read
+    name: Duplicate Actions Detection
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.skip_check.outputs.should_skip }}
+    steps:
+      - id: skip_check
+        uses: fkirc/skip-duplicate-actions@v5
+        with:
+          cancel_others: "true"
+          paths: '["crates/**", "tests/**", "Cargo.toml", "Cargo.lock", ".github/workflows/ci.yml", ".github/workflows/build-binaries.yml"]'
+          paths_ignore: '["**/README.md"]'
+          do_not_skip: '["workflow_dispatch"]'
+
+  checks:
+    needs: [pre_job]
+    if: needs.pre_job.outputs.should_skip != 'true'
+    name: Check clippy, formatting, and documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo clippy --workspace --all-targets --all-features
+      - run: cargo fmt --check --all
+      - run: cargo doc --workspace --no-deps
+
+  min-version:
+    needs: [pre_job]
+    if: needs.pre_job.outputs.should_skip != 'true'
+    name: Check minimum Rust version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.83.0
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --workspace
+
+  test:
+    needs: [pre_job]
+    if: needs.pre_job.outputs.should_skip != 'true'
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install Cargo Nextest
+        uses: taiki-e/install-action@nextest
+      - name: Run rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Source Han fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install fonts-noto-cjk fonts-noto-cjk-extra
+      - name: Install typst
+        uses: typst-community/setup-typst@v4
+      - name: Warmup typst package cache
+        run: |
+          python ./scripts/generate-imports.py
+          typst compile output.typ
+
+      - id: unit_tests
+        name: Run Unit tests
+        env:
+          TYPSTYLE_SAVE_DIFF: out
+        run: cargo nextest run --workspace -E '!test([e2e])' --no-fail-fast --status-level=fail
+      - id: e2e_tests
+        name: Run E2E tests
+        if: ${{ success() || steps.unit_tests.outcome == 'failure' }}
+        env:
+          TYPSTYLE_SAVE_DIFF: out
+        run: cargo nextest run --workspace -E 'test([e2e])' --no-fail-fast
+      - name: Upload diff images
+        if: ${{ failure() && (steps.unit_tests.outcome == 'failure' || steps.e2e_tests.outcome == 'failure') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: typstyle-test-diffs
+          path: tests/out/**/*
+          retention-days: 1
+
+  build-binaries:
+    needs: [pre_job]
+    if: needs.pre_job.outputs.should_skip != 'true'
+    uses: ./.github/workflows/build-binaries.yml

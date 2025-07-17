@@ -1,0 +1,130 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.2.3 or v1.2.3-rc1)'
+        required: true
+        type: string
+      dry-run:
+        description: 'Perform a dry run without actually publishing'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.status.outputs.version }}
+      base-version: ${{ steps.status.outputs.base-version }}
+      is-prerelease: ${{ steps.status.outputs.is-prerelease }}
+      dry-run: ${{ steps.status.outputs.dry-run }}
+    steps:
+      - id: status
+        run: |
+          # Use input tag for manual dispatch, otherwise use the pushed tag
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ github.event.inputs.tag }}"
+          else
+            TAG="${{ github.ref_name }}"
+          fi
+          echo "version=$TAG" >> $GITHUB_OUTPUT
+
+          # Extract base version (remove prerelease suffix)
+          BASE_VERSION=$(echo "$TAG" | sed 's/-.*$//')
+          echo "base-version=$BASE_VERSION" >> $GITHUB_OUTPUT
+
+          # Check if this is a prerelease
+          if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-(alpha|beta|rc)(\.[0-9]+)?$ ]]; then
+            echo "is-prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is-prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Check for dry-run mode
+          if [ "${{ github.event.inputs.dry-run }}" = "true" ]; then
+            echo "dry-run=true" >> $GITHUB_OUTPUT
+          else
+            echo "dry-run=false" >> $GITHUB_OUTPUT
+          fi
+
+  build-binaries:
+    needs: [plan]
+    uses: ./.github/workflows/build-binaries.yml
+
+  publish-crates:
+    needs: [plan]
+    uses: ./.github/workflows/publish-crates.yml
+    with:
+      dry-run: ${{ needs.plan.outputs.dry-run == 'true' || needs.plan.outputs.is-prerelease == 'true' }}
+
+  publish-wasm:
+    needs: [plan]
+    uses: ./.github/workflows/publish-wasm.yml
+    with:
+      dry-run: ${{ needs.plan.outputs.dry-run == 'true' || needs.plan.outputs.is-prerelease == 'true' }}
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: [plan, build-binaries, publish-crates, publish-wasm]
+    if: |
+      always() &&
+      needs.build-binaries.result == 'success' &&
+      (needs.publish-crates.result == 'success' || needs.publish-crates.result == 'skipped') &&
+      (needs.publish-wasm.result == 'success' || needs.publish-wasm.result == 'skipped')
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Display structure of downloaded files
+        run: ls -R artifacts
+      - name: Extract release notes
+        env:
+          VERSION: ${{ needs.plan.outputs.version }}
+          BASE_VERSION: ${{ needs.plan.outputs.base-version }}
+        run: |
+          # Use base version for changelog lookup (e.g., v0.13.0-rc1 -> v0.13.0)
+          CHANGELOG_VERSION="$BASE_VERSION"
+
+          # grab from "## v0.y.z[-suffix] – YYYY-MM-DD" until the next "## " and drop the header
+          if sed -En "/^## ${CHANGELOG_VERSION}[[:space:]]*-/,/^## /p" CHANGELOG.md | sed '1d;$d' > release_notes.md && [ -s release_notes.md ]; then
+            echo "Found changelog entry for $CHANGELOG_VERSION"
+          else
+            echo "No changelog entry found for $CHANGELOG_VERSION, using fallback message"
+            echo "Release $VERSION" > release_notes.md
+            echo "No detailed release notes available. Please refer to the changelog for more information." >> release_notes.md
+          fi
+
+          # Show what we extracted
+          echo "Release notes content:"
+          cat release_notes.md
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        if: needs.plan.outputs.dry-run != 'true'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ needs.plan.outputs.version }}
+          name: ${{ needs.plan.outputs.version }}
+          artifacts: "artifacts/**/*"
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitDraftDuringUpdate: true
+          omitNameDuringUpdate: true
+          omitPrereleaseDuringUpdate: true
+          bodyFile: "release_notes.md"
+          prerelease: ${{ needs.plan.outputs.is-prerelease == 'true' }}

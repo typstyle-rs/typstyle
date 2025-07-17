@@ -13,7 +13,10 @@ on:
   pull_request:
     paths:
       - "crates/typstyle-core/**"
+      - "Cargo.toml"
+      - "Cargo.lock"
       - ".github/workflows/bench-pr.yml"
+      - ".github/workflows/bench-job.yml"
   workflow_dispatch:
     inputs:
       force_rerun:
@@ -36,6 +39,9 @@ jobs:
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: "true"
+          paths: '["crates/typstyle-core/**", "Cargo.toml", "Cargo.lock", ".github/workflows/bench-pr.yml", ".github/workflows/bench-job.yml"]'
+          paths_ignore: '["**/README.md"]'
+          do_not_skip: '["workflow_dispatch"]'
 
   bench-base:
     name: Benchmark base branch

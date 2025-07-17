@@ -1,0 +1,168 @@
+name: Build Binaries
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
+  CARGO_TARGET_ARM_UNKNOWN_LINUX_GNUEABIHF_LINKER: arm-linux-gnueabihf-gcc
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rust-target: x86_64-pc-windows-msvc
+            platform: win32
+            arch: x64
+          - os: windows-latest
+            rust-target: aarch64-pc-windows-msvc
+            platform: win32
+            arch: arm64
+          - os: ubuntu-22.04
+            rust-target: x86_64-unknown-linux-gnu
+            platform: linux
+            arch: x64
+          - os: ubuntu-22.04
+            rust-target: aarch64-unknown-linux-gnu
+            platform: linux
+            arch: arm64
+          - os: ubuntu-22.04
+            rust-target: arm-unknown-linux-gnueabihf
+            platform: linux
+            arch: armhf
+          - os: macos-13
+            rust-target: x86_64-apple-darwin
+            platform: darwin
+            arch: x64
+          - os: macos-latest
+            rust-target: aarch64-apple-darwin
+            platform: darwin
+            arch: arm64
+
+    name: build (${{ matrix.platform }}-${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run rust cache
+        uses: Swatinem/rust-cache@v2
+      - name: rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust-target }}
+
+      - name: Install llvm
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install llvm
+      - name: Install AArch64 target toolchain
+        if: matrix.rust-target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-aarch64-linux-gnu
+      - name: Install ARM target toolchain
+        if: matrix.rust-target == 'arm-unknown-linux-gnueabihf'
+        run: |
+          sudo apt-get update
+          sudo apt-get install gcc-arm-linux-gnueabihf
+
+      - name: Build typstyle binary
+        shell: pwsh
+        run: |
+          cargo build --profile=ci --target ${{ matrix.rust-target }}
+      - name: Rename debug symbols for windows
+        if: matrix.platform == 'win32'
+        run: |
+          cd target/${{ matrix.rust-target }}/ci
+          cp typstyle.pdb typstyle-${{ matrix.rust-target }}.pdb
+      - name: Upload split debug symbols for windows
+        if: matrix.platform == 'win32'
+        uses: actions/upload-artifact@v4
+        with:
+          name: typstyle-${{ matrix.rust-target }}.pdb
+          path: target/${{ matrix.rust-target }}/ci/typstyle-${{ matrix.rust-target }}.pdb
+      - name: Split debug symbols for linux
+        if: matrix.platform == 'linux'
+        run: |
+          cd target/${{ matrix.rust-target }}/ci
+          llvm-objcopy --compress-debug-sections --only-keep-debug "typstyle" "typstyle-${{ matrix.rust-target }}.debug"
+          llvm-objcopy --strip-debug --add-gnu-debuglink="typstyle-${{ matrix.rust-target }}.debug" "typstyle"
+      - name: Upload split debug symbols for linux
+        if: matrix.platform == 'linux'
+        uses: actions/upload-artifact@v4
+        with:
+          name: typstyle-${{ matrix.rust-target }}.debug
+          path: target/${{ matrix.rust-target }}/ci/typstyle-${{ matrix.rust-target }}.debug
+          compression-level: 0
+      - name: Collect debug symbols for mac
+        if: matrix.platform == 'darwin'
+        run: |
+          dsymutil -f "target/${{ matrix.rust-target }}/ci/typstyle"
+          mv "target/${{ matrix.rust-target }}/ci/typstyle.dwarf" "target/${{ matrix.rust-target }}/ci/typstyle-${{ matrix.rust-target }}.dwarf"
+      - name: Upload split debug symbols for mac
+        if: matrix.platform == 'darwin'
+        uses: actions/upload-artifact@v4
+        with:
+          name: typstyle-${{ matrix.rust-target }}.dwarf
+          path: target/${{ matrix.rust-target }}/ci/typstyle-${{ matrix.rust-target }}.dwarf
+
+      - name: Copy binary to output directory
+        shell: pwsh
+        run: |
+          cp "target/${{ matrix.rust-target }}/ci/typstyle$(If ('${{ matrix.platform }}' -eq 'win32') { '.exe' } else { '' } )" "typstyle-${{ matrix.rust-target }}$(If ('${{ matrix.platform }}' -eq 'win32') { '.exe' } else { '' } )"
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: typstyle-${{ matrix.rust-target }}
+          path: typstyle-${{ matrix.rust-target }}${{ fromJSON('["", ".exe"]')[matrix.platform == 'win32'] }}
+
+  build_alpine:
+    name: build (x86_64-unknown-linux-musl)
+    runs-on: ubuntu-latest
+    container:
+      image: rust:alpine
+      volumes:
+        - /usr/local/cargo/registry:/usr/local/cargo/registry
+    env:
+      RUST_TARGET: x86_64-unknown-linux-musl
+      RUSTFLAGS: "-C target-feature=+crt-static"
+    steps:
+      - name: Install dependencies
+        run: apk add --no-cache git clang lld musl-dev nodejs npm yarn binutils
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Run rust cache
+        uses: Swatinem/rust-cache@v2
+      - name: Build typstyle binary
+        run: |
+          cargo build --profile=ci --target $RUST_TARGET
+      - name: Split debug symbols
+        run: |
+          cd target/$RUST_TARGET/ci
+          objcopy --compress-debug-sections --only-keep-debug "typstyle" "typstyle-${{ env.RUST_TARGET }}.debug"
+          objcopy --strip-debug --add-gnu-debuglink="typstyle-${{ env.RUST_TARGET }}.debug" "typstyle"
+      - name: Upload split debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: typstyle-${{ env.RUST_TARGET }}.debug
+          path: target/${{ env.RUST_TARGET }}/ci/typstyle-${{ env.RUST_TARGET }}.debug
+      - name: Copy binary to output directory
+        run: |
+          cp "target/${{ env.RUST_TARGET }}/ci/typstyle" "typstyle-${{ env.RUST_TARGET }}"
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: typstyle-${{ env.RUST_TARGET }}
+          path: typstyle-${{ env.RUST_TARGET }}

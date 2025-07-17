@@ -1,0 +1,80 @@
+name: Publish WASM to NPM
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: "Perform a dry run without actually publishing"
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Perform a dry run without actually publishing"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write # Required for provenance attestation
+
+jobs:
+  publish-wasm:
+    name: Build and publish WASM package to NPM
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [bundler]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@wasm-pack
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Copy license
+        run: cp LICENSE crates/typstyle-wasm/
+
+      - name: Build WASM package
+        working-directory: crates/typstyle-wasm
+        run: wasm-pack build --target ${{ matrix.target }} --out-dir pkg --scope typstyle
+
+      - name: Update package.json
+        working-directory: crates/typstyle-wasm/pkg
+        run: |
+          npm pkg set name="@typstyle/typstyle-wasm-${{ matrix.target }}"
+          npm pkg set keywords='["typst", "formatter", "wasm", "${{ matrix.target }}"]'
+
+      - name: Publish to NPM (dry-run)
+        if: inputs.dry-run
+        working-directory: crates/typstyle-wasm/pkg
+        run: npm publish --provenance --access public --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to NPM
+        if: "!inputs.dry-run"
+        working-directory: crates/typstyle-wasm/pkg
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: typstyle-wasm-${{ matrix.target }}
+          path: crates/typstyle-wasm/pkg/
