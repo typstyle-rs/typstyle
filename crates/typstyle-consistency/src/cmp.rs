@@ -160,11 +160,10 @@ fn check_png(
             png_bf.save_png(save_path.join(&save_name_before))?;
             png_af.save_png(save_path.join(&save_name_after))?;
             sink.push(format!(
-                "The output are not consistent for page {}.\nSaved diff PNGs: `{}` and `{}`",
-                i, save_name_before, save_name_after
+                "The output are not consistent for page {i}.\nSaved diff PNGs: `{save_name_before}` and `{save_name_after}`"
             ));
         } else {
-            sink.push(format!("The output are not consistent for page {}.", i));
+            sink.push(format!("The output are not consistent for page {i}."));
         }
     }
 

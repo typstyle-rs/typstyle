@@ -108,7 +108,7 @@ impl FormatterHarness {
 
             let rel_path = entry.path().strip_prefix(&self.project_root)?;
             let include_path = rel_path.to_str().unwrap().replace('\\', "/");
-            entry_content.push_str(&format!("#include \"{}\"\n", include_path));
+            entry_content.push_str(&format!("#include \"{include_path}\"\n"));
         }
         self.add_raw_file(one_path, Bytes::from_string(entry_content))?;
 
@@ -192,7 +192,7 @@ impl FormatterHarness {
         } else {
             format!("{} - {}", self.name, entry_path.display())
         };
-        let base_result = compile_world(format!("{} - original", name), &base_world)?;
+        let base_result = compile_world(format!("{name} - original"), &base_world)?;
 
         for sources in formatted {
             let world = FormattedWorld {

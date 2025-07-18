@@ -24,12 +24,12 @@ typst-syntax = "0.13.1"
 
 ecow = "0.2.3"
 itertools = "0.14"
-prettyless = "0.2"
+prettyless = "0.3"
 rustc-hash = "2.0"
 serde = "1.0"
 smallvec = "1"
 thiserror = "2"
-unicode-width = "0.2" # use the same version as in pretty
+unicode-width = "0.2.1" # use the same version as in pretty
 
 # Used in WASM
 console_error_panic_hook = "0.1.7"
@@ -51,7 +51,7 @@ anstream = "0.6"
 colored = "3.0"
 
 # Used in tests
-console = { version = "*", default-features = false }
+console = { version = "0.15", default-features = false } # use the same version as in pretty-asserts
 insta = "1.43"
 insta-cmd = "0.6"
 libtest-mimic = "0.8.1"
@@ -67,7 +67,7 @@ typst-render = "0.13.1"
 typst = "0.13.1"
 
 # Used in benchmark
-criterion = { version = "0.5" }
+criterion = { version = "0.6" }
 
 # Build
 vergen = { version = "9.0", features = ["build", "cargo", "rustc"] }
@@ -86,4 +86,4 @@ debug = true
 
 [patch.crates-io]
 # tinymist-world = { git = "https://github.com/Myriad-Dreamin/tinymist", rev = "84569fb98c4eeea65d91677c31d803718143fc10" }
-prettyless = { git = "https://github.com/typstyle-rs/prettyless", rev = "9afa5bdece2dbf14c54ade8bef46cd0828cb952b" }
+# prettyless = { git = "https://github.com/typstyle-rs/prettyless", rev = "9afa5bdece2dbf14c54ade8bef46cd0828cb952b" }
