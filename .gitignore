@@ -2,3 +2,4 @@
 *.log
 
 /github-pages
+.claude

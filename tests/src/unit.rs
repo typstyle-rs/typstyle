@@ -191,7 +191,7 @@ fn check_output_consistency(path: &Path, width: usize) -> Result<(), Failed> {
 
     let base_world = harness.snapshot();
     let fmt_sources = FormattedSources {
-        name: format!("{}char", width),
+        name: format!("{width}char"),
         sources: harness.format(
             &base_world,
             |source| Ok(t.format_source(source).render()?),
