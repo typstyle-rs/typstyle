@@ -1,5 +1,43 @@
 # Changelog
 
+## v0.13.15 - [2025-07-18]
+
+- Feature(CLI): Add `--diff` option to show unified diff of formatting changes. This allows users to preview what changes would be made before applying formatting.
+
+  For example:
+  ```bash
+  typstyle file.typ --diff
+  ```
+  
+  Output:
+  ```diff
+  --- file.typ
+  +++ file.typ
+  @@ -1,3 +1,3 @@
+  -#let x=1+2
+  -#let y=(3*4)
+  +#let x = 1 + 2
+  +#let y = (3 * 4)
+  ```
+
+- Feature: Improve comment handling - line comments are now treated as line suffixes instead of separate lines, resulting in more compact and natural formatting.
+
+  For example, The following code will be accepted by typstyle now:
+  ```typst
+  #let result = (x + y) / 2 + 1  // This comment stays on same line
+  ```
+  
+  But it will be formatted to this in previous versions. Note that the comment was moved to a new line, which is not ideal for inline comments.
+  ```typst
+  // line width = 40
+  #let result = (
+    (x + y) / 2 + 1
+  )  // This comment stays on same line
+  ```
+
+- Feature: Add support for sharing links in the web playground, making it easier to share formatted code snippets with others for demo or collaboration.
+- Performance: Bump prettyless to v0.3.0. This slightly improves performance and lowers memory consumption during formatting.
+
 ## v0.13.14 - [2025-07-11]
 
 We now employ [prettyless](https://github.com/typstyle-rs/prettyless) as the layout engine. It provides more features to support us to adopt better layout logic.
