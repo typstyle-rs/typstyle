@@ -113,7 +113,7 @@ The playground integrates the latest version of typstyle. If you encounter forma
 - **Rust**: <https://crates.io/crates/typstyle-core>
 - **WebAssembly**: <https://www.npmjs.com/package/@typstyle/typstyle-wasm-bundler>
 
- ### Use as a GitHub Action
+### Use as a GitHub Action
 
 The [typstyle-action](https://github.com/typstyle-rs/typstyle-action) maintained by [@grayespinoza](https://github.com/grayespinoza) can install and run typstyle in a GitHub Action.
 
