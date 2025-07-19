@@ -7,11 +7,11 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Tag to release (e.g., v1.2.3 or v1.2.3-rc1)'
+        description: Tag to release (e.g., v1.2.3 or v1.2.3-rc1)
         required: true
         type: string
       dry-run:
-        description: 'Perform a dry run without actually publishing'
+        description: Perform a dry run without actually publishing
         required: false
         type: boolean
         default: false
@@ -73,6 +73,10 @@ jobs:
   publish-wasm:
     needs: [plan]
     uses: ./.github/workflows/publish-wasm.yml
+    permissions:
+      contents: read
+      id-token: write
+      packages: write
     with:
       dry-run: ${{ needs.plan.outputs.dry-run == 'true' || needs.plan.outputs.is-prerelease == 'true' }}
 

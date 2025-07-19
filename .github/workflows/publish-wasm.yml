@@ -57,21 +57,18 @@ jobs:
         working-directory: crates/typstyle-wasm/pkg
         run: |
           npm pkg set name="@typstyle/typstyle-wasm-${{ matrix.target }}"
-          npm pkg set keywords='["typst", "formatter", "wasm", "${{ matrix.target }}"]'
 
       - name: Publish to NPM (dry-run)
-        if: inputs.dry-run
+        if: ${{ inputs.dry-run }}
         working-directory: crates/typstyle-wasm/pkg
         run: npm publish --provenance --access public --dry-run
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to NPM
-        if: "!inputs.dry-run"
-        working-directory: crates/typstyle-wasm/pkg
-        run: npm publish --provenance --access public
+        if: ${{ !inputs.dry-run }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        working-directory: crates/typstyle-wasm/pkg
+        run: npm publish --provenance --access public
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
