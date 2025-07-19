@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.13.16 - [2025-07-19]
+
+- Due to ci configuration issues, we failed to publish v0.13.15. This release is a re-publish of v0.13.15 with the correct version number.
+
 ## v0.13.15 - [2025-07-18]
 
 - Feature(CLI): Add `--diff` option to show unified diff of formatting changes. This allows users to preview what changes would be made before applying formatting.
