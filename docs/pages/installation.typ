@@ -71,7 +71,7 @@ For web projects using WebAssembly bindings:
 
 #raw("npm install @typstyle/typstyle-wasm-bundler", lang: "bash", block: true)
 
-The `@typstyle/typstyle-wasm-bundler` package provides WebAssembly bindings optimized for web bundlers like Webpack, Vite, and Rollup.
+The `@typstyle/typstyle-wasm-bundler` package provides WebAssembly bindings for web bundlers like Webpack, Vite, and Rollup.
 
 == GitHub Actions
 
