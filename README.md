@@ -3,6 +3,7 @@
 A beautiful and reliable code formatter for [Typst](https://typst.app/).
 
 [![crates.io](https://img.shields.io/crates/v/typstyle)](https://crates.io/crates/typstyle)
+[![npm wasm](https://img.shields.io/npm/v/@typstyle/typstyle-wasm-bundler)](https://www.npmjs.com/package/@typstyle/typstyle-wasm-bundler)
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://typstyle-rs.github.io/typstyle/)
 [![CI](https://github.com/typstyle-rs/typstyle/workflows/Test%20and%20Release/badge.svg)](…)
 [![License](https://img.shields.io/crates/l/typstyle)](LICENSE)
@@ -109,10 +110,10 @@ The playground integrates the latest version of typstyle. If you encounter forma
 
 ### Use as a Library
 
-- **NPM**: <https://www.npmjs.com/package/typstyle-core>
 - **Rust**: <https://crates.io/crates/typstyle-core>
+- **WebAssembly**: <https://www.npmjs.com/package/@typstyle/typstyle-wasm-bundler>
 
- ### Use as a GitHub Action
+### Use as a GitHub Action
 
 The [typstyle-action](https://github.com/typstyle-rs/typstyle-action) maintained by [@grayespinoza](https://github.com/grayespinoza) can install and run typstyle in a GitHub Action.
 

@@ -42,6 +42,10 @@ cargo binstall typstyle
 cargo install typstyle --locked
 ```
 
+#callout.important[
+  Installing without `--locked` may fail due to API changes: an older `typstyle` could depend on a newer, incompatible `typstyle-core`. Always use `--locked` to ensure version compatibility.
+]
+
 == Editor Integration
 
 Typstyle has been integrated into #link("https://github.com/Myriad-Dreamin/tinymist")[tinymist]. You can use it in your editor by installing the tinymist plugin and set `tinymist.formatterMode` to `typstyle`.
@@ -63,21 +67,43 @@ Typstyle is also available as a library integrated in your project.
 #raw("[dependencies]
 typstyle-core = \"=" + ver + "\"", lang: "toml", block: true)
 
-*Note*: Typstyle follows Typst’s major and minor versioning, and even patch releases may introduce breaking changes. We recommend pinning the version in your dependency and upgrading only when you require new features.
+#callout.important[
+  Typstyle follows Typst’s major and minor versioning, and even patch releases may introduce breaking changes. We recommend pinning the version in your dependency and upgrading only when you require new features.
+]
 
 === NPM (JavaScript/TypeScript)
 
-TODO
+For web projects using #link("https://www.npmjs.com/package/@typstyle/typstyle-wasm-bundler")[WebAssembly bindings]:
+
+```bash
+npm install @typstyle/typstyle-wasm-bundler
+```
+
+The `@typstyle/typstyle-wasm-bundler` package provides WebAssembly bindings for web bundlers like Webpack, Vite, and Rollup. Please see its README for details.
 
 == GitHub Actions
 
-Use the 3rd party-maintained #link("https://github.com/grayespinoza/typstyle-action")[typstyle-action] by #link("https://github.com/grayespinoza")[grayespinoza]:
+The #link("https://github.com/typstyle-rs/typstyle-action")[typstyle-action] maintained by #link("https://github.com/grayespinoza")[grayespinoza] can install and run Typstyle in a GitHub Action.
 
 ```yaml
 - name: Run typstyle
-  uses: grayespinoza/typstyle-action@main
+  uses: typstyle-rs/typstyle-action@main
 ```
 
 == Pre-commit Hook
 
-Not properly done yet.
+You can use your local installation:
+
+```yaml
+repos:
+  - repo: local
+    hooks:
+      - id: typstyle
+        name: typstyle
+        entry: typstyle -i
+        language: system
+        files: \.typ$
+        args: [] # set your style args here
+```
+
+This method requires typstyle to be installed and available in your PATH.
