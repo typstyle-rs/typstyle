@@ -33,6 +33,8 @@ jobs:
 
       - name: Publish crates (dry-run)
         if: ${{ inputs.dry-run }}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
         run: |
           cargo publish -p typstyle-core --dry-run
           cargo publish -p typstyle --dry-run

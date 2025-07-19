@@ -67,12 +67,14 @@ jobs:
   publish-crates:
     needs: [plan]
     uses: ./.github/workflows/publish-crates.yml
+    secrets: inherit
     with:
       dry-run: ${{ needs.plan.outputs.dry-run == 'true' || needs.plan.outputs.is-prerelease == 'true' }}
 
   publish-wasm:
     needs: [plan]
     uses: ./.github/workflows/publish-wasm.yml
+    secrets: inherit
     permissions:
       contents: read
       id-token: write
