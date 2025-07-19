@@ -67,15 +67,11 @@ typstyle-core = \"=" + ver + "\"", lang: "toml", block: true)
 
 === NPM (JavaScript/TypeScript)
 
-For Node.js/JavaScript projects using the core formatter:
-
-#raw("npm install typstyle-core", lang: "bash", block: true)
-
 For web projects using WebAssembly bindings:
 
 #raw("npm install @typstyle/typstyle-wasm-bundler", lang: "bash", block: true)
 
-The `typstyle-core` package provides the core formatting functionality for Node.js environments, while `@typstyle/typstyle-wasm-bundler` provides WebAssembly bindings optimized for web bundlers like Webpack, Vite, and Rollup.
+The `@typstyle/typstyle-wasm-bundler` package provides WebAssembly bindings optimized for web bundlers like Webpack, Vite, and Rollup.
 
 == GitHub Actions
 
