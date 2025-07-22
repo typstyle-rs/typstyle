@@ -3,7 +3,6 @@ import type { FormatOptions, OutputType } from "../types";
 export interface PlaygroundState {
   sourceCode: string;
   formatOptions: FormatOptions;
-  activeOutput: OutputType;
 }
 
 // Maximum URL length before using pastebin (browsers generally support 2000+ chars safely)
@@ -121,7 +120,6 @@ export function encodePlaygroundState(state: PlaygroundState): string {
     const compactState = {
       c: state.sourceCode,
       f: state.formatOptions,
-      o: state.activeOutput,
     };
 
     const stateString = JSON.stringify(compactState);
@@ -147,7 +145,6 @@ export function decodePlaygroundState(encoded: string): PlaygroundState | null {
       return {
         sourceCode: parsed.c || "",
         formatOptions: parsed.f || {},
-        activeOutput: parsed.o || "formatted",
       };
     }
 
@@ -155,7 +152,6 @@ export function decodePlaygroundState(encoded: string): PlaygroundState | null {
     return {
       sourceCode: parsed.sourceCode || "",
       formatOptions: parsed.formatOptions || {},
-      activeOutput: parsed.activeOutput || "formatted",
     };
   } catch (error) {
     console.error("Error decoding playground state:", error);
@@ -189,7 +185,6 @@ export async function generateShareUrl(
   const stateString = JSON.stringify({
     c: state.sourceCode,
     f: state.formatOptions,
-    o: state.activeOutput,
   });
 
   const pasteId = await uploadToPastebin(stateString);
@@ -232,7 +227,6 @@ export async function getStateFromUrl(): Promise<PlaygroundState | null> {
       return {
         sourceCode: parsed.c || "",
         formatOptions: parsed.f || {},
-        activeOutput: parsed.o || "formatted",
       };
     } catch (error) {
       console.error("Error parsing pastebin content:", error);
