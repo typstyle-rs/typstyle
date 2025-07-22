@@ -1,0 +1,37 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for typstyle
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please describe what you'd like to see.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like to see?
+      description: Describe the feature you want
+      placeholder: |
+        A clear description of what you'd like typstyle to do.
+
+        For formatting features, you can show before/after:
+        ```typst
+        // Current behavior
+        let x=1+2
+
+        // What I want
+        let x = 1 + 2
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why is this useful?
+      description: What problem does this solve?
+      placeholder: Explain why this feature would be helpful
+    validations:
+      required: true
