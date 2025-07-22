@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useState } from "react";
 import * as typstyle from "typstyle-wasm";
-import type { FormatOptions, OutputType } from "@/types";
+import type { OutputType } from "@/types";
+import type { FormatOptions } from "@/utils/formatter";
 
 export interface Formatter {
   formattedCode: string;

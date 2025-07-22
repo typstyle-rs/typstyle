@@ -1,4 +1,8 @@
-import type { FormatOptions } from "../types";
+import {
+  DEFAULT_FORMAT_OPTIONS,
+  type FormatOptions,
+  filterNonDefaultOptions,
+} from "./formatter";
 
 export interface PlaygroundState {
   sourceCode: string;
@@ -66,9 +70,10 @@ async function fetchFromPastebin(pasteId: string): Promise<string | null> {
 export async function generateShareUrl(
   state: PlaygroundState,
 ): Promise<{ url: string; usedPastebin: boolean }> {
+  const filteredOptions = filterNonDefaultOptions(state.formatOptions);
   const stateString = JSON.stringify({
     c: state.sourceCode,
-    f: state.formatOptions,
+    f: Object.keys(filteredOptions).length > 0 ? filteredOptions : undefined,
   });
   const encoded = encodeURIComponent(stateString);
 
@@ -128,7 +133,7 @@ export async function getStateFromUrl(): Promise<PlaygroundState | null> {
     // Handle the compact format from pastebin
     return {
       sourceCode: parsed.c ?? "",
-      formatOptions: parsed.f ?? {},
+      formatOptions: { ...DEFAULT_FORMAT_OPTIONS, ...parsed.f },
     };
   } catch (error) {
     console.error("Error parsing pastebin content:", error);

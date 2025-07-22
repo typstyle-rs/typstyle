@@ -1,6 +1,5 @@
 import { useId } from "react";
-import { DEFAULT_FORMAT_OPTIONS } from "@/constants";
-import type { FormatOptions } from "@/types";
+import { DEFAULT_FORMAT_OPTIONS, type FormatOptions } from "@/utils/formatter";
 
 interface SettingsPanelProps {
   formatOptions: FormatOptions;

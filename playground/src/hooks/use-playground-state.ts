@@ -1,6 +1,9 @@
 import { useDeferredValue, useEffect, useState } from "react";
-import { DEFAULT_FORMAT_OPTIONS } from "../constants";
-import type { FormatOptions } from "../types";
+import {
+  DEFAULT_FORMAT_OPTIONS,
+  type FormatOptions,
+  filterNonDefaultOptions,
+} from "@/utils/formatter";
 import { cleanUrlAfterLoad, getStateFromUrl } from "../utils";
 
 const STORAGE_KEY = "typstyle-playground-state";
@@ -62,13 +65,7 @@ export function usePlaygroundState() {
     }
 
     // Only include format options that differ from defaults
-    const nondefaultOptions: Partial<FormatOptions> = Object.fromEntries(
-      Object.entries(formatOptions).filter(
-        ([key, value]) =>
-          value !==
-          DEFAULT_FORMAT_OPTIONS[key as keyof typeof DEFAULT_FORMAT_OPTIONS],
-      ),
-    );
+    const nondefaultOptions = filterNonDefaultOptions(formatOptions);
     if (Object.keys(nondefaultOptions).length > 0) {
       stateToSave.formatOptions = nondefaultOptions;
     }
