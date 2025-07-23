@@ -1,3 +1,5 @@
+import * as typstyle from "typstyle-wasm";
+
 export interface FormatOptions {
   maxLineLength: number;
   indentSize: number;
@@ -28,4 +30,19 @@ export function filterNonDefaultOptions(
         DEFAULT_FORMAT_OPTIONS[key as keyof typeof DEFAULT_FORMAT_OPTIONS],
     ),
   );
+}
+
+/**
+ * Converts FormatOptions to typstyle configuration
+ */
+export function formatOptionsToConfig(
+  options: FormatOptions,
+): Partial<typstyle.Config> {
+  return {
+    max_width: options.maxLineLength,
+    tab_spaces: options.indentSize,
+    collapse_markup_spaces: options.collapseMarkupSpaces,
+    reorder_import_items: options.reorderImportItems,
+    wrap_text: options.wrapText,
+  };
 }
