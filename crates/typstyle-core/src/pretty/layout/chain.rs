@@ -106,7 +106,7 @@ impl<'a> ChainStylist<'a> {
     ) -> Self {
         let mut can_attach = false;
         let mut seen_linebreak_recently = false;
-        
+
         for node in nodes {
             if operand_pred(node) {
                 self.chain_op_num += 1;
@@ -118,9 +118,11 @@ impl<'a> ChainStylist<'a> {
                         seen_linebreak_recently = false;
                     } else if child.kind() == SyntaxKind::Space {
                         if child.text().has_linebreak() {
-                            if self.items.last().is_some_and(|last| {
-                                matches!(*last, ChainItem::Comment(_, _))
-                            }) {
+                            if self
+                                .items
+                                .last()
+                                .is_some_and(|last| matches!(*last, ChainItem::Comment(_, _)))
+                            {
                                 self.items.push(ChainItem::Linebreak);
                             }
                             can_attach = false;
@@ -128,11 +130,11 @@ impl<'a> ChainStylist<'a> {
                         }
                     } else if is_comment_node(child) {
                         let doc = self.printer.convert_comment(ctx, child);
-                        
+
                         // For line comments that follow a recent linebreak, treat them as standalone
                         let is_line_comment = child.kind() == SyntaxKind::LineComment;
                         let should_be_standalone = is_line_comment && seen_linebreak_recently;
-                        
+
                         let position = if can_attach && !should_be_standalone {
                             CommentPosition::Attached
                         } else if should_be_standalone {
