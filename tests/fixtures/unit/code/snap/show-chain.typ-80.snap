@@ -16,8 +16,10 @@ input_file: tests/fixtures/unit/code/show-chain.typ
 })
 
 #show: (
-  a /* 1 */
-    ./* 2 */b /* 3 */
+  a
+    /* 1 */
+    .
+    /* 2 */b /* 3 */
     ./* 4 */f /* 5 */
     .with(theme: {
       let t = none
@@ -26,8 +28,10 @@ input_file: tests/fixtures/unit/code/show-chain.typ
 )
 
 #show: (
-  c /* 1 */
-    ./* 2 */f /* 3 */
+  c
+    /* 1 */
+    .
+    /* 2 */f /* 3 */
     .with(theme: {
       let t = none
       t
@@ -45,16 +49,20 @@ input_file: tests/fixtures/unit/code/show-chain.typ
     t
   })
 
-  show: a /* 1 */
-    ./* 2 */b /* 3 */
+  show: a
+    /* 1 */
+    .
+    /* 2 */b /* 3 */
     ./* 4 */f /* 5 */
     .with(theme: {
       let t = none
       t
     })
 
-  show: c /* 1 */
-    ./* 2 */f /* 3 */
+  show: c
+    /* 1 */
+    .
+    /* 2 */f /* 3 */
     .with(theme: {
       let t = none
       t

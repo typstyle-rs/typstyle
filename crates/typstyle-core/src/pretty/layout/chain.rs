@@ -105,11 +105,14 @@ impl<'a> ChainStylist<'a> {
                         self.items.push(ChainItem::Op(op));
                     } else if is_comment_node(child) {
                         let doc = self.printer.convert_comment(ctx, child);
-                        self.items.push(if can_attach {
+                        // Line comments should always be on their own line, not attached
+                        let is_line_comment = child.kind() == SyntaxKind::LineComment;
+                        let chain_item = if can_attach && !is_line_comment {
                             ChainItem::Attached(doc)
                         } else {
                             ChainItem::Comment(doc)
-                        });
+                        };
+                        self.items.push(chain_item);
                         self.has_comment = true;
                     } else if child.kind() == SyntaxKind::Space {
                         if child.text().has_linebreak() {
@@ -183,12 +186,9 @@ impl<'a> ChainStylist<'a> {
                 ChainItem::Comment(cmt) => {
                     if leading {
                         docs.push(cmt);
-                    } else if let Some(last) = docs.last_mut() {
-                        *last += if space_after {
-                            arena.space() + cmt
-                        } else {
-                            cmt
-                        }
+                    } else {
+                        // Line comments should always be on their own line
+                        docs.push(arena.hardline() + cmt);
                     }
                     leading = false;
                     space_after = true;

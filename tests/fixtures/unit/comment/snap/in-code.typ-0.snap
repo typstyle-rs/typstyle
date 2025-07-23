@@ -1,7 +1,6 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/comment/in-code.typ
-snapshot_kind: text
 ---
 #let /* 1 */ f(
   /* 2 */
@@ -46,12 +45,17 @@ snapshot_kind: text
 }
 #{
   (
-    -1 /* 2 */
-      - /* 1 */+/* 0 */7 /* 1 */
+    -1
+      /* 2 */
+      -
+      /* 1 */+/* 0 */7 /* 1 */
       + /* 2 */(
         /* 3 */
-        +/* 4 */7 /* 5 */
-          * /* 6 */-3 /* 7 */
+        +/* 4 */7
+          /* 5 */
+          *
+          /* 6 */-3
+          /* 7 */
           - 6 /* 8 */
       )
   )
@@ -77,11 +81,15 @@ snapshot_kind: text
 #{
   /* 0 */
   (
-    not /* 1 */ true /* 2 */
-      and /* 3 */(
+    not /* 1 */ true
+      /* 2 */
+      and
+      /* 3 */(
         /* 4 */
-        false /* 5 */
-          or /* 6 */true /* 7 */
+        false
+          /* 5 */
+          or
+          /* 6 */true /* 7 */
       )
   )
 }

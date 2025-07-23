@@ -27,7 +27,8 @@ input_file: tests/fixtures/unit/off/through.typ
 
 #(
   1
-    + /* @typstyle off */(3    /    9)    * 6
+    +
+    /* @typstyle off */(3    /    9)    * 6
 )
 
 #[

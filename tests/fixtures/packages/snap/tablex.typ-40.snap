@@ -2790,7 +2790,8 @@ input_file: tests/fixtures/packages/tablex.typ
       )
 
       let hline_hasnt_already_ended = (
-        h.end in (auto, none) // always goes towards the right
+        h.end in (auto, none)
+          // always goes towards the right
           or h.end
             >= cell.x + cell.colspan // ends at or after this cell
       )
@@ -2836,7 +2837,8 @@ input_file: tests/fixtures/packages/tablex.typ
       )
 
       let vline_hasnt_already_ended = (
-        v.end in (auto, none) // always goes towards the bottom
+        v.end in (auto, none)
+          // always goes towards the bottom
           or v.end
             >= cell.y + cell.rowspan // ends at or after this cell
       )

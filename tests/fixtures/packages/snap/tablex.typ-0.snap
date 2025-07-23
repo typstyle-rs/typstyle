@@ -4102,7 +4102,8 @@ input_file: tests/fixtures/packages/tablex.typ
             in (
               auto,
               none,
-            ) // always goes towards the right
+            )
+            // always goes towards the right
             or h.end
               >= cell.x
                 + cell.colspan // ends at or after this cell
@@ -4171,7 +4172,8 @@ input_file: tests/fixtures/packages/tablex.typ
             in (
               auto,
               none,
-            ) // always goes towards the bottom
+            )
+            // always goes towards the bottom
             or v.end
               >= cell.y
                 + cell.rowspan // ends at or after this cell
