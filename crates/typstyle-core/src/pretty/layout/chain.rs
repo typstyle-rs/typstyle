@@ -13,6 +13,7 @@ enum ChainItem<'a> {
     Body(ArenaDoc<'a>),
     Op(ArenaDoc<'a>),
     Comment(ArenaDoc<'a>),
+    StandaloneComment(ArenaDoc<'a>),
     Attached(ArenaDoc<'a>),
     Linebreak,
 }
@@ -103,23 +104,36 @@ impl<'a> ChainStylist<'a> {
                     if let Some(op) = op_converter(child) {
                         seen_op = true;
                         self.items.push(ChainItem::Op(op));
-                    } else if is_comment_node(child) {
-                        let doc = self.printer.convert_comment(ctx, child);
-                        self.items.push(if can_attach {
-                            ChainItem::Attached(doc)
-                        } else {
-                            ChainItem::Comment(doc)
-                        });
-                        self.has_comment = true;
                     } else if child.kind() == SyntaxKind::Space {
                         if child.text().has_linebreak() {
                             if self.items.last().is_some_and(|last| {
-                                matches!(*last, ChainItem::Attached(_) | ChainItem::Comment(_))
+                                matches!(*last, ChainItem::Attached(_) | ChainItem::Comment(_) | ChainItem::StandaloneComment(_))
                             }) {
                                 self.items.push(ChainItem::Linebreak);
                             }
                             can_attach = false;
                         }
+                    } else if is_comment_node(child) {
+                        let doc = self.printer.convert_comment(ctx, child);
+                        
+                        // Check if this is a line comment that should be standalone
+                        let is_line_comment = child.kind() == SyntaxKind::LineComment;
+                        let should_be_standalone = is_line_comment && !can_attach;
+                        
+                        eprintln!("Comment: {:?}, can_attach: {}, standalone: {}", 
+                                 child.text().as_str(), can_attach, should_be_standalone);
+                        
+                        self.items.push(if can_attach && !should_be_standalone {
+                            eprintln!("  -> Attached");
+                            ChainItem::Attached(doc)
+                        } else if should_be_standalone {
+                            eprintln!("  -> StandaloneComment");
+                            ChainItem::StandaloneComment(doc)
+                        } else {
+                            eprintln!("  -> Comment");
+                            ChainItem::Comment(doc)
+                        });
+                        self.has_comment = true;
                     } else if seen_op {
                         if let Some(rhs) = rhs_converter(ctx, child) {
                             self.items.push(ChainItem::Body(rhs));
@@ -191,6 +205,17 @@ impl<'a> ChainStylist<'a> {
                         }
                     }
                     leading = false;
+                    space_after = true;
+                }
+                ChainItem::StandaloneComment(cmt) => {
+                    if leading {
+                        docs.push(cmt);
+                    } else {
+                        // For standalone comments, put them on a new line
+                        docs.push(arena.hardline());
+                        docs.push(cmt);
+                        leading = true;
+                    }
                     space_after = true;
                 }
                 ChainItem::Attached(cmt) => {
