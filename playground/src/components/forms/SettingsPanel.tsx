@@ -19,6 +19,8 @@ export function SettingsPanel({
   const reorderImportItemsId = useId();
   const wrapTextId = useId();
 
+  const lineLengthValues = [0, 20, 40, 60, 80, 100, 120];
+
   const handleReset = () => {
     setFormatOptions(DEFAULT_FORMAT_OPTIONS);
   };
@@ -33,7 +35,7 @@ export function SettingsPanel({
             name="lineWidth"
             className="select w-16 px-3"
             value={
-              [40, 60, 80, 100, 120].includes(formatOptions.maxLineLength)
+              lineLengthValues.includes(formatOptions.maxLineLength)
                 ? formatOptions.maxLineLength
                 : "custom"
             }
@@ -49,11 +51,11 @@ export function SettingsPanel({
             <option value="custom" disabled>
               Custom
             </option>
-            <option value={40}>40</option>
-            <option value={60}>60</option>
-            <option value={80}>80</option>
-            <option value={100}>100</option>
-            <option value={120}>120</option>
+            {lineLengthValues.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
           </select>
           <input
             id={lineLengthInputId}
