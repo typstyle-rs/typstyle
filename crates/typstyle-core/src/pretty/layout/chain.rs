@@ -96,6 +96,8 @@ impl<'a> ChainStylist<'a> {
         fallback_converter: impl Fn(Context, &'a SyntaxNode) -> Option<ArenaDoc<'a>>,
     ) -> Self {
         let mut can_attach = false;
+        let mut seen_linebreak_recently = false;
+        
         for node in nodes {
             if operand_pred(node) {
                 self.chain_op_num += 1;
@@ -104,6 +106,7 @@ impl<'a> ChainStylist<'a> {
                     if let Some(op) = op_converter(child) {
                         seen_op = true;
                         self.items.push(ChainItem::Op(op));
+                        seen_linebreak_recently = false;
                     } else if child.kind() == SyntaxKind::Space {
                         if child.text().has_linebreak() {
                             if self.items.last().is_some_and(|last| {
@@ -112,32 +115,29 @@ impl<'a> ChainStylist<'a> {
                                 self.items.push(ChainItem::Linebreak);
                             }
                             can_attach = false;
+                            seen_linebreak_recently = true;
                         }
                     } else if is_comment_node(child) {
                         let doc = self.printer.convert_comment(ctx, child);
                         
-                        // Check if this is a line comment that should be standalone
+                        // For line comments that follow a recent linebreak, treat them as standalone
                         let is_line_comment = child.kind() == SyntaxKind::LineComment;
-                        let should_be_standalone = is_line_comment && !can_attach;
-                        
-                        eprintln!("Comment: {:?}, can_attach: {}, standalone: {}", 
-                                 child.text().as_str(), can_attach, should_be_standalone);
+                        let should_be_standalone = is_line_comment && seen_linebreak_recently;
                         
                         self.items.push(if can_attach && !should_be_standalone {
-                            eprintln!("  -> Attached");
                             ChainItem::Attached(doc)
                         } else if should_be_standalone {
-                            eprintln!("  -> StandaloneComment");
                             ChainItem::StandaloneComment(doc)
                         } else {
-                            eprintln!("  -> Comment");
                             ChainItem::Comment(doc)
                         });
                         self.has_comment = true;
+                        seen_linebreak_recently = false; // Reset after processing comment
                     } else if seen_op {
                         if let Some(rhs) = rhs_converter(ctx, child) {
                             self.items.push(ChainItem::Body(rhs));
                             can_attach = true;
+                            seen_linebreak_recently = false;
                         }
                     }
                 }
