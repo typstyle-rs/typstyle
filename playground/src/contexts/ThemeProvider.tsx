@@ -7,12 +7,35 @@ interface ThemeProviderProps {
 }
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
-  // Initialize theme with saved preference, defaulting to light
+  const THEME_STORE_KEY = "playground-theme";
+
+  // Helper function to get system theme preference
+  const getSystemTheme = (): ThemeType => {
+    if (typeof window !== "undefined" && window.matchMedia) {
+      return window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+    }
+    return "light"; // fallback for SSR or older browsers
+  };
+
+  // Initialize theme with saved preference, defaulting to system preference
   const [theme, setTheme] = useState<ThemeType>(() => {
-    const savedTheme = localStorage.getItem("theme") as ThemeType | null;
-    return savedTheme && (savedTheme === "light" || savedTheme === "dark")
-      ? savedTheme
-      : "light";
+    if (typeof window === "undefined") {
+      return "light"; // SSR fallback
+    }
+
+    const savedTheme = localStorage.getItem(
+      THEME_STORE_KEY,
+    ) as ThemeType | null;
+
+    if (savedTheme && (savedTheme === "light" || savedTheme === "dark")) {
+      // If we have a saved theme preference, use it
+      return savedTheme;
+    }
+
+    // Otherwise, use system preference
+    return getSystemTheme();
   });
 
   const toggleTheme = useCallback(() => {
@@ -23,7 +46,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   useEffect(() => {
     const root = document.documentElement;
     root.setAttribute("data-theme", theme);
-    localStorage.setItem("theme", theme);
+    localStorage.setItem(THEME_STORE_KEY, theme);
   }, [theme]);
 
   return (

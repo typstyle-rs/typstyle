@@ -39,6 +39,9 @@ export default defineConfig({
           if (id.includes("react")) {
             return "react";
           }
+          if (id.includes("typstyle-wasm")) {
+            return "typstyle-wasm";
+          }
           if (id.includes("node_modules")) {
             return "vendor";
           }
