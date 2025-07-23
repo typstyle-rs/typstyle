@@ -8,13 +8,22 @@ use crate::{
     pretty::{prelude::*, util::is_comment_node, Context, PrettyPrinter},
 };
 
+/// Comment positioning strategy in chain formatting.
+#[derive(Clone, Copy)]
+enum CommentPosition {
+    /// Regular comment that flows with the chain
+    Normal,
+    /// Comment that should remain on its own line
+    Standalone,
+    /// Comment that should be attached to the previous element
+    Attached,
+}
+
 /// Intermediate representation in chain formatting.
 enum ChainItem<'a> {
     Body(ArenaDoc<'a>),
     Op(ArenaDoc<'a>),
-    Comment(ArenaDoc<'a>),
-    StandaloneComment(ArenaDoc<'a>),
-    Attached(ArenaDoc<'a>),
+    Comment(ArenaDoc<'a>, CommentPosition),
     Linebreak,
 }
 
@@ -110,7 +119,7 @@ impl<'a> ChainStylist<'a> {
                     } else if child.kind() == SyntaxKind::Space {
                         if child.text().has_linebreak() {
                             if self.items.last().is_some_and(|last| {
-                                matches!(*last, ChainItem::Attached(_) | ChainItem::Comment(_) | ChainItem::StandaloneComment(_))
+                                matches!(*last, ChainItem::Comment(_, _))
                             }) {
                                 self.items.push(ChainItem::Linebreak);
                             }
@@ -124,13 +133,14 @@ impl<'a> ChainStylist<'a> {
                         let is_line_comment = child.kind() == SyntaxKind::LineComment;
                         let should_be_standalone = is_line_comment && seen_linebreak_recently;
                         
-                        self.items.push(if can_attach && !should_be_standalone {
-                            ChainItem::Attached(doc)
+                        let position = if can_attach && !should_be_standalone {
+                            CommentPosition::Attached
                         } else if should_be_standalone {
-                            ChainItem::StandaloneComment(doc)
+                            CommentPosition::Standalone
                         } else {
-                            ChainItem::Comment(doc)
-                        });
+                            CommentPosition::Normal
+                        };
+                        self.items.push(ChainItem::Comment(doc, position));
                         self.has_comment = true;
                         seen_linebreak_recently = false; // Reset after processing comment
                     } else if seen_op {
@@ -194,36 +204,40 @@ impl<'a> ChainStylist<'a> {
                     leading = false;
                     space_after = false;
                 }
-                ChainItem::Comment(cmt) => {
-                    if leading {
-                        docs.push(cmt);
-                    } else if let Some(last) = docs.last_mut() {
-                        *last += if space_after {
-                            arena.space() + cmt
-                        } else {
-                            cmt
+                ChainItem::Comment(cmt, position) => {
+                    match position {
+                        CommentPosition::Normal => {
+                            if leading {
+                                docs.push(cmt);
+                            } else if let Some(last) = docs.last_mut() {
+                                *last += if space_after {
+                                    arena.space() + cmt
+                                } else {
+                                    cmt
+                                }
+                            }
+                            leading = false;
+                            space_after = true;
                         }
-                    }
-                    leading = false;
-                    space_after = true;
-                }
-                ChainItem::StandaloneComment(cmt) => {
-                    if leading {
-                        docs.push(cmt);
-                    } else {
-                        // For standalone comments, put them on a new line
-                        docs.push(arena.hardline());
-                        docs.push(cmt);
-                        leading = true;
-                    }
-                    space_after = true;
-                }
-                ChainItem::Attached(cmt) => {
-                    if let Some(last) = docs.last_mut() {
-                        *last += if space_after {
-                            arena.space() + cmt
-                        } else {
-                            cmt
+                        CommentPosition::Standalone => {
+                            if leading {
+                                docs.push(cmt);
+                            } else {
+                                // For standalone comments, put them on a new line
+                                docs.push(arena.hardline());
+                                docs.push(cmt);
+                                leading = true;
+                            }
+                            space_after = true;
+                        }
+                        CommentPosition::Attached => {
+                            if let Some(last) = docs.last_mut() {
+                                *last += if space_after {
+                                    arena.space() + cmt
+                                } else {
+                                    cmt
+                                }
+                            }
                         }
                     }
                 }
