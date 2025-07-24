@@ -1,4 +1,4 @@
-import { useDeferredValue, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import * as typstyle from "typstyle-wasm";
 import type { OutputType } from "@/types";
 import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
@@ -16,7 +16,6 @@ export function useTypstFormatter(
   formatOptions: FormatOptions,
   activeOutput: OutputType,
 ): Formatter {
-  const deferredSourceCode = useDeferredValue(sourceCode);
   const [formattedCode, setFormattedCode] = useState("");
   const [astOutput, setAstOutput] = useState("");
   const [irOutput, setIrOutput] = useState("");
@@ -29,7 +28,7 @@ export function useTypstFormatter(
       // Only call the WASM function for the currently active output
       switch (activeOutput) {
         case "formatted": {
-          const formatted = typstyle.format(deferredSourceCode, config);
+          const formatted = typstyle.format(sourceCode, config);
           setFormattedCode(formatted);
 
           // Check for convergence on formatted output
@@ -47,13 +46,13 @@ export function useTypstFormatter(
           break;
         }
         case "ast": {
-          const ast = typstyle.parse(deferredSourceCode);
+          const ast = typstyle.parse(sourceCode);
           setAstOutput(ast);
           setError(null);
           break;
         }
         case "ir": {
-          const formatIr = typstyle.format_ir(deferredSourceCode, config);
+          const formatIr = typstyle.format_ir(sourceCode, config);
           setIrOutput(formatIr);
           setError(null);
           break;
@@ -67,7 +66,7 @@ export function useTypstFormatter(
 
   useEffect(() => {
     formatCode();
-  }, [deferredSourceCode, formatOptions, activeOutput]);
+  }, [sourceCode, formatOptions, activeOutput]);
 
   return {
     formattedCode,

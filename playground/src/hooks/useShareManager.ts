@@ -1,6 +1,5 @@
 import { useCallback, useState } from "react";
-import type { PlaygroundState } from "@/utils/url";
-import { generateShareUrl } from "@/utils/url";
+import { generateShareUrl, type PlaygroundState } from "@/utils/url";
 import { useToast } from ".";
 
 export interface ShareState {

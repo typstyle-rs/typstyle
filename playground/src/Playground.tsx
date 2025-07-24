@@ -16,7 +16,7 @@ import type { OutputType } from "./types";
 
 function Playground() {
   const {
-    state: { sourceCode, formatOptions },
+    state: { sourceCode, deferredSourceCode, formatOptions },
     setSourceCode,
     setFormatOptions,
   } = usePlaygroundState();
@@ -24,7 +24,11 @@ function Playground() {
 
   // Custom hooks
   const screenSize = useScreenSize();
-  const formatter = useTypstFormatter(sourceCode, formatOptions, activeOutput);
+  const formatter = useTypstFormatter(
+    deferredSourceCode,
+    formatOptions,
+    activeOutput,
+  );
   const shareManager = useShareManager();
 
   const handleEditorChange = (value: string | undefined) => {
@@ -38,6 +42,7 @@ function Playground() {
   };
 
   const handleActiveTabChange = (tabId: string) => {
+    // Only update activeOutput if the tab is an output type
     if (tabId === "formatted" || tabId === "ast" || tabId === "ir") {
       setActiveOutput(tabId);
     }

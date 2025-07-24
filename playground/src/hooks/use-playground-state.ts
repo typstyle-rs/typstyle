@@ -42,7 +42,7 @@ export function usePlaygroundState() {
     loadState();
   }, []);
 
-  // Save state to localStorage and update URL (only non-default options)
+  // Save state to URL (only non-default options)
   useEffect(() => {
     if (!initialized.current) {
       // To avoid url state being overridden
@@ -55,7 +55,7 @@ export function usePlaygroundState() {
   }, [deferredSourceCode, formatOptions]);
 
   return {
-    state: { sourceCode, formatOptions },
+    state: { sourceCode, deferredSourceCode, formatOptions },
     setSourceCode,
     setFormatOptions,
   };
