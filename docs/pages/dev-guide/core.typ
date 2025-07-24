@@ -3,13 +3,11 @@
 
 #show: book-page.with(title: "Rust Development")
 
-= Core Development
-
 This section covers building, testing, and benchmarking the Rust crates of typstyle.
 
-== Building Components
+= Building Components
 
-=== CLI and Core
+== CLI and Core
 
 ```bash
 cargo build                     # Debug build
@@ -18,7 +16,7 @@ cargo build -p typstyle         # CLI only
 cargo build -p typstyle-core    # Core only
 ```
 
-== Running Tests
+= Running Tests
 
 #important[
   Update snapshots with `cargo insta` when changing core library or fixtures.
@@ -27,7 +25,7 @@ cargo build -p typstyle-core    # Core only
   For style arguments, add tests to `test_style_args.rs`.
 ]
 
-=== Test Commands
+== Test Commands
 
 List all tests:
 ```bash
@@ -62,7 +60,7 @@ Integration tests:
 cargo nextest run -p tests --no-fail-fast
 ```
 
-=== Snapshot Management
+== Snapshot Management
 
 Review and accept snapshot changes:
 ```bash
@@ -70,7 +68,7 @@ cargo insta review    # Interactive review
 cargo insta accept    # Accept all changes
 ```
 
-=== Benchmarks
+== Benchmarks
 
 Using #link("https://github.com/bheisler/criterion.rs")[Criterion.rs]:
 
@@ -81,9 +79,9 @@ cargo bench --workspace              # Run all benchmarks
 
 View HTML reports at `target/criterion/report/index.html`.
 
-== Code Quality
+= Code Quality
 
-=== Formatting and Linting
+== Formatting and Linting
 
 Format code:
 ```bash
@@ -95,7 +93,7 @@ Run clippy:
 cargo clippy --workspace --all-targets --all-features
 ```
 
-=== Testing Guidelines
+== Testing Guidelines
 
 - Add tests to appropriate modules when implementing new features
 - Use snapshot tests for formatter output validation

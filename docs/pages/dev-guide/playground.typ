@@ -3,11 +3,9 @@
 
 #show: book-page.with(title: "Playground Development")
 
-= Playground Development
+The #link(package.homepage + "playground")[typstyle playground] is an interactive web application for trying typstyle formatting in the browser.
 
-The #link("https://typstyle-rs.github.io/typstyle/playground")[typstyle playground] is an interactive web application for trying typstyle formatting in the browser.
-
-== Tech Stack
+= Tech Stack
 
 - *React 19* + *TypeScript* + *Vite*
 - *TailwindCSS 4.x* + *DaisyUI* for styling
@@ -15,7 +13,7 @@ The #link("https://typstyle-rs.github.io/typstyle/playground")[typstyle playgrou
 - *Typstyle WASM* for client-side formatting
 - *pnpm* for package management
 
-== Quick Start
+= Quick Start
 
 Prerequisites: Node.js 18+ and pnpm
 
@@ -35,7 +33,7 @@ pnpm build:wasm     # Build Typstyle WASM module
 pnpm check          # Run linter and formatter
 ```
 
-== Key Components
+= Key Components
 
 - *WASM Integration*: Typstyle compiled to WebAssembly for client-side formatting
 - *Monaco Editor*: Custom Typst language support with TextMate grammar from #link("https://github.com/Myriad-Dreamin/tinymist")[Tinymist]
@@ -44,7 +42,7 @@ pnpm check          # Run linter and formatter
   Rebuild WASM bindings (```sh pnpm dev:wasm``` or ```sh pnpm build:wasm```) after changes to `typstyle-core` or `typstyle-wasm` crates.
 ]
 
-== Development Workflow
+= Development Workflow
 
 1. *Code changes*: Modify TypeScript/React code in `src/`
 2. *WASM changes*: Rebuild WASM if Rust code changed

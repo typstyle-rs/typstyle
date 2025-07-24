@@ -6,12 +6,6 @@
   --content-max-width: 960px;
 }
 
-:root.coal,
-:root.navy,
-:root.ayu {
-  color-scheme: dark;
-}
-
 .content {
   padding: 0 2em 50px 2em;
 }
@@ -25,6 +19,11 @@
     display: grid;
     place-items: center;
     overflow-x: auto;
+  }
+  .site-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    font-style: italic;
   }
 }
 

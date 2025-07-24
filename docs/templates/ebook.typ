@@ -1,6 +1,8 @@
-#import "deps.typ": shiroa
+#import "../deps.typ": numbly, shiroa
 #import shiroa: *
-#import "./page.typ": part-style, project
+#import "page.typ": project
+#import "constants.typ": *
+#import "version.typ": *
 
 #let _page-project = project
 
@@ -8,21 +10,94 @@
 
 #let resolve-inclusion(inc) = _resolve-inclusion-state.update(it => inc)
 
-#let project(title: "", authors: (), spec: "", content) = {
+#let part-counter = counter("shiroa-part-counter")
+
+#let part-style(it) = {
+  set text(size: heading-sizes.at(0))
+  set text(weight: "bold")
+  set text(fill: main-color)
+  part-counter.step()
+
+  context heading(numbering: none, [Part #part-counter.display(numbly.numbly("{1}. "))#it])
+  counter(heading).update(0)
+}
+
+#let project(title: "", authors: (), spec: "", body) = {
   // Set document metadata early
-  set document(author: authors, title: title)
+  set document(
+    author: authors,
+    title: title,
+  )
 
   // Inherit from gh-pages
-  show: _page-project
+  show: _page-project.with(title: title)
 
-  if title != "" {
-    heading(title)
+  [
+    #package.description
+
+    Visit typstyle repository: #link(package.repository)[main branch, ] or #link({
+      package.repository
+      "/tree/v"
+      package.version
+    })[v#package.version.]
+  ]
+
+  {
+    // inherit from page setting
+    show: _page-project.with(title: none, kind: "preface")
+
+    // include "/typ/templates/license.typ"
+
+    let outline-numbering-base = numbering.with("1.")
+    let outline-numbering(a0, ..args) = if a0 > 0 {
+      h(1em * args.pos().len())
+      outline-numbering-base(a0, ..args) + [ ]
+    }
+
+    let outline-counter = counter("outline-counter")
+    show outline.entry: it => {
+      let has-part = if it.body().func() != none and "children" in it.body().fields() {
+        for ch in it.body().children {
+          if "text" in ch.fields() and ch.text.contains("Part") {
+            ch.text
+          }
+        }
+      }
+
+      // set link(main-color)
+      show link: set text(fill: main-color)
+
+      if has-part == none {
+        if it.element.numbering == none {
+          outline-counter.step(level: it.level + 1)
+        } else {
+          outline-counter.step(level: it.level + 2)
+        }
+        layout(shape => {
+          context {
+            let lnk = link(it.element.location(), [#outline-counter.display(outline-numbering) #it.element.body])
+            let r = repeat([.])
+            let page-no = str(it.element.location().page())
+            let q = measure(lnk + page-no)
+            lnk
+            box(width: shape.width - q.width, inset: (x: 0.25em), r)
+            page-no
+          }
+        })
+      } else {
+        outline-counter.step(level: 1)
+        block(link(it.element.location(), it.element.body))
+      }
+    }
+
+    set outline.entry(fill: repeat[.])
+    outline(depth: 1)
   }
+
+  body
 
   context {
     let inc = _resolve-inclusion-state.final()
-    external-book(spec: inc(spec))
-
     let mt = book-meta-state.final()
     let styles = (inc: inc, part: part-style, chapter: it => it)
 
@@ -30,6 +105,4 @@
       mt.summary.map(it => visit-summary(it, styles)).sum()
     }
   }
-
-  content
 }

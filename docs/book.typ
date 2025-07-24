@@ -1,13 +1,14 @@
 #import "deps.typ": shiroa
 #import shiroa: *
+#import "templates/version.typ": package
 
 #show: book
 
 #book-meta(
   title: "typstyle",
   description: "Typstyle Documentation",
-  repository: "https://github.com/typstyle-rs/typstyle",
-  repository-edit: "https://github.com/typstyle-rs/typstyle/edit/master/docs/pages/{path}",
+  repository: package.repository,
+  repository-edit: package.repository + "/edit/master/docs/pages/{path}",
   summary: [
     #prefix-chapter("introduction.typ")[Introduction]
     = User Guide

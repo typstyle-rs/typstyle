@@ -4,8 +4,6 @@
 
 #show: render-examples
 
-= Formatting Features
-
 Typstyle follows a consistent set of formatting rules to ensure your Typst code is readable, maintainable, and follows established conventions. This page documents the core formatting styles applied by typstyle.
 
 #callout.note[
@@ -14,17 +12,17 @@ Typstyle follows a consistent set of formatting rules to ensure your Typst code 
   However, documentation updates may lag behind new features. If there are inconsistencies between descriptions and example output, the actual formatting behavior takes precedence.
 ]
 
-== Configuration
+= Configuration
 
-=== Line Width and Indentation
+== Line Width and Indentation
 
 - *Default line width*: 80 characters (configurable with `--line-width`)
 - *Default indentation*: 2 spaces per level (configurable with `--indent-width`)
 - *File endings*: typstyle ensures files end with a newline character
 
-== Comments
+= Comments
 
-=== Inline Comments
+== Inline Comments
 
 Inline comments are preserved and positioned correctly:
 
@@ -44,7 +42,7 @@ doc,// my docs
 }
 ```
 
-=== Block Comments
+== Block Comments
 
 Block comments are automatically aligned and formatted:
 
@@ -69,7 +67,7 @@ Aligned: /* Block comment with leading stars
   */
 ```
 
-== Disabling Formatting
+= Disabling Formatting
 
 Use `// @typstyle off` to disable formatting for specific code regions:
 

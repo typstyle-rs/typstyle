@@ -4,9 +4,7 @@
 
 #show: render-examples
 
-= Table and Grid Formatting
-
-== Formatting Rules
+= Formatting Rules
 
 typstyle applies intelligent formatting to tables and grids based on content structure:
 
@@ -26,7 +24,7 @@ typstyle applies intelligent formatting to tables and grids based on content str
   - If no special cells exist, typstyle reflows all cells to fit the columns.
   - Otherwise, the original grid structure is preserved.
 
-== Column-Aware Formatting
+= Column-Aware Formatting
 
 typstyle formats tables and grids in a "column-aware" way, recognizing basic patterns and column numbers. Single rows are kept on single lines when possible:
 
@@ -57,7 +55,7 @@ When a table row cannot fit on a single line, each cell is placed on its own lin
 )
 ```
 
-== Advanced Table Features
+= Advanced Table Features
 
 typstyle provides comprehensive support for complex table structures:
 
