@@ -25,7 +25,7 @@ export function usePlaygroundState() {
     const loadState = async () => {
       try {
         const urlState = await getStateFromUrl();
-        console.log("load state", urlState);
+        console.debug("load state", urlState);
         if (urlState) {
           setSourceCode(urlState.sourceCode);
           setFormatOptions({
