@@ -1,173 +1,109 @@
-import {
-  DEFAULT_FORMAT_OPTIONS,
-  type FormatOptions,
-  filterNonDefaultOptions,
-} from "./formatter";
+import * as lz from "lz-string";
+import queryString from "query-string";
+import { type FormatOptions } from "./formatter";
+import { fetchFromPastebin, uploadToPastebin } from "./pastebin";
 
 export interface PlaygroundState {
   sourceCode: string;
-  formatOptions: FormatOptions;
+  formatOptions: Partial<FormatOptions>;
 }
 
-// Maximum URL length before using pastebin (browsers generally support 2000+ chars safely)
-const MAX_URL_LENGTH = 2000;
-
-// shz.al API base URL
-const PASTEBIN_API = "https://shz.al";
+// Maximum URL length before using pastebin for source code storage
+// We use a shorter (< 2048) length to avoid verbosity
+const MAX_URL_LENGTH = 256;
 
 /**
- * Upload content to shz.al pastebin
+ * Updates the URL with current options and source code
  */
-async function uploadToPastebin(content: string): Promise<string | null> {
-  try {
-    const formData = new FormData();
-    formData.append("c", content);
-
-    const response = await fetch(PASTEBIN_API, {
-      method: "POST",
-      body: formData,
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const result = await response.json();
-    if (result.url) {
-      // Extract the paste ID from the URL (e.g., "https://shz.al/abcd" -> "abcd")
-      return (result.url as string).split("/").pop() ?? null;
-    }
-
-    return null;
-  } catch (error) {
-    console.error("Error uploading to pastebin:", error);
-    return null;
-  }
-}
-
-/**
- * Fetch content from shz.al pastebin
- */
-async function fetchFromPastebin(pasteId: string): Promise<string | null> {
-  try {
-    const response = await fetch(`${PASTEBIN_API}/${pasteId}`);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    return await response.text();
-  } catch (error) {
-    console.error("Error fetching from pastebin:", error);
-    return null;
-  }
-}
-
-/**
- * Generates a shareable URL for the current playground state
- * Automatically uses pastebin if URL becomes too long
- */
-export async function generateShareUrl(
-  state: PlaygroundState,
-): Promise<{ url: string; usedPastebin: boolean }> {
-  const filteredOptions = filterNonDefaultOptions(state.formatOptions);
-  const stateString = JSON.stringify({
-    c: state.sourceCode,
-    f: Object.keys(filteredOptions).length > 0 ? filteredOptions : undefined,
+export function updateUrlWithState(
+  sourceCode: string,
+  options: Partial<FormatOptions>,
+): void {
+  const query = {
+    ...options,
+    code:
+      sourceCode === "" ? null : lz.compressToEncodedURIComponent(sourceCode),
+  };
+  const qs = queryString.stringify(query, {
+    skipNull: true,
+    skipEmptyString: true,
+    sort: false,
   });
-  const encoded = encodeURIComponent(stateString);
 
-  // Try normal URL encoding first
-  const baseUrl = new URL(window.location.href);
-  baseUrl.searchParams.delete("paste");
-  baseUrl.searchParams.set("share", encoded);
-  const normalUrl = baseUrl.toString();
-
-  // If URL is within acceptable length, use it
-  if (normalUrl.length <= MAX_URL_LENGTH) {
-    return { url: normalUrl, usedPastebin: false };
-  }
-
-  // URL is too long, upload to pastebin
-  const pasteId = await uploadToPastebin(stateString);
-  if (!pasteId) {
-    // Fallback to normal URL if pastebin fails
-    return { url: normalUrl, usedPastebin: false };
-  }
-
-  // Create pastebin URL
-  const pastebinUrl = new URL(window.location.href);
-  pastebinUrl.searchParams.delete("share");
-  pastebinUrl.searchParams.set("paste", pasteId);
-
-  return { url: pastebinUrl.toString(), usedPastebin: true };
+  // Replace the current URL without reloading
+  window.history.replaceState({}, "", `?${qs}`);
 }
 
 /**
  * Extracts playground state from the current URL
- * Supports both direct encoding and pastebin URLs
  */
 export async function getStateFromUrl(): Promise<PlaygroundState | null> {
   const url = new URL(window.location.href);
+  const params = url.searchParams;
 
-  let stateString: string | null = null;
+  let sourceCode = "";
 
-  // Check for direct share parameter first
-  const shareParam = url.searchParams.get("share");
-  if (shareParam) {
-    stateString = decodeURIComponent(shareParam);
+  // Check for code parameter first
+  const codeParam = params.get("code");
+  if (codeParam) {
+    try {
+      const decompressed = lz.decompressFromEncodedURIComponent(codeParam);
+      if (decompressed !== null) {
+        sourceCode = decompressed;
+      }
+    } catch (error) {
+      console.warn("Failed to decompress code parameter:", error);
+    }
   } else {
     // Check for pastebin parameter
-    const pasteParam = url.searchParams.get("paste");
+    const pasteParam = params.get("paste");
     if (pasteParam) {
-      stateString = await fetchFromPastebin(pasteParam);
+      try {
+        const content = await fetchFromPastebin(pasteParam);
+        if (content) {
+          sourceCode = content;
+        }
+        params.delete("paste");
+        window.history.replaceState({}, "", url.toString());
+      } catch (error) {
+        console.warn("Failed to fetch from pastebin:", error);
+      }
     }
   }
 
-  if (!stateString) {
-    return null;
-  }
+  // Parse options from query params (use current URL state)
+  params.delete("code");
+  params.delete("paste");
+  const query = queryString.parse(url.search, {
+    parseBooleans: true,
+    parseNumbers: true,
+  });
 
-  try {
-    const parsed = JSON.parse(stateString);
-    // Handle the compact format from pastebin
-    return {
-      sourceCode: parsed.c ?? "",
-      formatOptions: { ...DEFAULT_FORMAT_OPTIONS, ...parsed.f },
-    };
-  } catch (error) {
-    console.error("Error parsing pastebin content:", error);
-    return null;
-  }
+  return {
+    sourceCode,
+    formatOptions: query as Partial<FormatOptions>,
+  };
 }
 
 /**
- * Copies text to the clipboard using modern API
+ * Generates a shareable URL for the current playground state
  */
-export async function copyToClipboard(text: string): Promise<boolean> {
-  try {
-    if (navigator.clipboard && window.isSecureContext) {
-      await navigator.clipboard.writeText(text);
-      return true;
+export async function generateShareUrl(
+  state: PlaygroundState,
+): Promise<{ url: string; usedPastebin: boolean }> {
+  // Check if current URL is already suitable (not too long)
+  if (window.location.href.length > MAX_URL_LENGTH) {
+    // Try to upload to pastebin for long URLs
+    const pasteId = await uploadToPastebin(state.sourceCode);
+    if (pasteId) {
+      // Replace code parameter with paste parameter in current URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete("code");
+      url.searchParams.set("paste", pasteId);
+      return { url: url.toString(), usedPastebin: true };
     }
-    // For modern browsers, fallback should rarely be needed
-    throw new Error("Clipboard API not available");
-  } catch (error) {
-    console.error("Error copying to clipboard:", error);
-    return false;
   }
-}
 
-/**
- * Removes share parameters from the current URL to clean up the address bar
- */
-export function cleanUrlAfterLoad(): void {
-  const url = new URL(window.location.href);
-  if (url.searchParams.has("share") || url.searchParams.has("paste")) {
-    url.searchParams.delete("share");
-    url.searchParams.delete("paste");
-
-    // Update the URL without triggering a page reload
-    window.history.replaceState({}, "", url.toString());
-  }
+  // If pastebin fails, use current URL as-is
+  return { url: window.location.href, usedPastebin: false };
 }

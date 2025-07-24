@@ -1,12 +1,10 @@
-import { useDeferredValue, useEffect, useState } from "react";
+import { useDeferredValue, useEffect, useRef, useState } from "react";
 import {
   DEFAULT_FORMAT_OPTIONS,
   type FormatOptions,
   filterNonDefaultOptions,
 } from "@/utils/formatter";
-import { cleanUrlAfterLoad, getStateFromUrl } from "../utils";
-
-const STORAGE_KEY = "typstyle-playground-state";
+import { getStateFromUrl, updateUrlWithState } from "@/utils/url";
 
 export interface PlaygroundState {
   sourceCode: string;
@@ -20,61 +18,40 @@ export function usePlaygroundState() {
   // Use deferred value for source code throttling
   const deferredSourceCode = useDeferredValue(sourceCode);
 
+  const initialized = useRef(false);
+
   // Load state on mount
   useEffect(() => {
     const loadState = async () => {
       try {
         const urlState = await getStateFromUrl();
+        console.log("load state", urlState);
         if (urlState) {
-          setSourceCode(urlState.sourceCode || "");
+          setSourceCode(urlState.sourceCode);
           setFormatOptions({
             ...DEFAULT_FORMAT_OPTIONS,
             ...urlState.formatOptions,
-          });
-          cleanUrlAfterLoad();
-          return;
-        }
-
-        const savedState = localStorage.getItem(STORAGE_KEY);
-        if (savedState) {
-          const parsed = JSON.parse(savedState);
-          setSourceCode(parsed.sourceCode || "");
-          setFormatOptions({
-            ...DEFAULT_FORMAT_OPTIONS,
-            ...parsed.formatOptions,
           });
         }
       } catch (error) {
         console.error("Error loading state:", error);
       }
+      initialized.current = true;
     };
 
     loadState();
   }, []);
 
-  // Save state to localStorage (throttled for source code, only non-default options)
+  // Save state to localStorage and update URL (only non-default options)
   useEffect(() => {
-    // Build state with only non-default options
-    const stateToSave: {
-      sourceCode?: string;
-      formatOptions?: Partial<FormatOptions>;
-    } = {};
-
-    if (deferredSourceCode !== "") {
-      stateToSave.sourceCode = deferredSourceCode;
+    if (!initialized.current) {
+      // To avoid url state being overridden
+      return;
     }
-
-    // Only include format options that differ from defaults
     const nondefaultOptions = filterNonDefaultOptions(formatOptions);
-    if (Object.keys(nondefaultOptions).length > 0) {
-      stateToSave.formatOptions = nondefaultOptions;
-    }
 
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-    } catch (error) {
-      console.error("Error saving to localStorage:", error);
-    }
+    // Update URL with current state
+    updateUrlWithState(sourceCode, nondefaultOptions);
   }, [deferredSourceCode, formatOptions]);
 
   return {

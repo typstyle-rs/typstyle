@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
-import type { PlaygroundState } from "@/utils";
-import { copyToClipboard, generateShareUrl } from "@/utils";
+import type { PlaygroundState } from "@/utils/url";
+import { generateShareUrl } from "@/utils/url";
 import { useToast } from ".";
 
 export interface ShareState {
@@ -105,4 +105,20 @@ export function useShareManager() {
     closeModal,
     resetError,
   };
+}
+
+/**
+ * Copies text to the clipboard using modern API
+ */
+async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    throw new Error("Clipboard API not available");
+  } catch (error) {
+    console.error("Error copying to clipboard:", error);
+    return false;
+  }
 }
