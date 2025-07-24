@@ -1,8 +1,8 @@
 import * as typstyle from "typstyle-wasm";
 
 export interface FormatOptions {
-  maxLineLength: number;
-  indentSize: number;
+  lineWidth: number;
+  indentWidth: number;
   collapseMarkupSpaces: boolean;
   reorderImportItems: boolean;
   wrapText: boolean;
@@ -10,8 +10,8 @@ export interface FormatOptions {
 
 // Default format style options
 export const DEFAULT_FORMAT_OPTIONS: FormatOptions = {
-  maxLineLength: 80,
-  indentSize: 2,
+  lineWidth: 80,
+  indentWidth: 2,
   collapseMarkupSpaces: false,
   reorderImportItems: true,
   wrapText: false,
@@ -39,8 +39,8 @@ export function formatOptionsToConfig(
   options: FormatOptions,
 ): Partial<typstyle.Config> {
   return {
-    max_width: options.maxLineLength,
-    tab_spaces: options.indentSize,
+    max_width: options.lineWidth,
+    tab_spaces: options.indentWidth,
     collapse_markup_spaces: options.collapseMarkupSpaces,
     reorder_import_items: options.reorderImportItems,
     wrap_text: options.wrapText,

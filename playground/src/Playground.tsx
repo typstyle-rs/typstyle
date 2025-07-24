@@ -71,7 +71,7 @@ function Playground() {
       key="source-editor"
       value={sourceCode}
       onChange={handleEditorChange}
-      lineLengthGuide={formatOptions.maxLineLength}
+      lineLengthGuide={formatOptions.lineWidth}
     />
   );
   const formattedPanel = (
@@ -79,8 +79,8 @@ function Playground() {
       key="output-formatted"
       content={formatter.formattedCode}
       language="typst"
-      indentSize={formatOptions.indentSize}
-      lineLengthGuide={formatOptions.maxLineLength}
+      indentSize={formatOptions.indentWidth}
+      lineLengthGuide={formatOptions.lineWidth}
     />
   );
   const astPanel = (

@@ -10,10 +10,10 @@ export function SettingsPanel({
   formatOptions,
   setFormatOptions,
 }: SettingsPanelProps) {
-  const lineLengthSelectId = useId();
-  const lineLengthInputId = useId();
-  const indentSizeSelectId = useId();
-  const indentSizeInputId = useId();
+  const lineWidthSelectId = useId();
+  const lineWidthInputId = useId();
+  const indentWidthSelectId = useId();
+  const indentWidthInputId = useId();
   const collapseMarkupSpacesId = useId();
   const reorderImportItemsId = useId();
   const wrapTextId = useId();
@@ -25,22 +25,22 @@ export function SettingsPanel({
   return (
     <div className="p-2 overflow-y-auto flex flex-wrap gap-3 text-sm">
       <div className="flex items-center justify-between w-full">
-        <label htmlFor={lineLengthSelectId}>Line Length:</label>
+        <label htmlFor={lineWidthSelectId}>Line Width:</label>
         <div className="flex gap-1 flex-shrink-0">
           <select
-            id={lineLengthSelectId}
+            id={lineWidthSelectId}
             name="lineWidth"
             className="select w-16 px-3"
             value={
-              [40, 60, 80, 100, 120].includes(formatOptions.maxLineLength)
-                ? formatOptions.maxLineLength
+              [40, 60, 80, 100, 120].includes(formatOptions.lineWidth)
+                ? formatOptions.lineWidth
                 : "custom"
             }
             onChange={(e) => {
               if (e.target.value !== "custom") {
                 setFormatOptions((prev) => ({
                   ...prev,
-                  maxLineLength: Number.parseInt(e.target.value),
+                  lineWidth: Number.parseInt(e.target.value),
                 }));
               }
             }}
@@ -57,17 +57,17 @@ export function SettingsPanel({
             <option value={120}>120</option>
           </select>
           <input
-            id={lineLengthInputId}
+            id={lineWidthInputId}
             type="number"
             className="input w-16"
             min="0"
             max="200"
-            aria-label="Custom Line Length"
-            value={formatOptions.maxLineLength}
+            aria-label="Custom Line Width"
+            value={formatOptions.lineWidth}
             onChange={(e) =>
               setFormatOptions((prev) => ({
                 ...prev,
-                maxLineLength: Number.parseInt(e.target.value),
+                lineWidth: Number.parseInt(e.target.value),
               }))
             }
           />
@@ -75,21 +75,21 @@ export function SettingsPanel({
       </div>
 
       <div className="flex items-center justify-between w-full">
-        <label htmlFor={indentSizeSelectId}>Indent:</label>
+        <label htmlFor={indentWidthSelectId}>Indent:</label>
         <div className="flex gap-1 flex-shrink-0">
           <select
-            id={indentSizeSelectId}
+            id={indentWidthSelectId}
             name="indentSize"
             className="select w-16 px-3"
             value={
-              [2, 4, 8].includes(formatOptions.indentSize)
-                ? formatOptions.indentSize
+              [2, 4, 8].includes(formatOptions.indentWidth)
+                ? formatOptions.indentWidth
                 : "custom"
             }
             onChange={(e) => {
               setFormatOptions((prev) => ({
                 ...prev,
-                indentSize: Number.parseInt(e.target.value),
+                indentWidth: Number.parseInt(e.target.value),
               }));
             }}
           >
@@ -101,17 +101,17 @@ export function SettingsPanel({
             <option value={8}>8</option>
           </select>
           <input
-            id={indentSizeInputId}
+            id={indentWidthInputId}
             type="number"
             className="input w-16"
             min="1"
             max="16"
             aria-label="Custom Indent Size"
-            value={formatOptions.indentSize}
+            value={formatOptions.indentWidth}
             onChange={(e) =>
               setFormatOptions((prev) => ({
                 ...prev,
-                indentSize: Number.parseInt(e.target.value),
+                indentWidth: Number.parseInt(e.target.value),
               }))
             }
           />
