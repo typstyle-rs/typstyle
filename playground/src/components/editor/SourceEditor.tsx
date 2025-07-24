@@ -1,3 +1,4 @@
+import diff from "fast-diff";
 import { useRef } from "react";
 import * as typstyle from "typstyle-wasm";
 import type { editor, Monaco } from "@/monaco/types";
@@ -72,8 +73,11 @@ export function SourceEditor({
 
     try {
       const formatted = typstyle.format(currentValue, config);
-      if (formatted !== "") {
-        onChange(formatted);
+      if (formatted !== currentValue) {
+        const edits = computeDiffEdits(currentValue, formatted, 0, model);
+        if (edits.length > 0) {
+          editorRef.current.executeEdits("format-document", edits);
+        }
       }
     } catch (error) {
       console.error("Failed to format document:", error);
@@ -83,16 +87,13 @@ export function SourceEditor({
   const formatSelection = () => {
     if (!editorRef.current) return;
 
-    const selection = editorRef.current.getSelection();
-    if (!selection || selection.isEmpty()) return;
-
     const model = editorRef.current.getModel();
     if (!model) return;
 
-    // Get the full text to calculate byte offsets
-    const fullText = model.getValue();
+    const selection = editorRef.current.getSelection();
+    if (!selection || selection.isEmpty()) return;
 
-    // Get character offsets from Monaco
+    const fullText = model.getValue();
     const start = model.getOffsetAt({
       lineNumber: selection.startLineNumber,
       column: selection.startColumn,
@@ -107,24 +108,18 @@ export function SourceEditor({
     try {
       const result = typstyle.format_range(fullText, start, end, config);
 
-      if (result.text !== "") {
-        const actualStartChar = result.start;
-        const actualEndChar = result.end;
+      const originalRangeText = fullText.slice(result.start, result.end);
+      if (originalRangeText !== result.text) {
+        const edits = computeDiffEdits(
+          originalRangeText,
+          result.text,
+          result.start,
+          model,
+        );
 
-        const startPos = model.getPositionAt(actualStartChar);
-        const endPos = model.getPositionAt(actualEndChar);
-
-        const edit: editor.IIdentifiedSingleEditOperation = {
-          range: {
-            startLineNumber: startPos.lineNumber,
-            startColumn: startPos.column,
-            endLineNumber: endPos.lineNumber,
-            endColumn: endPos.column,
-          },
-          text: result.text,
-        };
-
-        editorRef.current.executeEdits("format-selection", [edit]);
+        if (edits.length > 0) {
+          editorRef.current.executeEdits("format-selection", edits);
+        }
       }
     } catch (error) {
       console.error("Failed to format selection:", error);
@@ -147,3 +142,55 @@ export function SourceEditor({
     />
   );
 }
+
+const computeDiffEdits = (
+  originalText: string,
+  newText: string,
+  baseOffset: number,
+  model: editor.ITextModel,
+): editor.IIdentifiedSingleEditOperation[] => {
+  if (originalText === newText) return [];
+
+  const changes = diff(originalText, newText);
+  const edits: editor.IIdentifiedSingleEditOperation[] = [];
+  let currentOffset = 0;
+
+  for (const [operation, text] of changes) {
+    if (operation === diff.EQUAL) {
+      currentOffset += text.length;
+    } else if (operation === diff.DELETE) {
+      const startOffset = baseOffset + currentOffset;
+      const endOffset = baseOffset + currentOffset + text.length;
+
+      const startPos = model.getPositionAt(startOffset);
+      const endPos = model.getPositionAt(endOffset);
+
+      edits.push({
+        range: {
+          startLineNumber: startPos.lineNumber,
+          startColumn: startPos.column,
+          endLineNumber: endPos.lineNumber,
+          endColumn: endPos.column,
+        },
+        text: "",
+      });
+
+      currentOffset += text.length;
+    } else if (operation === diff.INSERT) {
+      const startOffset = baseOffset + currentOffset;
+      const pos = model.getPositionAt(startOffset);
+
+      edits.push({
+        range: {
+          startLineNumber: pos.lineNumber,
+          startColumn: pos.column,
+          endLineNumber: pos.lineNumber,
+          endColumn: pos.column,
+        },
+        text: text,
+      });
+    }
+  }
+
+  return edits;
+};
