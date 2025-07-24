@@ -1,18 +1,16 @@
 #import "./book.typ": *
 
-#show: book-page.with(title: "Installation")
-
-= Installation & Setup
+#show: book-page.with(title: "Installation & Setup")
 
 Typstyle can be installed and used in multiple ways. Choose the method that best fits your workflow.
 
-== CLI Installation
+= CLI Installation
 
-=== Download Binary
+== Download Binary
 
-The easiest way to get started is to download the pre-built binary from the #link("https://github.com/typstyle-rs/typstyle/releases")[release page].
+The easiest way to get started is to download the pre-built binary from the #link(package.repository + "/releases")[release page].
 
-=== Package Managers
+== Package Managers
 
 #context if is-html-target() {
   html.elem("a", attrs: (href: "https://repology.org/project/typstyle/versions"))[
@@ -28,15 +26,15 @@ Typstyle is available in many package managers. Check the #link("https://repolog
 
 Notably, typstyle is available in #link("https://www.archlinuxcn.org/archlinux-cn-repo-and-mirror/")[Archlinux CN] repo.
 
-=== Cargo Installation
+== Cargo Installation
 
-==== Using cargo-binstall (Recommended)
+=== Using cargo-binstall (Recommended)
 
 ```bash
 cargo binstall typstyle
 ```
 
-==== Building from Source
+=== Building from Source
 
 ```bash
 cargo install typstyle --locked
@@ -46,32 +44,34 @@ cargo install typstyle --locked
   Installing without `--locked` may fail due to API changes: an older `typstyle` could depend on a newer, incompatible `typstyle-core`. Always use `--locked` to ensure version compatibility.
 ]
 
-== Editor Integration
+= Editor Integration
 
 Typstyle has been integrated into #link("https://github.com/Myriad-Dreamin/tinymist")[tinymist]. You can use it in your editor by installing the tinymist plugin and set `tinymist.formatterMode` to `typstyle`.
 
-=== VS Code (via Tinymist)
+== VS Code (via Tinymist)
 
 + Install the #link("https://marketplace.visualstudio.com/items?itemName=myriad-dreamin.tinymist")[Tinymist extension]
 + Set `tinymist.formatterMode` to `"typstyle"` in your settings
 + Enable format on save or use `Ctrl+Shift+P` → "Format Document"
 
-== Library Installation
+= Library Installation
 
 Typstyle is also available as a library integrated in your project.
 
-=== Cargo (Rust)
+== Cargo (Rust)
 
-#let ver = toml("../../Cargo.toml").workspace.package.version
-
-#raw("[dependencies]
-typstyle-core = \"=" + ver + "\"", lang: "toml", block: true)
+#raw(
+  "[dependencies]
+typstyle-core = \"=VERSION\"".replace("VERSION", package.version),
+  lang: "toml",
+  block: true,
+)
 
 #callout.important[
   Typstyle follows Typst’s major and minor versioning, and even patch releases may introduce breaking changes. We recommend pinning the version in your dependency and upgrading only when you require new features.
 ]
 
-=== NPM (JavaScript/TypeScript)
+== NPM (JavaScript/TypeScript)
 
 For web projects using #link("https://www.npmjs.com/package/@typstyle/typstyle-wasm-bundler")[WebAssembly bindings]:
 
@@ -81,7 +81,7 @@ npm install @typstyle/typstyle-wasm-bundler
 
 The `@typstyle/typstyle-wasm-bundler` package provides WebAssembly bindings for web bundlers like Webpack, Vite, and Rollup. Please see its README for details.
 
-== GitHub Actions
+= GitHub Actions
 
 The #link("https://github.com/typstyle-rs/typstyle-action")[typstyle-action] maintained by #link("https://github.com/grayespinoza")[grayespinoza] can install and run Typstyle in a GitHub Action.
 
@@ -90,7 +90,7 @@ The #link("https://github.com/typstyle-rs/typstyle-action")[typstyle-action] mai
   uses: typstyle-rs/typstyle-action@main
 ```
 
-== Pre-commit Hook
+= Pre-commit Hook
 
 You can use your local installation:
 

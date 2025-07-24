@@ -4,4 +4,4 @@
 
 #import "../deps.typ": cmarker
 
-#cmarker.render(read("../../CHANGELOG.md"))
+#cmarker.render(read("../../CHANGELOG.md"), h1-level: 0)

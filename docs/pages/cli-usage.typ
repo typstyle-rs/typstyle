@@ -2,11 +2,9 @@
 
 #show: book-page.with(title: "CLI Usage")
 
-= CLI Usage
-
 #raw(read("../assets/generated/cli-help.txt"), block: true)
 
-== Basic Usage
+= Basic Usage
 
 ```bash
 # Format multiple files
@@ -19,9 +17,9 @@ typstyle -i .
 typstyle -l 100 -t 4 --wrap-text -i src/
 ```
 
-== Arguments
+= Arguments
 
-=== Input Files
+== Input Files
 
 ```bash
 # Format from stdin (default)
@@ -34,11 +32,11 @@ typstyle file1.typ file2.typ
 typstyle src/ docs/
 ```
 
-== Main Options
+= Main Options
 
-=== Format Control
+== Format Control
 
-==== In-Place Formatting
+=== In-Place Formatting
 
 ```bash
 # Modify files directly
@@ -46,7 +44,7 @@ typstyle -i file.typ
 typstyle --inplace file.typ
 ```
 
-==== Check Mode
+=== Check Mode
 
 ```bash
 # Exit with non-zero if formatting needed
@@ -58,9 +56,9 @@ typstyle --check src/
 typstyle --diff src/
 ```
 
-=== Format Configuration
+== Format Configuration
 
-==== Line Width
+=== Line Width
 
 ```bash
 # Set maximum line width (default: 80)
@@ -68,7 +66,7 @@ typstyle -l 100 file.typ
 typstyle --line-width 100 file.typ
 ```
 
-==== Indentation
+=== Indentation
 
 ```bash
 # Set indentation width (default: 2)
@@ -76,16 +74,16 @@ typstyle -t 4 file.typ
 typstyle --indent-width 4 file.typ
 ```
 
-==== Text Wrapping
+=== Text Wrapping
 
 ```bash
 # Wrap text in markup to fit line width
 typstyle --wrap-text file.typ
 ```
 
-== Debug Options
+= Debug Options
 
-=== AST Output
+== AST Output
 
 ```bash
 # Print the Abstract Syntax Tree
@@ -93,7 +91,7 @@ typstyle -a file.typ
 typstyle --ast file.typ
 ```
 
-=== Pretty Document Output
+== Pretty Document Output
 
 ```bash
 # Print the internal pretty document representation
@@ -101,13 +99,13 @@ typstyle -p file.typ
 typstyle --pretty-doc file.typ
 ```
 
-=== Timing Information
+== Timing Information
 
 ```bash
 # Show elapsed time taken by the formatter
 typstyle --timing file.typ
 ```
 
-== Logging Options
+= Logging Options
 
 See CLI help.

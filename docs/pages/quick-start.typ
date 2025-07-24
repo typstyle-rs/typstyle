@@ -3,13 +3,11 @@
 
 #show: book-page.with(title: "Quick Start")
 
-= Quick Start
-
 Get up and running with typstyle in minutes.
 
-== Your First Format
+= Your First Format
 
-=== Format a Single File
+== Format a Single File
 
 #let example-file = ````typ
 // example.typ
@@ -19,11 +17,11 @@ Get up and running with typstyle in minutes.
 #set text(font:("Times New Roman",)
 )
 
-= Mathematical Analysis of Algorithm Performance
+ Mathematical Analysis of Algorithm Performance
 
 Consider the time complexity analysis for sorting algorithms.The bubble sort algorithm has quadratic time complexity.
 
-== Performance Comparison
+= Performance Comparison
 
 #figure(
 table(columns:(auto,  )+(1fr,)*3,
@@ -62,7 +60,7 @@ Output:
 
 #raw(typstyle.format(example-file.text), lang: "typ", block: true)
 
-=== Format In-Place
+== Format In-Place
 
 To modify the file directly:
 
@@ -70,15 +68,15 @@ To modify the file directly:
 typstyle -i example.typ
 ```
 
-=== Format from stdin
+== Format from stdin
 
 ```bash
 cat example.typ | typstyle > formatted.typ
 ```
 
-== Common Usage Patterns
+= Common Usage Patterns
 
-=== Format Multiple Files
+== Format Multiple Files
 
 ```bash
 # Format specific files
@@ -91,7 +89,7 @@ typstyle -i src/
 typstyle -l 100 -i src/
 ```
 
-=== Check Mode
+== Check Mode
 
 Use check mode in CI/CD to ensure code is properly formatted:
 
@@ -102,39 +100,39 @@ typstyle --diff src/
 
 This exits with code 0 if files are properly formatted, non-zero otherwise.
 
-== Configuration Options
+= Configuration Options
 
-=== Line Width
+== Line Width
 
 ```bash
 # Set maximum line width to 100 characters
 typstyle -l 100 file.typ
 ```
 
-=== Indentation
+== Indentation
 
 ```bash
 # Use 4 spaces for indentation instead of default 2
 typstyle -t 4 file.typ
 ```
 
-=== Import Sorting
+== Import Sorting
 
 ```bash
 # Disable automatic import sorting
 typstyle --no-reorder-import-items file.typ
 ```
 
-=== Text Wrapping
+== Text Wrapping
 
 ```bash
 # Enable text wrapping in markup
 typstyle --wrap-text file.typ
 ```
 
-== Integration Examples
+= Integration Examples
 
-=== VS Code
+== VS Code
 
 1. Install Tinymist extension
 2. Add to `settings.json`:
@@ -145,7 +143,7 @@ typstyle --wrap-text file.typ
   }
   ```
 
-== Next Steps
+= Next Steps
 
 - Learn about #cross-link("/features.typ")[features]
 - See #cross-link("/cli-usage.typ")[detailed CLI usage]

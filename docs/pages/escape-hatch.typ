@@ -5,15 +5,13 @@
 
 #show: render-examples
 
-= Escape Hatch
-
 Typstyle aims to format all code consistently, but occasionally you may need to override its formatting decisions. The escape hatch is a workaround for rare cases where typstyle's output isn't suitable or when working around limitations.
 
 #warning[
   The escape hatch should be used sparingly. It breaks consistency and may indicate areas where typstyle could be improved. Consider reporting issues instead of relying on escape hatches.
 ]
 
-== When You Might Need This
+= When You Might Need This
 
 Escape hatches are intended as a last resort for specific situations:
 
@@ -24,7 +22,7 @@ Escape hatches are intended as a last resort for specific situations:
 
 Most formatting preferences can be achieved by working with typstyle's style rather than against it.
 
-== Basic Usage
+= Basic Usage
 
 Use ```typ // @typstyle off``` or ```typ /* @typstyle off */``` to disable the formatter on the next non-trivial syntax node:
 
@@ -39,7 +37,7 @@ Use ```typ // @typstyle off``` or ```typ /* @typstyle off */``` to disable the f
 #let formatted = another_func(arg1, arg2)
 ```
 
-== Automatic Fallback
+= Automatic Fallback
 
 Typstyle automatically preserves original formatting when it encounters issues:
 
@@ -48,9 +46,9 @@ Typstyle automatically preserves original formatting when it encounters issues:
 
 In these cases, you don't need an escape hatch—typstyle handles it automatically.
 
-== Scope and Behavior
+= Scope and Behavior
 
-=== Parbreak Penetration
+== Parbreak Penetration
 
 The escape hatch comment must be placed directly before the code you want to preserve. It doesn't work across paragraph breaks:
 
@@ -60,7 +58,7 @@ The escape hatch comment must be placed directly before the code you want to pre
 #(1+2)  // This will be formatted normally because of the blank line above
 ```
 
-=== Comment Penetration
+== Comment Penetration
 
 The escape hatch does not penetrate through comments:
 
@@ -70,7 +68,7 @@ The escape hatch does not penetrate through comments:
   #let formatted=func(arg1,   arg2)  // This will be formatted normally
 ```
 
-=== Specific Syntax Nodes
+== Specific Syntax Nodes
 
 When used before `Code` or `Math`, the escape hatch applies only to the first non-trivial child:
 
@@ -89,7 +87,7 @@ $
 ```
 
 
-== Use Cases
+= Use Cases
 
 #tip[
   Before using escape hatches, consider if the formatting issue could be solved by restructuring your code to work better with typstyle's conventions.

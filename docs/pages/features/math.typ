@@ -4,9 +4,7 @@
 
 #show: render-examples
 
-= Math Equation Formatting
-
-== Formatting Rules
+= Formatting Rules
 
 typstyle applies specific formatting rules to math equations:
 
@@ -16,7 +14,7 @@ typstyle applies specific formatting rules to math equations:
 - Inline equations are never aligned or padded
 - Spaces between variables and underscores are preserved: `$ #mysum _(i=0) $`
 
-== Alignment
+= Alignment
 
 typstyle aligns `&` symbols in math equations, even with multiline cells. Non-block equations are never aligned:
 
@@ -41,7 +39,7 @@ c&=sum_(i=1)^n x_i
 $
 ```
 
-== Block vs Inline Equations
+= Block vs Inline Equations
 
 typstyle uses flavor detection for equations. Block equations with newlines are formatted with proper indentation:
 
@@ -53,7 +51,7 @@ $
 F(x) = integral_0^x f(t) dif t $
 ```
 
-== Comments in Math
+= Comments in Math
 
 typstyle can format math equations containing comments while preserving their meaning and proper placement:
 
