@@ -28,13 +28,13 @@ export function SourceEditor({
 
     // Add keyboard shortcuts
     editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+      monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KeyF,
       () => formatDocument(),
       "Format Document",
     );
 
     editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyS,
+      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyF,
       () => formatSelection(),
       "Format Selection",
     );
@@ -43,7 +43,9 @@ export function SourceEditor({
     editor.addAction({
       id: "format-document",
       label: "Format Document",
-      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
+      keybindings: [
+        monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KeyF,
+      ],
       contextMenuGroupId: "1_modification",
       contextMenuOrder: 1.5,
       run: () => formatDocument(),
@@ -53,7 +55,7 @@ export function SourceEditor({
       id: "format-selection",
       label: "Format Selection",
       keybindings: [
-        monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyS,
+        monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyF,
       ],
       contextMenuGroupId: "1_modification",
       contextMenuOrder: 1.6,
@@ -61,69 +63,81 @@ export function SourceEditor({
     });
   };
 
-  const formatDocument = () => {
+  const withEditorAndModel = (
+    callback: (
+      editor: editor.IStandaloneCodeEditor,
+      model: editor.ITextModel,
+    ) => void,
+  ) => {
     if (!editorRef.current) return;
-
     const model = editorRef.current.getModel();
     if (!model) return;
+    callback(editorRef.current, model);
+  };
 
-    const currentValue = model.getValue();
-    const config: Partial<typstyle.Config> =
-      formatOptionsToConfig(formatOptions);
+  const applyFormattingEdits = (
+    editor: editor.IStandaloneCodeEditor,
+    model: editor.ITextModel,
+    originalText: string,
+    formattedText: string,
+    baseOffset: number = 0,
+  ) => {
+    if (originalText === formattedText) return;
 
-    try {
-      const formatted = typstyle.format(currentValue, config);
-      if (formatted !== currentValue) {
-        const edits = computeDiffEdits(currentValue, formatted, 0, model);
-        if (edits.length > 0) {
-          editorRef.current.executeEdits("format-document", edits);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to format document:", error);
+    const edits = computeDiffEdits(
+      originalText,
+      formattedText,
+      baseOffset,
+      model,
+    );
+    if (edits.length > 0) {
+      editor.executeEdits("format", edits);
     }
   };
 
+  const formatDocument = () => {
+    withEditorAndModel((editor, model) => {
+      try {
+        const currentValue = model.getValue();
+        const config = formatOptionsToConfig(formatOptions);
+        const formatted = typstyle.format(currentValue, config);
+        applyFormattingEdits(editor, model, currentValue, formatted);
+      } catch (error) {
+        console.error("Failed to format document:", error);
+      }
+    });
+  };
+
   const formatSelection = () => {
-    if (!editorRef.current) return;
+    withEditorAndModel((editor, model) => {
+      const selection = editor.getSelection();
+      if (!selection || selection.isEmpty()) return;
 
-    const model = editorRef.current.getModel();
-    if (!model) return;
+      try {
+        const fullText = model.getValue();
+        const start = model.getOffsetAt({
+          lineNumber: selection.startLineNumber,
+          column: selection.startColumn,
+        });
+        const end = model.getOffsetAt({
+          lineNumber: selection.endLineNumber,
+          column: selection.endColumn,
+        });
 
-    const selection = editorRef.current.getSelection();
-    if (!selection || selection.isEmpty()) return;
-
-    const fullText = model.getValue();
-    const start = model.getOffsetAt({
-      lineNumber: selection.startLineNumber,
-      column: selection.startColumn,
-    });
-    const end = model.getOffsetAt({
-      lineNumber: selection.endLineNumber,
-      column: selection.endColumn,
-    });
-
-    const config = formatOptionsToConfig(formatOptions);
-
-    try {
-      const result = typstyle.format_range(fullText, start, end, config);
-
-      const originalRangeText = fullText.slice(result.start, result.end);
-      if (originalRangeText !== result.text) {
-        const edits = computeDiffEdits(
+        const config = formatOptionsToConfig(formatOptions);
+        const result = typstyle.format_range(fullText, start, end, config);
+        const originalRangeText = fullText.slice(result.start, result.end);
+        applyFormattingEdits(
+          editor,
+          model,
           originalRangeText,
           result.text,
           result.start,
-          model,
         );
-
-        if (edits.length > 0) {
-          editorRef.current.executeEdits("format-selection", edits);
-        }
+      } catch (error) {
+        console.error("Failed to format selection:", error);
       }
-    } catch (error) {
-      console.error("Failed to format selection:", error);
-    }
+    });
   };
 
   return (
