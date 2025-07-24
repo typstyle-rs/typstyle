@@ -10,7 +10,7 @@ export interface PlaygroundState {
 
 // Maximum URL length before using pastebin for source code storage
 // We use a shorter (< 2048) length to avoid verbosity
-const MAX_URL_LENGTH = 256;
+const MAX_URL_LENGTH = 1024;
 
 /**
  * Updates the URL with current options and source code
