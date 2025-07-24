@@ -10,6 +10,7 @@ edition = "2021"
 authors = ["Wenzhuo Liu"]
 description = "Beautiful and reliable typst code formatter"
 license = "Apache-2.0"
+readme = "README.md"
 repository = "https://github.com/typstyle-rs/typstyle"
 homepage = "https://typstyle-rs.github.io/typstyle/"
 
