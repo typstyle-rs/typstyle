@@ -9,6 +9,7 @@ mod utils;
 
 pub use attr::AttrStore;
 pub use config::Config;
+pub use partial::FormatRangeResult;
 use pretty::{prelude::*, PrettyPrinter};
 use thiserror::Error;
 use typst_syntax::Source;

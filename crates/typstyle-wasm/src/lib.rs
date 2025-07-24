@@ -1,6 +1,6 @@
 use js_sys::Error;
 use typst_syntax::Source;
-use typstyle_core::{Config, Typstyle};
+use typstyle_core::{partial::get_node_for_range, Config, Typstyle};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(typescript_custom_section)]
@@ -59,6 +59,16 @@ pub struct FormatRangeResult {
     pub text: String,
 }
 
+impl From<typstyle_core::FormatRangeResult> for FormatRangeResult {
+    fn from(value: typstyle_core::FormatRangeResult) -> Self {
+        FormatRangeResult {
+            text: value.text,
+            start: value.range.start,
+            end: value.range.end,
+        }
+    }
+}
+
 /// Formats a specific range within the content using the provided configuration.
 /// Returns the formatted text and the actual range that was formatted.
 #[wasm_bindgen]
@@ -74,11 +84,44 @@ pub fn format_range(
     let range = start..end;
 
     match t.format_source_range(&source, range) {
-        Ok(result) => Ok(FormatRangeResult {
-            text: result.text,
-            start: result.range.start,
-            end: result.range.end,
-        }),
+        Ok(result) => Ok(result.into()),
+        Err(e) => Err(into_error(e)),
+    }
+}
+
+/// Gets the AST representation of a specific range within the content.
+/// Returns the AST and the actual range that was analyzed.
+#[wasm_bindgen]
+pub fn get_range_ast(
+    text: &str,
+    start: usize,
+    end: usize,
+) -> Result<String, Error> {
+    let source = Source::detached(text);
+    let range = start..end;
+
+    match get_node_for_range(&source, range) {
+        Ok(node) => Ok(format!("{node:#?}")),
+        Err(e) => Err(into_error(e)),
+    }
+}
+
+/// Gets the IR (Intermediate Representation) of a specific range within the content.
+/// Returns the IR and the actual range that was analyzed.
+#[wasm_bindgen]
+pub fn get_range_ir(
+    text: &str,
+    start: usize,
+    end: usize,
+    #[wasm_bindgen(unchecked_param_type = "Partial<Config>")] config: JsValue,
+) -> Result<String, Error> {
+    let config = parse_config(config)?;
+    let t = Typstyle::new(config);
+    let source = Source::detached(text);
+    let range = start..end;
+
+    match t.get_range_ir(&source, range) {
+        Ok(result) => Ok(result.text),
         Err(e) => Err(into_error(e)),
     }
 }
