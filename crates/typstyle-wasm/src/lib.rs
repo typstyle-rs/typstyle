@@ -1,4 +1,5 @@
 use js_sys::Error;
+use typst_syntax::Source;
 use typstyle_core::{Config, Typstyle};
 use wasm_bindgen::prelude::*;
 
@@ -47,19 +48,45 @@ pub fn format_ir(
     t.format_text(text).render_ir().map_err(into_error)
 }
 
+/// The result of formatting a range within content.
+#[wasm_bindgen(getter_with_clone)]
+pub struct FormatRangeResult {
+    /// Start position of the actual formatted range
+    pub start: usize,
+    /// End position of the actual formatted range
+    pub end: usize,
+    /// The formatted text for the range
+    pub text: String,
+}
+
+/// Formats a specific range within the content using the provided configuration.
+/// Returns the formatted text and the actual range that was formatted.
+#[wasm_bindgen]
+pub fn format_range(
+    text: &str,
+    start: usize,
+    end: usize,
+    #[wasm_bindgen(unchecked_param_type = "Partial<Config>")] config: JsValue,
+) -> Result<FormatRangeResult, Error> {
+    let config = parse_config(config)?;
+    let t = Typstyle::new(config);
+    let source = Source::detached(text);
+    let range = start..end;
+
+    match t.format_source_range(&source, range) {
+        Ok(result) => Ok(FormatRangeResult {
+            text: result.text,
+            start: result.range.start,
+            end: result.range.end,
+        }),
+        Err(e) => Err(into_error(e)),
+    }
+}
+
 fn parse_config(config: JsValue) -> Result<Config, Error> {
     serde_wasm_bindgen::from_value(config).map_err(into_error)
 }
 
 fn into_error<E: std::fmt::Display>(err: E) -> Error {
     Error::new(&err.to_string())
-}
-
-#[wasm_bindgen]
-pub fn pretty_print_wasm(content: &str, width: usize) -> String {
-    let config = Config::new().with_width(width);
-    let t = Typstyle::new(config);
-    t.format_text(content)
-        .render()
-        .unwrap_or_else(|_| content.to_string())
 }

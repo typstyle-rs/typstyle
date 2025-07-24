@@ -10,21 +10,43 @@ use crate::{
     utils, AttrStore, Error, PrettyPrinter, Typstyle,
 };
 
+/// Result of a range formatting operation.
+#[derive(Debug, Clone)]
+pub struct FormatRangeResult {
+    /// The actual range that was formatted (may be larger than requested to include complete nodes)
+    pub range: Range<usize>,
+    /// The formatted text for the range
+    pub text: String,
+}
+
 impl Typstyle {
     /// Format the node with minimal span that covering the given range.
+    ///
+    /// This function finds the smallest complete syntax node that encompasses the given range
+    /// and formats it. The actual formatted range may be larger than the input range to ensure
+    /// syntactically valid formatting.
+    ///
+    /// # Arguments
+    /// - `source` - The source code to format
+    /// - `utf8_range` - The UTF-8 byte range to format
+    ///
+    /// # Returns
+    /// A `FormatRangeResult` containing the formatted text and metadata about the operation.
     pub fn format_source_range(
         &self,
         source: &Source,
         utf8_range: Range<usize>,
-    ) -> Result<(Range<usize>, String), Error> {
+    ) -> Result<FormatRangeResult, Error> {
         // Trim the give range to ensure no space aside.
-        let range = utils::trim_range(source.text(), utf8_range);
+        let trimmed_range = utils::trim_range(source.text(), utf8_range.clone());
 
-        let Some((node, mode)) =
-            get_node_cover_range(source, range.clone()).filter(|(node, _)| !node.erroneous())
+        let Some((node, mode)) = get_node_cover_range(source, trimmed_range.clone())
+            .filter(|(node, _)| !node.erroneous())
         else {
             return Err(Error::SyntaxError);
         };
+
+        let node_range = node.range();
 
         let attrs = AttrStore::new(node.get()); // Here we only compute the attributes of that subtree.
         let printer = PrettyPrinter::new(self.config.clone(), attrs);
@@ -39,17 +61,21 @@ impl Typstyle {
             return Err(Error::SyntaxError);
         };
         // Infer indent from context.
-        let indent = utils::count_spaces_after_last_newline(source.text(), range.start);
-        let res = doc
+        let indent = utils::count_spaces_after_last_newline(source.text(), node_range.start);
+        let text = doc
             .nest(indent as isize)
             .print(self.config.max_width)
             .to_string();
-        Ok((node.range(), res))
+
+        Ok(FormatRangeResult {
+            range: node_range,
+            text,
+        })
     }
 }
 
 /// Get a Markup/Expr/Pattern node from source with minimal span that covering the given range.
-fn get_node_cover_range(source: &Source, range: Range<usize>) -> Option<(LinkedNode, Mode)> {
+fn get_node_cover_range(source: &Source, range: Range<usize>) -> Option<(LinkedNode<'_>, Mode)> {
     let range = range.start..range.end.min(source.len_bytes());
     get_node_cover_range_impl(range, LinkedNode::new(source.root()), Mode::Markup)
         .and_then(|(span, mode)| source.find(span).map(|node| (node, mode)))

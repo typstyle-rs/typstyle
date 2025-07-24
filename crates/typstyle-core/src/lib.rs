@@ -34,13 +34,13 @@ impl Typstyle {
     }
 
     /// Prepares a text string for formatting.
-    pub fn format_text(&self, text: impl Into<String>) -> Formatter {
+    pub fn format_text(&self, text: impl Into<String>) -> Formatter<'_> {
         // We should ensure that the source tree is spanned.
         self.format_source(Source::detached(text.into()))
     }
 
     /// Prepares a source for formatting.
-    pub fn format_source(&self, source: Source) -> Formatter {
+    pub fn format_source(&self, source: Source) -> Formatter<'_> {
         Formatter::new(self.config.clone(), source)
     }
 }

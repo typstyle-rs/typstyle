@@ -69,12 +69,12 @@ fn check_snapshot(path: &Path, range: Range<usize>) -> Result<(), Failed> {
     let mut info: Vec<(Content, Content)> = vec![("range".into(), range_to_content(&range))];
 
     match Typstyle::default().format_source_range(&source, range.clone()) {
-        Ok((fmt_range, formatted)) => {
-            info.push(("range_node".into(), range_to_content(&fmt_range)));
+        Ok(result) => {
+            info.push(("range_node".into(), range_to_content(&result.range)));
             settings.set_raw_info(&Content::Map(info));
 
             settings.bind(|| {
-                let snap = format!("{}\n---\n{}", &source.text()[fmt_range], formatted);
+                let snap = format!("{}\n---\n{}", &source.text()[result.range], result.text);
                 insta::assert_snapshot!(snap_name, snap);
             });
         }
