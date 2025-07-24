@@ -200,42 +200,48 @@ const computeDiffEdits = (
 
   // Convert diff changes to Monaco edit operations
   for (const [operation, text] of changes) {
-    if (operation === diff.EQUAL) {
-      // Skip unchanged text - just advance the offset
-      currentOffset += text.length;
-    } else if (operation === diff.DELETE) {
-      // Create delete operation for removed text
-      const startOffset = baseOffset + currentOffset;
-      const endOffset = baseOffset + currentOffset + text.length;
+    switch (operation) {
+      case diff.EQUAL:
+        // Skip unchanged text - just advance the offset
+        currentOffset += text.length;
+        break;
+      case diff.DELETE: {
+        // Create delete operation for removed text
+        const startOffset = baseOffset + currentOffset;
+        const endOffset = baseOffset + currentOffset + text.length;
 
-      const startPos = model.getPositionAt(startOffset);
-      const endPos = model.getPositionAt(endOffset);
+        const startPos = model.getPositionAt(startOffset);
+        const endPos = model.getPositionAt(endOffset);
 
-      edits.push({
-        range: {
-          startLineNumber: startPos.lineNumber,
-          startColumn: startPos.column,
-          endLineNumber: endPos.lineNumber,
-          endColumn: endPos.column,
-        },
-        text: "",
-      });
+        edits.push({
+          range: {
+            startLineNumber: startPos.lineNumber,
+            startColumn: startPos.column,
+            endLineNumber: endPos.lineNumber,
+            endColumn: endPos.column,
+          },
+          text: "",
+        });
 
-      currentOffset += text.length;
-    } else if (operation === diff.INSERT) {
-      // Create insert operation for new text
-      const startOffset = baseOffset + currentOffset;
-      const pos = model.getPositionAt(startOffset);
+        currentOffset += text.length;
+        break;
+      }
+      case diff.INSERT: {
+        // Create insert operation for new text
+        const startOffset = baseOffset + currentOffset;
+        const pos = model.getPositionAt(startOffset);
 
-      edits.push({
-        range: {
-          startLineNumber: pos.lineNumber,
-          startColumn: pos.column,
-          endLineNumber: pos.lineNumber,
-          endColumn: pos.column,
-        },
-        text: text,
-      });
+        edits.push({
+          range: {
+            startLineNumber: pos.lineNumber,
+            startColumn: pos.column,
+            endLineNumber: pos.lineNumber,
+            endColumn: pos.column,
+          },
+          text: text,
+        });
+        break;
+      }
     }
   }
 
