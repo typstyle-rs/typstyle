@@ -1,5 +1,5 @@
 import diff from "fast-diff";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import * as typstyle from "typstyle-wasm";
 import type { editor, Monaco } from "@/monaco/types";
 import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
@@ -19,6 +19,11 @@ export function SourceEditor({
   formatOptions,
 }: SourceEditorProps) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  // Keep latest options in a ref to ensure formatting functions always use current values
+  const formatOptionsRef = useRef(formatOptions);
+  useEffect(() => {
+    formatOptionsRef.current = formatOptions;
+  }, [formatOptions]);
 
   const handleEditorMount = (
     editor: editor.IStandaloneCodeEditor,
@@ -29,13 +34,13 @@ export function SourceEditor({
     // Add keyboard shortcuts
     editor.addCommand(
       monaco.KeyMod.Alt | monaco.KeyMod.Shift | monaco.KeyCode.KeyF,
-      () => formatDocument(),
+      formatDocument,
       "Format Document",
     );
 
     editor.addCommand(
       monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyF,
-      () => formatSelection(),
+      formatSelection,
       "Format Selection",
     );
 
@@ -48,7 +53,7 @@ export function SourceEditor({
       ],
       contextMenuGroupId: "1_modification",
       contextMenuOrder: 1.5,
-      run: () => formatDocument(),
+      run: formatDocument,
     });
 
     editor.addAction({
@@ -59,22 +64,31 @@ export function SourceEditor({
       ],
       contextMenuGroupId: "1_modification",
       contextMenuOrder: 1.6,
-      run: () => formatSelection(),
+      run: formatSelection,
     });
   };
 
-  const withEditorAndModel = (
+  const withEditorState = (
     callback: (
       editor: editor.IStandaloneCodeEditor,
       model: editor.ITextModel,
+      fullText: string,
+      config: Partial<typstyle.Config>,
     ) => void,
   ) => {
     if (!editorRef.current) return;
     const model = editorRef.current.getModel();
     if (!model) return;
-    callback(editorRef.current, model);
+    const fullText = model.getValue();
+    // Use ref to ensure we always have the latest format options
+    const config = formatOptionsToConfig(formatOptionsRef.current);
+    callback(editorRef.current, model, fullText, config);
   };
 
+  /**
+   * Apply fine-grained edits to the editor using diff-based changes
+   * Only applies actual changes to preserve cursor position and undo history
+   */
   const applyFormattingEdits = (
     editor: editor.IStandaloneCodeEditor,
     model: editor.ITextModel,
@@ -84,6 +98,7 @@ export function SourceEditor({
   ) => {
     if (originalText === formattedText) return;
 
+    // Compute minimal edits using fast-diff algorithm
     const edits = computeDiffEdits(
       originalText,
       formattedText,
@@ -95,26 +110,31 @@ export function SourceEditor({
     }
   };
 
-  const formatDocument = () => {
-    withEditorAndModel((editor, model) => {
+  /**
+   * Format the entire document in place
+   * Uses fine-grained edits to maintain cursor position and undo history
+   */
+  const formatDocument = () =>
+    withEditorState((editor, model, fullText, config) => {
       try {
-        const currentValue = model.getValue();
-        const config = formatOptionsToConfig(formatOptions);
-        const formatted = typstyle.format(currentValue, config);
-        applyFormattingEdits(editor, model, currentValue, formatted);
+        const formatted = typstyle.format(fullText, config);
+        applyFormattingEdits(editor, model, fullText, formatted);
       } catch (error) {
         console.error("Failed to format document:", error);
       }
     });
-  };
 
-  const formatSelection = () => {
-    withEditorAndModel((editor, model) => {
+  /**
+   * Format the current selection in place
+   * Uses fine-grained edits to maintain cursor position and undo history
+   */
+  const formatSelection = () =>
+    withEditorState((editor, model, fullText, config) => {
       const selection = editor.getSelection();
       if (!selection || selection.isEmpty()) return;
 
       try {
-        const fullText = model.getValue();
+        // Convert Monaco line/column positions to character offsets
         const start = model.getOffsetAt({
           lineNumber: selection.startLineNumber,
           column: selection.startColumn,
@@ -124,7 +144,6 @@ export function SourceEditor({
           column: selection.endColumn,
         });
 
-        const config = formatOptionsToConfig(formatOptions);
         const result = typstyle.format_range(fullText, start, end, config);
         const originalRangeText = fullText.slice(result.start, result.end);
         applyFormattingEdits(
@@ -138,7 +157,6 @@ export function SourceEditor({
         console.error("Failed to format selection:", error);
       }
     });
-  };
 
   return (
     <CodeEditor
@@ -157,6 +175,16 @@ export function SourceEditor({
   );
 }
 
+/**
+ * Compute fine-grained edits between original and formatted text using diff algorithm
+ * Returns Monaco edit operations that represent minimal changes needed
+ *
+ * @param originalText - The original text to compare
+ * @param newText - The formatted text
+ * @param baseOffset - Character offset in the full document where this text starts
+ * @param model - Monaco text model for position calculations
+ * @returns Array of Monaco edit operations
+ */
 const computeDiffEdits = (
   originalText: string,
   newText: string,
@@ -165,14 +193,18 @@ const computeDiffEdits = (
 ): editor.IIdentifiedSingleEditOperation[] => {
   if (originalText === newText) return [];
 
+  // Use fast-diff to compute minimal changes between texts
   const changes = diff(originalText, newText);
   const edits: editor.IIdentifiedSingleEditOperation[] = [];
   let currentOffset = 0;
 
+  // Convert diff changes to Monaco edit operations
   for (const [operation, text] of changes) {
     if (operation === diff.EQUAL) {
+      // Skip unchanged text - just advance the offset
       currentOffset += text.length;
     } else if (operation === diff.DELETE) {
+      // Create delete operation for removed text
       const startOffset = baseOffset + currentOffset;
       const endOffset = baseOffset + currentOffset + text.length;
 
@@ -191,6 +223,7 @@ const computeDiffEdits = (
 
       currentOffset += text.length;
     } else if (operation === diff.INSERT) {
+      // Create insert operation for new text
       const startOffset = baseOffset + currentOffset;
       const pos = model.getPositionAt(startOffset);
 
