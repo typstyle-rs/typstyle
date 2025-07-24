@@ -1,6 +1,6 @@
 import * as lz from "lz-string";
 import queryString from "query-string";
-import { type FormatOptions } from "./formatter";
+import { DEFAULT_FORMAT_OPTIONS, type FormatOptions } from "./formatter";
 import { fetchFromPastebin, uploadToPastebin } from "./pastebin";
 
 export interface PlaygroundState {
@@ -72,12 +72,13 @@ export async function getStateFromUrl(): Promise<PlaygroundState | null> {
   }
 
   // Parse options from query params (use current URL state)
-  params.delete("code");
-  params.delete("paste");
-  const query = queryString.parse(url.search, {
-    parseBooleans: true,
-    parseNumbers: true,
-  });
+  const query = queryString.parse(
+    queryString.pick(url.search, Object.keys(DEFAULT_FORMAT_OPTIONS)),
+    {
+      parseBooleans: true,
+      parseNumbers: true,
+    },
+  );
 
   return {
     sourceCode,
