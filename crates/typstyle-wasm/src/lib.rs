@@ -83,25 +83,8 @@ pub fn format_range(
     let source = Source::detached(text);
     let range = start..end;
 
-    match t.format_source_range(&source, range) {
+    match t.format_source_range(source, range) {
         Ok(result) => Ok(result.into()),
-        Err(e) => Err(into_error(e)),
-    }
-}
-
-/// Gets the AST representation of a specific range within the content.
-/// Returns the AST and the actual range that was analyzed.
-#[wasm_bindgen]
-pub fn get_range_ast(
-    text: &str,
-    start: usize,
-    end: usize,
-) -> Result<String, Error> {
-    let source = Source::detached(text);
-    let range = start..end;
-
-    match get_node_for_range(&source, range) {
-        Ok(node) => Ok(format!("{node:#?}")),
         Err(e) => Err(into_error(e)),
     }
 }
@@ -109,7 +92,7 @@ pub fn get_range_ast(
 /// Gets the IR (Intermediate Representation) of a specific range within the content.
 /// Returns the IR and the actual range that was analyzed.
 #[wasm_bindgen]
-pub fn get_range_ir(
+pub fn format_range_ir(
     text: &str,
     start: usize,
     end: usize,
@@ -120,8 +103,21 @@ pub fn get_range_ir(
     let source = Source::detached(text);
     let range = start..end;
 
-    match t.get_range_ir(&source, range) {
+    match t.format_source_range_ir(source, range) {
         Ok(result) => Ok(result.text),
+        Err(e) => Err(into_error(e)),
+    }
+}
+
+/// Gets the AST representation of a specific range within the content.
+/// Returns the AST and the actual range that was analyzed.
+#[wasm_bindgen]
+pub fn get_range_ast(text: &str, start: usize, end: usize) -> Result<String, Error> {
+    let source = Source::detached(text);
+    let range = start..end;
+
+    match get_node_for_range(&source, range) {
+        Ok(node) => Ok(format!("{node:#?}")),
         Err(e) => Err(into_error(e)),
     }
 }

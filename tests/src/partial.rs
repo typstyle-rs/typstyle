@@ -68,7 +68,7 @@ fn check_snapshot(path: &Path, range: Range<usize>) -> Result<(), Failed> {
     );
     let mut info: Vec<(Content, Content)> = vec![("range".into(), range_to_content(&range))];
 
-    match Typstyle::default().format_source_range(&source, range.clone()) {
+    match Typstyle::default().format_source_range(source.clone(), range.clone()) {
         Ok(result) => {
             info.push(("range_node".into(), range_to_content(&result.range)));
             settings.set_raw_info(&Content::Map(info));

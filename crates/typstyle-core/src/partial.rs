@@ -5,10 +5,7 @@ use typst_syntax::{
     LinkedNode, Source, Span, SyntaxKind,
 };
 
-use crate::{
-    pretty::{Context, Mode},
-    utils, AttrStore, Error, PrettyPrinter, Typstyle,
-};
+use crate::{pretty::Mode, utils, AttrStore, Error, PrettyPrinter, Typstyle};
 
 /// Result of a range formatting operation.
 #[derive(Debug, Clone)]
@@ -34,25 +31,17 @@ impl Typstyle {
     /// A `FormatRangeResult` containing the formatted text and metadata about the operation.
     pub fn format_source_range(
         &self,
-        source: &Source,
+        source: Source,
         utf8_range: Range<usize>,
     ) -> Result<FormatRangeResult, Error> {
-        let (node, mode) = get_node_and_mode_for_range(source, utf8_range)?;
+        let (node, mode) = get_node_and_mode_for_range(&source, utf8_range)?;
 
         let node_range = node.range();
 
         let attrs = AttrStore::new(node.get()); // Here we only compute the attributes of that subtree.
         let printer = PrettyPrinter::new(self.config.clone(), attrs);
-        let ctx = Context::default().with_mode(mode);
-        let doc = if let Some(markup) = node.cast() {
-            printer.convert_markup(ctx, markup)
-        } else if let Some(expr) = node.cast() {
-            printer.convert_expr(ctx, expr)
-        } else if let Some(pattern) = node.cast() {
-            printer.convert_pattern(ctx, pattern)
-        } else {
-            return Err(Error::SyntaxError);
-        };
+        let doc = printer.try_convert_with_mode(&node, mode)?;
+
         // Infer indent from context.
         let indent = utils::count_spaces_after_last_newline(source.text(), node_range.start);
         let text = doc
@@ -77,27 +66,18 @@ impl Typstyle {
     ///
     /// # Returns
     /// A `FormatRangeResult` containing the IR representation and metadata about the operation.
-    pub fn get_range_ir(
+    pub fn format_source_range_ir(
         &self,
-        source: &Source,
+        source: Source,
         utf8_range: Range<usize>,
     ) -> Result<FormatRangeResult, Error> {
-        let (node, mode) = get_node_and_mode_for_range(source, utf8_range)?;
+        let (node, mode) = get_node_and_mode_for_range(&source, utf8_range)?;
 
         let node_range = node.range();
 
-        let attrs = AttrStore::new(node.get()); // Here we only compute the attributes of that subtree.
+        let attrs = AttrStore::new(node.get());
         let printer = PrettyPrinter::new(self.config.clone(), attrs);
-        let ctx = Context::default().with_mode(mode);
-        let doc = if let Some(markup) = node.cast() {
-            printer.convert_markup(ctx, markup)
-        } else if let Some(expr) = node.cast() {
-            printer.convert_expr(ctx, expr)
-        } else if let Some(pattern) = node.cast() {
-            printer.convert_pattern(ctx, pattern)
-        } else {
-            return Err(Error::SyntaxError);
-        };
+        let doc = printer.try_convert_with_mode(&node, mode)?;
 
         let ir = format!("{doc:#?}");
 
