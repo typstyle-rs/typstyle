@@ -151,7 +151,7 @@ We maintain a comprehensive suite of tests to ensure the correctness and reliabi
 
 We provide benchmarks for node attribute computation and pretty printing. Typically, it can format a large document (given parsed source) within 5ms (e.g., `tablex.typ` with ~3000 lines).
 
-We also have continuous benchmarking for each commit on `master` branch. See <https://enter-tainer.github.io/typstyle-bench-results/dev/bench/>.
+We also have continuous benchmarking for each commit on `master` branch. See <https://typstyle-rs.github.io/typstyle-bench-results/dev/bench/>.
 
 ## Why Another Formatter?
 
