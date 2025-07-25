@@ -1,5 +1,6 @@
 use js_sys::Error;
-use typstyle_core::{Config, Typstyle};
+use typst_syntax::Source;
+use typstyle_core::{partial::get_node_for_range, Config, Typstyle};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(typescript_custom_section)]
@@ -47,19 +48,84 @@ pub fn format_ir(
     t.format_text(text).render_ir().map_err(into_error)
 }
 
+/// The result of formatting a range within content.
+#[wasm_bindgen(getter_with_clone)]
+pub struct FormatRangeResult {
+    /// Start byte offset (in UTF8) of the actual formatted range
+    pub start: usize,
+    /// End byte offset (in UTF8) of the actual formatted range
+    pub end: usize,
+    /// The formatted text for the range
+    pub text: String,
+}
+
+impl From<typstyle_core::partial::RangeResult> for FormatRangeResult {
+    fn from(value: typstyle_core::partial::RangeResult) -> Self {
+        FormatRangeResult {
+            text: value.content,
+            start: value.source_range.start,
+            end: value.source_range.end,
+        }
+    }
+}
+
+/// Formats a specific range within the content using the provided configuration.
+/// Returns the formatted text and the actual range that was formatted.
+#[wasm_bindgen]
+pub fn format_range(
+    text: &str,
+    start: usize,
+    end: usize,
+    #[wasm_bindgen(unchecked_param_type = "Partial<Config>")] config: JsValue,
+) -> Result<FormatRangeResult, Error> {
+    let config = parse_config(config)?;
+    let t = Typstyle::new(config);
+    let source = Source::detached(text);
+    let range = start..end;
+
+    match t.format_source_range(source, range) {
+        Ok(result) => Ok(result.into()),
+        Err(e) => Err(into_error(e)),
+    }
+}
+
+/// Gets the IR (Intermediate Representation) of a specific range within the content.
+/// Returns the IR of the actual range.
+#[wasm_bindgen]
+pub fn format_range_ir(
+    text: &str,
+    start: usize,
+    end: usize,
+    #[wasm_bindgen(unchecked_param_type = "Partial<Config>")] config: JsValue,
+) -> Result<String, Error> {
+    let config = parse_config(config)?;
+    let t = Typstyle::new(config);
+    let source = Source::detached(text);
+    let range = start..end;
+
+    match t.format_source_range_ir(source, range) {
+        Ok(result) => Ok(result.content),
+        Err(e) => Err(into_error(e)),
+    }
+}
+
+/// Gets the AST representation of a specific range within the content.
+/// Returns the AST of the actual range.
+#[wasm_bindgen]
+pub fn get_range_ast(text: &str, start: usize, end: usize) -> Result<String, Error> {
+    let source = Source::detached(text);
+    let range = start..end;
+
+    match get_node_for_range(&source, range) {
+        Ok(node) => Ok(format!("{node:#?}")),
+        Err(e) => Err(into_error(e)),
+    }
+}
+
 fn parse_config(config: JsValue) -> Result<Config, Error> {
     serde_wasm_bindgen::from_value(config).map_err(into_error)
 }
 
 fn into_error<E: std::fmt::Display>(err: E) -> Error {
     Error::new(&err.to_string())
-}
-
-#[wasm_bindgen]
-pub fn pretty_print_wasm(content: &str, width: usize) -> String {
-    let config = Config::new().with_width(width);
-    let t = Typstyle::new(config);
-    t.format_text(content)
-        .render()
-        .unwrap_or_else(|_| content.to_string())
 }

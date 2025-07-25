@@ -5,51 +5,110 @@ use typst_syntax::{
     LinkedNode, Source, Span, SyntaxKind,
 };
 
-use crate::{
-    pretty::{Context, Mode},
-    utils, AttrStore, Error, PrettyPrinter, Typstyle,
-};
+use crate::{pretty::Mode, utils, AttrStore, Error, PrettyPrinter, Typstyle};
+
+/// Result of a range operation (formatting, IR generation, etc.).
+#[derive(Debug, Clone)]
+pub struct RangeResult {
+    /// The actual source range that was processed (may be larger than requested to include complete nodes)
+    pub source_range: Range<usize>,
+    /// The processed content for the range (formatted text, IR, AST, etc.)
+    pub content: String,
+}
 
 impl Typstyle {
     /// Format the node with minimal span that covering the given range.
+    ///
+    /// This function finds the smallest complete syntax node that encompasses the given range
+    /// and formats it. The actual formatted range may be larger than the input range to ensure
+    /// syntactically valid formatting.
+    ///
+    /// # Arguments
+    /// - `source` - The source code to format
+    /// - `utf8_range` - The UTF-8 byte range to format
+    ///
+    /// # Returns
+    /// A `FormatRangeResult` containing the formatted text and metadata about the operation.
     pub fn format_source_range(
         &self,
-        source: &Source,
+        source: Source,
         utf8_range: Range<usize>,
-    ) -> Result<(Range<usize>, String), Error> {
-        // Trim the give range to ensure no space aside.
-        let range = utils::trim_range(source.text(), utf8_range);
+    ) -> Result<RangeResult, Error> {
+        let (node, mode) = get_node_and_mode_for_range(&source, utf8_range)?;
 
-        let Some((node, mode)) =
-            get_node_cover_range(source, range.clone()).filter(|(node, _)| !node.erroneous())
-        else {
-            return Err(Error::SyntaxError);
-        };
+        let node_range = node.range();
 
         let attrs = AttrStore::new(node.get()); // Here we only compute the attributes of that subtree.
         let printer = PrettyPrinter::new(self.config.clone(), attrs);
-        let ctx = Context::default().with_mode(mode);
-        let doc = if let Some(markup) = node.cast() {
-            printer.convert_markup(ctx, markup)
-        } else if let Some(expr) = node.cast() {
-            printer.convert_expr(ctx, expr)
-        } else if let Some(pattern) = node.cast() {
-            printer.convert_pattern(ctx, pattern)
-        } else {
-            return Err(Error::SyntaxError);
-        };
+        let doc = printer.try_convert_with_mode(&node, mode)?;
+
         // Infer indent from context.
-        let indent = utils::count_spaces_after_last_newline(source.text(), range.start);
-        let res = doc
+        let indent = utils::count_spaces_after_last_newline(source.text(), node_range.start);
+        let text = doc
             .nest(indent as isize)
             .print(self.config.max_width)
             .to_string();
-        Ok((node.range(), res))
+
+        Ok(RangeResult {
+            source_range: node_range,
+            content: text,
+        })
+    }
+
+    /// Get the pretty IR representation of the node with minimal span that covers the given range.
+    ///
+    /// This function finds the smallest complete syntax node that encompasses the given range
+    /// and returns its pretty IR representation.
+    ///
+    /// # Arguments
+    /// - `source` - The source code to analyze
+    /// - `utf8_range` - The UTF-8 byte range to analyze
+    ///
+    /// # Returns
+    /// A `FormatRangeResult` containing the IR representation and metadata about the operation.
+    pub fn format_source_range_ir(
+        &self,
+        source: Source,
+        utf8_range: Range<usize>,
+    ) -> Result<RangeResult, Error> {
+        let (node, mode) = get_node_and_mode_for_range(&source, utf8_range)?;
+
+        let node_range = node.range();
+
+        let attrs = AttrStore::new(node.get());
+        let printer = PrettyPrinter::new(self.config.clone(), attrs);
+        let doc = printer.try_convert_with_mode(&node, mode)?;
+
+        let ir = format!("{doc:#?}");
+
+        Ok(RangeResult {
+            source_range: node_range,
+            content: ir,
+        })
     }
 }
 
+pub fn get_node_for_range(
+    source: &Source,
+    utf8_range: Range<usize>,
+) -> Result<LinkedNode<'_>, Error> {
+    get_node_and_mode_for_range(source, utf8_range).map(|(node, _)| node)
+}
+
+fn get_node_and_mode_for_range(
+    source: &Source,
+    utf8_range: Range<usize>,
+) -> Result<(LinkedNode<'_>, Mode), Error> {
+    // Trim the given range to ensure no space aside.
+    let trimmed_range = utils::trim_range(source.text(), utf8_range);
+
+    get_node_cover_range(source, trimmed_range)
+        .filter(|(node, _)| !node.erroneous())
+        .ok_or(Error::SyntaxError)
+}
+
 /// Get a Markup/Expr/Pattern node from source with minimal span that covering the given range.
-fn get_node_cover_range(source: &Source, range: Range<usize>) -> Option<(LinkedNode, Mode)> {
+fn get_node_cover_range(source: &Source, range: Range<usize>) -> Option<(LinkedNode<'_>, Mode)> {
     let range = range.start..range.end.min(source.len_bytes());
     get_node_cover_range_impl(range, LinkedNode::new(source.root()), Mode::Markup)
         .and_then(|(span, mode)| source.find(span).map(|node| (node, mode)))
