@@ -24,7 +24,7 @@ use prelude::*;
 use style::FoldStyle;
 use typst_syntax::{ast::*, SyntaxNode};
 
-use crate::{ext::StrExt, AttrStore, Config};
+use crate::{ext::StrExt, pretty::style::is_multiline_flavored, AttrStore, Config};
 
 pub struct PrettyPrinter<'a> {
     config: Config,
@@ -50,14 +50,15 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     fn get_fold_style_untyped(&self, ctx: Context, node: &'a SyntaxNode) -> FoldStyle {
+        let is_multiline = is_multiline_flavored(node);
         if ctx.break_suppressed {
-            return if self.attr_store.is_multiline(node) {
+            return if is_multiline {
                 FoldStyle::Fit
             } else {
                 FoldStyle::Always
             };
         }
-        if self.attr_store.is_multiline_flavor(node) {
+        if is_multiline {
             FoldStyle::Never
         } else {
             FoldStyle::Fit

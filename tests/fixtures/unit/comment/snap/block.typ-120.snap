@@ -1,7 +1,6 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/comment/block.typ
-snapshot_kind: text
 ---
 Our study design is as follows:
 /* Somebody write this up:
@@ -10,10 +9,7 @@ Our study design is as follows:
 
 #if draw-edge == auto {
   draw-edge = (source-name, target-name, target-node) => {
-    let (a, b) = (
-      source-name + "." + direction,
-      target-name + "." + opposite-dir.at(direction),
-    )
+    let (a, b) = (source-name + "." + direction, target-name + "." + opposite-dir.at(direction))
     /* see this */
     draw.line(a, b)
     /*

@@ -162,17 +162,7 @@ input_file: tests/fixtures/packages/tablex.typ
   parent: none,
 )
 
-#let cellx(
-  content,
-  x: auto,
-  y: auto,
-  rowspan: 1,
-  colspan: 1,
-  fill: auto,
-  align: auto,
-  inset: auto,
-  fit-spans: auto,
-) = (
+#let cellx(content, x: auto, y: auto, rowspan: 1, colspan: 1, fill: auto, align: auto, inset: auto, fit-spans: auto) = (
   tablex-dict-type: "cell",
   content: content,
   rowspan: rowspan,
@@ -2393,12 +2383,7 @@ input_file: tests/fixtures/packages/tablex.typ
             }
 
             // place the cell!
-            place(
-              top + left,
-              dx: dx,
-              dy: height-between(start: first_y, end: y) + added_header_height,
-              cell_box.box,
-            )
+            place(top + left, dx: dx, dy: height-between(start: first_y, end: y) + added_header_height, cell_box.box)
 
             // let box_h = measure(cell_box.box, styles).height
             // tallest_box_h = calc.max(tallest_box_h, box_h)
