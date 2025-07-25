@@ -59,12 +59,12 @@ pub struct FormatRangeResult {
     pub text: String,
 }
 
-impl From<typstyle_core::FormatRangeResult> for FormatRangeResult {
-    fn from(value: typstyle_core::FormatRangeResult) -> Self {
+impl From<typstyle_core::partial::RangeResult> for FormatRangeResult {
+    fn from(value: typstyle_core::partial::RangeResult) -> Self {
         FormatRangeResult {
-            text: value.text,
-            start: value.range.start,
-            end: value.range.end,
+            text: value.content,
+            start: value.source_range.start,
+            end: value.source_range.end,
         }
     }
 }
@@ -90,7 +90,7 @@ pub fn format_range(
 }
 
 /// Gets the IR (Intermediate Representation) of a specific range within the content.
-/// Returns the IR and the actual range that was analyzed.
+/// Returns the IR of the actual range.
 #[wasm_bindgen]
 pub fn format_range_ir(
     text: &str,
@@ -104,13 +104,13 @@ pub fn format_range_ir(
     let range = start..end;
 
     match t.format_source_range_ir(source, range) {
-        Ok(result) => Ok(result.text),
+        Ok(result) => Ok(result.content),
         Err(e) => Err(into_error(e)),
     }
 }
 
 /// Gets the AST representation of a specific range within the content.
-/// Returns the AST and the actual range that was analyzed.
+/// Returns the AST of the actual range.
 #[wasm_bindgen]
 pub fn get_range_ast(text: &str, start: usize, end: usize) -> Result<String, Error> {
     let source = Source::detached(text);

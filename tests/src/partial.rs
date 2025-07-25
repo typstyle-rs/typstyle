@@ -70,11 +70,11 @@ fn check_snapshot(path: &Path, range: Range<usize>) -> Result<(), Failed> {
 
     match Typstyle::default().format_source_range(source.clone(), range.clone()) {
         Ok(result) => {
-            info.push(("range_node".into(), range_to_content(&result.range)));
+            info.push(("range_node".into(), range_to_content(&result.source_range)));
             settings.set_raw_info(&Content::Map(info));
 
             settings.bind(|| {
-                let snap = format!("{}\n---\n{}", &source.text()[result.range], result.text);
+                let snap = format!("{}\n---\n{}", &source.text()[result.source_range], result.content);
                 insta::assert_snapshot!(snap_name, snap);
             });
         }

@@ -7,13 +7,13 @@ use typst_syntax::{
 
 use crate::{pretty::Mode, utils, AttrStore, Error, PrettyPrinter, Typstyle};
 
-/// Result of a range formatting operation.
+/// Result of a range operation (formatting, IR generation, etc.).
 #[derive(Debug, Clone)]
-pub struct FormatRangeResult {
-    /// The actual range that was formatted (may be larger than requested to include complete nodes)
-    pub range: Range<usize>,
-    /// The formatted text for the range
-    pub text: String,
+pub struct RangeResult {
+    /// The actual source range that was processed (may be larger than requested to include complete nodes)
+    pub source_range: Range<usize>,
+    /// The processed content for the range (formatted text, IR, AST, etc.)
+    pub content: String,
 }
 
 impl Typstyle {
@@ -33,7 +33,7 @@ impl Typstyle {
         &self,
         source: Source,
         utf8_range: Range<usize>,
-    ) -> Result<FormatRangeResult, Error> {
+    ) -> Result<RangeResult, Error> {
         let (node, mode) = get_node_and_mode_for_range(&source, utf8_range)?;
 
         let node_range = node.range();
@@ -49,9 +49,9 @@ impl Typstyle {
             .print(self.config.max_width)
             .to_string();
 
-        Ok(FormatRangeResult {
-            range: node_range,
-            text,
+        Ok(RangeResult {
+            source_range: node_range,
+            content: text,
         })
     }
 
@@ -70,7 +70,7 @@ impl Typstyle {
         &self,
         source: Source,
         utf8_range: Range<usize>,
-    ) -> Result<FormatRangeResult, Error> {
+    ) -> Result<RangeResult, Error> {
         let (node, mode) = get_node_and_mode_for_range(&source, utf8_range)?;
 
         let node_range = node.range();
@@ -81,9 +81,9 @@ impl Typstyle {
 
         let ir = format!("{doc:#?}");
 
-        Ok(FormatRangeResult {
-            range: node_range,
-            text: ir,
+        Ok(RangeResult {
+            source_range: node_range,
+            content: ir,
         })
     }
 }
@@ -100,9 +100,9 @@ fn get_node_and_mode_for_range(
     utf8_range: Range<usize>,
 ) -> Result<(LinkedNode<'_>, Mode), Error> {
     // Trim the given range to ensure no space aside.
-    let trimmed_range = utils::trim_range(source.text(), utf8_range.clone());
+    let trimmed_range = utils::trim_range(source.text(), utf8_range);
 
-    get_node_cover_range(source, trimmed_range.clone())
+    get_node_cover_range(source, trimmed_range)
         .filter(|(node, _)| !node.erroneous())
         .ok_or(Error::SyntaxError)
 }
