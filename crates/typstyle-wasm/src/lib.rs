@@ -51,9 +51,9 @@ pub fn format_ir(
 /// The result of formatting a range within content.
 #[wasm_bindgen(getter_with_clone)]
 pub struct FormatRangeResult {
-    /// Start position of the actual formatted range
+    /// Start byte offset (in UTF8) of the actual formatted range
     pub start: usize,
-    /// End position of the actual formatted range
+    /// End byte offset (in UTF8) of the actual formatted range
     pub end: usize,
     /// The formatted text for the range
     pub text: String,

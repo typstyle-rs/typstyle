@@ -74,7 +74,11 @@ fn check_snapshot(path: &Path, range: Range<usize>) -> Result<(), Failed> {
             settings.set_raw_info(&Content::Map(info));
 
             settings.bind(|| {
-                let snap = format!("{}\n---\n{}", &source.text()[result.source_range], result.content);
+                let snap = format!(
+                    "{}\n---\n{}",
+                    &source.text()[result.source_range],
+                    result.content
+                );
                 insta::assert_snapshot!(snap_name, snap);
             });
         }
