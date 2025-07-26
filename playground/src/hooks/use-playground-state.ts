@@ -16,6 +16,7 @@ export interface PlaygroundState {
 export function usePlaygroundState() {
   const [sourceCode, setSourceCode] = useState("");
   const [formatOptions, setFormatOptions] = useState(DEFAULT_FORMAT_OPTIONS);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   // Use deferred value for source code throttling
   const deferredSourceCode = useDeferredValue(sourceCode);
@@ -37,8 +38,10 @@ export function usePlaygroundState() {
         });
       } catch (error) {
         console.error("Error loading state:", error);
+      } finally {
+        setIsInitializing(false);
+        initialized.current = true;
       }
-      initialized.current = true;
     };
 
     loadState();
@@ -66,7 +69,7 @@ export function usePlaygroundState() {
   }, [deferredSourceCode]);
 
   return {
-    state: { sourceCode, deferredSourceCode, formatOptions },
+    state: { sourceCode, deferredSourceCode, formatOptions, isInitializing },
     setSourceCode,
     setFormatOptions,
   };
