@@ -104,8 +104,7 @@ $
   columns: (1fr, 2fr),
   [ * Header 1 *], [*Header    2*],
   [Cell   1],
-  [
-    Cell with
+  [  Cell with
     #text(
       style: "italic",
       fill: green,

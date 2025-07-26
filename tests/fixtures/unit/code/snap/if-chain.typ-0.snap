@@ -35,9 +35,7 @@ input_file: tests/fixtures/unit/code/if-chain.typ
 } else if (
   c
     < d
-) [
-  false
-] else if (
+) [  false ] else if (
   1
     + 2
     == 3
@@ -54,8 +52,7 @@ input_file: tests/fixtures/unit/code/if-chain.typ
   c
     < d
 ) [
-  false
-] else if (
+  false ] else if (
   1
     + 2
     == 3
@@ -71,9 +68,7 @@ input_file: tests/fixtures/unit/code/if-chain.typ
 } else if (
   c
     < d
-) [
-  false
-] else if (
+) [  false ] else if (
   1
     + 2
     == 3
@@ -116,9 +111,7 @@ input_file: tests/fixtures/unit/code/if-chain.typ
   } else if (
     c
       < d
-  ) [
-    false
-  ] else if (
+  ) [  false ] else if (
     1
       + 2
       == 3
@@ -135,8 +128,7 @@ input_file: tests/fixtures/unit/code/if-chain.typ
     c
       < d
   ) [
-    false
-  ] else if (
+    false ] else if (
     1
       + 2
       == 3
@@ -152,9 +144,7 @@ input_file: tests/fixtures/unit/code/if-chain.typ
   } else if (
     c
       < d
-  ) [
-    false
-  ] else if (
+  ) [  false ] else if (
     1
       + 2
       == 3
@@ -173,9 +163,7 @@ input_file: tests/fixtures/unit/code/if-chain.typ
 } else if (
   c
     < d
-) [
-  false
-] else if (
+) [  false ] else if (
   1
     + 2
     == 3
@@ -194,8 +182,7 @@ input_file: tests/fixtures/unit/code/if-chain.typ
   c
     < d
 ) [
-  false
-] else if (
+  false ] else if (
   1
     + 2
     == 3

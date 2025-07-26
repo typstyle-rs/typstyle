@@ -21,7 +21,7 @@ pub fn unwrap_expr_deep(arg: Arg) -> Expr {
 }
 
 /// Split the arguments of a function call into parenthesized and trailing nodes.
-pub fn split_paren_args(args: Args) -> (&[SyntaxNode], &[SyntaxNode]) {
+pub fn split_paren_args(args: Args<'_>) -> (&[SyntaxNode], &[SyntaxNode]) {
     let children = args.to_untyped().children().as_slice();
     // split args, find first `)` and split there (inclusive)
     if let Some(idx) = children

@@ -1,7 +1,8 @@
 ---
 source: tests/src/unit.rs
-input_file: tests/fixtures/unit/markup/content-multiline.typ
+input_file: tests/fixtures/unit/markup/content-multiline-reflow.typ
 ---
+/// typstyle: wrap_text
 #[]
 #[ ]
 #[
@@ -18,58 +19,50 @@ input_file: tests/fixtures/unit/markup/content-multiline.typ
 ]
 #[ 10]
 #[ 11 ]
-#[ 12
+#[
+  12
 ]
 #[
   20]
 #[
-  21 ]
+  21
+]
 #[
   22
 ]
 
-#[0
-  0]
-#[0
-  1 ]
-#[0
-  2
+#[0 0]
+#[0 1 ]
+#[0 2
 ]
-#[ 1
-  0]
-#[ 1
-  1 ]
-#[ 1
-  2
+#[ 1 0]
+#[ 1 1 ]
+#[
+  1 2
 ]
 #[
-  2
-  0]
+  2 0]
 #[
-  2
-  1 ]
+  2 1
+]
 #[
-  2
-  2
+  2 2
 ]
 
 #[/*  */00/*  */]
 #[/*  */ 10/*  */]
 #[/*  */01 /*  */]
 #[/*  */ 11 /*  */]
-#[/*  */0
-  0/*  */]
-#[/*  */ 1
-  0/*  */]
-#[/*  */0
-  1 /*  */]
-#[/*  */ 1
-  1 /*  */]
+#[/*  */0 0/*  */]
+#[/*  */ 1 0/*  */]
+#[/*  */0 1 /*  */]
+#[/*  */ 1 1 /*  */]
 
 #[
   // a
   20]
-#[ // b
+#[
+  // b
   20]
 #[
   // c
@@ -79,26 +72,34 @@ input_file: tests/fixtures/unit/markup/content-multiline.typ
 
 #[
   // a
-  21 ]
+  21
+]
 #[
   // a
   22
 ]
-#[ // b
-  21 ]
-#[ // b
+#[
+  // b
+  21
+]
+#[
+  // b
   22
 ]
 
 #[/*
    */00/*
         */]
-#[/*
+#[
+  /*
    */ 10/*
          */]
 #[/*
    */01 /*
-         */]
-#[/*
+         */
+]
+#[
+  /*
    */ 11 /*
-          */]
+          */
+]

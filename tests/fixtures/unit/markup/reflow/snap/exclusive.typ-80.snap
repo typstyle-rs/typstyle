@@ -32,7 +32,8 @@ Not #for i in range(5) {}
 Not #context 1
 And block equations:
 $ eq $
-And also ``` block
+And also
+``` block
 raw ```
 but not ``` non-block raw ``` End
 ...
