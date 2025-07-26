@@ -5,6 +5,7 @@ import {
   filterNonDefaultOptions,
 } from "@/utils/formatter";
 import { getStateFromUrl, updateUrlWithState } from "@/utils/url";
+import { useAsyncError } from "./useErrorHandler";
 
 const STORAGE_KEY = "playground-code";
 
@@ -17,6 +18,7 @@ export function usePlaygroundState() {
   const [sourceCode, setSourceCode] = useState("");
   const [formatOptions, setFormatOptions] = useState(DEFAULT_FORMAT_OPTIONS);
   const [isInitializing, setIsInitializing] = useState(true);
+  const captureAsyncError = useAsyncError();
 
   // Use deferred value for source code throttling
   const deferredSourceCode = useDeferredValue(sourceCode);
@@ -38,6 +40,14 @@ export function usePlaygroundState() {
         });
       } catch (error) {
         console.error("Error loading state:", error);
+
+        // If it's a critical error (like network failure for pastebin), report it
+        if (
+          error instanceof Error &&
+          error.message.includes("Failed to fetch")
+        ) {
+          captureAsyncError(error);
+        }
       } finally {
         setIsInitializing(false);
         initialized.current = true;
