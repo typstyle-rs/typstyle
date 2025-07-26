@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 use js_sys::Error;
 use typst_syntax::Source;
 use typstyle_core::{partial::get_node_for_range, Config, Typstyle};
@@ -51,26 +53,22 @@ pub fn format_ir(
 /// The result of formatting a range within content.
 #[wasm_bindgen(getter_with_clone)]
 pub struct FormatRangeResult {
-    /// Start byte offset (in UTF8) of the actual formatted range
+    /// Start UTF-16 code unit index of the actual formatted range
     pub start: usize,
-    /// End byte offset (in UTF8) of the actual formatted range
+    /// End UTF-16 code unit index of the actual formatted range
     pub end: usize,
     /// The formatted text for the range
     pub text: String,
 }
 
-impl From<typstyle_core::partial::RangeResult> for FormatRangeResult {
-    fn from(value: typstyle_core::partial::RangeResult) -> Self {
-        FormatRangeResult {
-            text: value.content,
-            start: value.source_range.start,
-            end: value.source_range.end,
-        }
-    }
-}
-
 /// Formats a specific range within the content using the provided configuration.
-/// Returns the formatted text and the actual range that was formatted.
+/// The `start` and `end` parameters are UTF-16 code unit indices, matching JavaScript string indexing.
+/// Returns the formatted text and the actual UTF-16 range that was formatted.
+///
+/// The returned [`FormatRangeResult`] contains the formatted text for the specified range,
+/// along with the start and end indices (UTF-16) of the formatted region. These indices
+/// can be used directly with JavaScript string methods such as `slice` or `substring`
+/// to replace or extract the corresponding part of the original string.
 #[wasm_bindgen]
 pub fn format_range(
     text: &str,
@@ -81,16 +79,24 @@ pub fn format_range(
     let config = parse_config(config)?;
     let t = Typstyle::new(config);
     let source = Source::detached(text);
-    let range = start..end;
+    let uft8_range = to_utf16_range(&source, start, end)?;
 
-    match t.format_source_range(source, range) {
-        Ok(result) => Ok(result.into()),
+    match t.format_source_range(source.clone(), uft8_range) {
+        Ok(result) => Ok(FormatRangeResult {
+            start: source
+                .byte_to_utf16(result.source_range.start)
+                .expect("Invalid start index"),
+            end: source
+                .byte_to_utf16(result.source_range.end)
+                .expect("Invalid end index"),
+            text: result.content,
+        }),
         Err(e) => Err(into_error(e)),
     }
 }
 
 /// Gets the IR (Intermediate Representation) of a specific range within the content.
-/// Returns the IR of the actual range.
+/// Takes UTF-16 code unit indices and returns the IR of the actual range.
 #[wasm_bindgen]
 pub fn format_range_ir(
     text: &str,
@@ -101,22 +107,22 @@ pub fn format_range_ir(
     let config = parse_config(config)?;
     let t = Typstyle::new(config);
     let source = Source::detached(text);
-    let range = start..end;
+    let uft8_range = to_utf16_range(&source, start, end)?;
 
-    match t.format_source_range_ir(source, range) {
+    match t.format_source_range_ir(source, uft8_range) {
         Ok(result) => Ok(result.content),
         Err(e) => Err(into_error(e)),
     }
 }
 
 /// Gets the AST representation of a specific range within the content.
-/// Returns the AST of the actual range.
+/// Takes UTF-16 code unit indices and returns the AST of the actual range.
 #[wasm_bindgen]
 pub fn get_range_ast(text: &str, start: usize, end: usize) -> Result<String, Error> {
     let source = Source::detached(text);
-    let range = start..end;
+    let uft8_range = to_utf16_range(&source, start, end)?;
 
-    match get_node_for_range(&source, range) {
+    match get_node_for_range(&source, uft8_range) {
         Ok(node) => Ok(format!("{node:#?}")),
         Err(e) => Err(into_error(e)),
     }
@@ -124,6 +130,19 @@ pub fn get_range_ast(text: &str, start: usize, end: usize) -> Result<String, Err
 
 fn parse_config(config: JsValue) -> Result<Config, Error> {
     serde_wasm_bindgen::from_value(config).map_err(into_error)
+}
+
+fn to_utf16_range(source: &Source, start: usize, end: usize) -> Result<Range<usize>, Error> {
+    Ok(utf16_to_byte(source, start)?..utf16_to_byte(source, end)?)
+}
+
+fn utf16_to_byte(source: &Source, utf16_idx: usize) -> Result<usize, Error> {
+    source.utf16_to_byte(utf16_idx).ok_or_else(|| {
+        Error::new(&format!(
+            "Invalid UTF-16 index: {utf16_idx} in source length: {}",
+            source.len_utf16()
+        ))
+    })
 }
 
 fn into_error<E: std::fmt::Display>(err: E) -> Error {
