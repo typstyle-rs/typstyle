@@ -3,3 +3,6 @@
 
 /github-pages
 .claude
+
+# nix build output
+/result
