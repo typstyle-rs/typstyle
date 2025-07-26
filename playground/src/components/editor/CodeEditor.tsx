@@ -2,7 +2,7 @@ import MonacoEditor from "@monaco-editor/react";
 import { useMemo } from "react";
 import { getEditorTheme } from "@/config/monaco";
 import { useTheme } from "@/hooks";
-import type { editor } from "@/monaco/types";
+import type { editor, Monaco } from "@/monaco/types";
 
 export interface CodeEditorProps {
   value: string;
@@ -12,6 +12,10 @@ export interface CodeEditorProps {
   rulers?: number[];
   options?: editor.IStandaloneEditorConstructionOptions;
   onChange?: (value: string | undefined) => void;
+  onEditorMount?: (
+    editor: editor.IStandaloneCodeEditor,
+    monaco: Monaco,
+  ) => void;
 }
 
 export function CodeEditor({
@@ -22,6 +26,7 @@ export function CodeEditor({
   rulers,
   options = {},
   onChange,
+  onEditorMount,
 }: CodeEditorProps) {
   const { theme } = useTheme();
 
@@ -49,6 +54,7 @@ export function CodeEditor({
         theme={editorTheme}
         onChange={onChange}
         options={editorOptions}
+        onMount={onEditorMount}
       />
     </div>
   );

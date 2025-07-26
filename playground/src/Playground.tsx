@@ -72,6 +72,7 @@ function Playground() {
       value={sourceCode}
       onChange={handleEditorChange}
       lineLengthGuide={formatOptions.lineWidth}
+      formatOptions={formatOptions}
     />
   );
   const formattedPanel = (
