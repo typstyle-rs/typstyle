@@ -8,6 +8,11 @@ export interface PlaygroundState {
   formatOptions: Partial<FormatOptions>;
 }
 
+export interface PlaygroundUrlState {
+  sourceCode?: string;
+  formatOptions: Partial<FormatOptions>;
+}
+
 // Maximum URL length before using pastebin for source code storage
 // We use a shorter (< 2048) length to avoid verbosity
 const MAX_URL_LENGTH = 1024;
@@ -31,17 +36,17 @@ export function updateUrlWithState(
   });
 
   // Replace the current URL without reloading
-  window.history.replaceState({}, "", `?${qs}`);
+  window.history.replaceState({}, "", qs === "" ? location.pathname : `?${qs}`);
 }
 
 /**
  * Extracts playground state from the current URL
  */
-export async function getStateFromUrl(): Promise<PlaygroundState | null> {
+export async function getStateFromUrl(): Promise<PlaygroundUrlState> {
   const url = new URL(window.location.href);
   const params = url.searchParams;
 
-  let sourceCode = "";
+  let sourceCode: string | undefined = undefined;
 
   // Check for code parameter first
   const codeParam = params.get("code");
