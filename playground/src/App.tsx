@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { LoadingSpinner } from "./components/ui";
 import { initMonaco } from "./config/monaco";
 import { ThemeProvider } from "./contexts";
@@ -35,14 +36,20 @@ function AppContent() {
     );
   }
 
-  return <Playground />;
+  return (
+    <ErrorBoundary>
+      <Playground />
+    </ErrorBoundary>
+  );
 }
 
 function App() {
   return (
-    <ThemeProvider>
-      <AppContent />
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }
 

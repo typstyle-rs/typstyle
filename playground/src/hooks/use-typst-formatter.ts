@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import * as typstyle from "typstyle-wasm";
 import type { OutputType } from "@/types";
 import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
+import { useAsyncError } from "./useErrorHandler";
 
 export interface Formatter {
   formattedCode: string;
@@ -20,6 +21,7 @@ export function useTypstFormatter(
   const [astOutput, setAstOutput] = useState("");
   const [irOutput, setIrOutput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const captureAsyncError = useAsyncError();
 
   const formatCode = async () => {
     const config = formatOptionsToConfig(formatOptions);
@@ -59,7 +61,15 @@ export function useTypstFormatter(
         }
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : String(error));
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      setError(errorMessage);
+
+      // Report critical WASM errors to error boundary in development
+      if (error instanceof Error && error.message.includes("RuntimeError")) {
+        captureAsyncError(error);
+      }
+
       // Keep previous outputs on error
     }
   };
