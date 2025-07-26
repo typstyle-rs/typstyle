@@ -13,18 +13,14 @@ input_file: tests/fixtures/unit/table/large-cell.typ
       auto,
     ),
     gutter: 0em,
-    [
-      #read(
+    [ #read(
         "large-cell.typ",
         encoding: "utf8",
-      )
-    ],
-    [
-      #read(
+      ) ],
+    [ #read(
         "large-cell.typ",
         encoding: "utf8",
-      )
-    ],
+      ) ],
   ),
   caption: [],
 )
