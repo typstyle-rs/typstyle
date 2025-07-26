@@ -29,7 +29,7 @@ pub fn has_comment_children(node: &SyntaxNode) -> bool {
     node.children().any(is_comment_node)
 }
 
-pub(super) fn func_name(node: FuncCall) -> Option<&str> {
+pub(super) fn func_name(node: FuncCall<'_>) -> Option<&str> {
     match node.callee() {
         Expr::Ident(ident) => Some(ident.as_str()),
         Expr::FieldAccess(field_access) => Some(field_access.field().as_str()),

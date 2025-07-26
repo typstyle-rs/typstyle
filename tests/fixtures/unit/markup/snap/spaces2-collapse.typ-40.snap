@@ -17,15 +17,13 @@ spaces between words are preserved without `--collapse-space`
 
 Spaces can turn to line breaks in the following cases:
 
-#[  in content block  ]
-#[but not in this one  ]
+#[ in content block ]
+#[but not in this one ]
 
 * in strong syntax *
-*
-in
+* in
 multiline
-strong syntax
-*
+strong syntax *
 _
 in emph syntax
 _

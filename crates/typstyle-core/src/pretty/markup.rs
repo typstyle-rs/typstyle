@@ -204,9 +204,6 @@ impl<'a> PrettyPrinter<'a> {
 
         // Add line or space (if any) to both sides.
         // Only turn space into, not the other way around.
-        let prefer_tight =
-            !self.config.wrap_text && !self.attr_store.is_multiline(markup.to_untyped());
-        let is_symmetric = repr.start_bound != Boundary::Nil && repr.end_bound != Boundary::Nil;
         let get_delim = |bound: Boundary| {
             if scope == MarkupScope::Document || scope.can_trim() {
                 // should not add extra lines to the document
@@ -219,23 +216,26 @@ impl<'a> PrettyPrinter<'a> {
             match bound {
                 Boundary::Nil => self.arena.nil(),
                 Boundary::NilOrBreak => {
-                    if scope.can_trim() || !is_symmetric && prefer_tight || ctx.break_suppressed {
+                    if (scope.can_trim() || ctx.break_suppressed) && !self.config.wrap_text {
                         self.arena.nil()
                     } else {
                         self.arena.line_()
                     }
                 }
-                Boundary::SpaceOrBreak(n) | Boundary::WeakSpaceOrBreak(n) => {
-                    if is_symmetric && !ctx.break_suppressed || !prefer_tight {
-                        if self.config.wrap_text {
-                            self.arena.line()
-                        } else {
-                            self.arena.hardline().flat_alt(self.arena.spaces(n))
-                        }
-                    } else if scope.can_trim() {
+                Boundary::WeakNilOrBreak => {
+                    if self.config.wrap_text {
+                        self.arena.line_()
+                    } else {
+                        self.arena.nil()
+                    }
+                }
+                Boundary::Space(n) => {
+                    if scope.can_trim() {
                         // the space can be safely eaten
                         self.arena.nil()
                     } else if self.config.wrap_text {
+                        self.arena.line()
+                    } else if self.config.collapse_markup_spaces {
                         self.arena.space()
                     } else {
                         self.arena.spaces(n)
@@ -245,6 +245,7 @@ impl<'a> PrettyPrinter<'a> {
             }
         };
         body.enclose(get_delim(repr.start_bound), get_delim(repr.end_bound))
+            .group()
     }
 
     fn convert_markup_body(&'a self, ctx: Context, repr: &MarkupRepr<'a>) -> ArenaDoc<'a> {
@@ -295,7 +296,7 @@ impl<'a> PrettyPrinter<'a> {
         /// For space -> hard-line: \
         /// Prefers block equations exclusive to a single line.
         fn prefer_exclusive(node: &&SyntaxNode) -> bool {
-            is_block_equation(node)
+            is_block_equation(node) || is_block_raw(node)
         }
 
         /// For NOT hard-line -> soft-line: \
@@ -331,6 +332,7 @@ impl<'a> PrettyPrinter<'a> {
             let len = nodes.len();
             len == 1 && nodes[0].kind() != SyntaxKind::Text
                 || len == 2 && nodes[0].kind() == SyntaxKind::Hash
+                || len > 0 && prefer_exclusive(&nodes[0])
         }
 
         let mut doc = self.arena.nil();
@@ -396,14 +398,15 @@ struct MarkupRepr<'a> {
 enum Boundary {
     /// Should add no blank.
     Nil,
-    /// Can add a space or linebreak when multiline.
+    /// Beside blocky elements. Can turn to a linebreak when multiline.
     NilOrBreak,
-    /// Can turn to a linebreak.
-    SpaceOrBreak(usize),
+    /// Can turn to a linebreak if not in document scope and text-wrapping enabled,
+    /// as there are already spaces after comments.
+    WeakNilOrBreak,
+    /// n spaces.
+    Space(usize),
     /// Always breaks.
     Break,
-    /// Can turn to a linebreak if not in document scope.
-    WeakSpaceOrBreak(usize),
     /// Always breaks if not in document scope.
     WeakBreak,
 }
@@ -413,13 +416,13 @@ impl Boundary {
         if space.has_linebreak() {
             Self::Break
         } else {
-            Self::SpaceOrBreak(space.len())
+            Self::Space(space.len())
         }
     }
 
     pub fn strip_space(self) -> Self {
         match self {
-            Self::SpaceOrBreak(_) => Self::NilOrBreak,
+            Self::Space(_) => Self::NilOrBreak,
             _ => self,
         }
     }
@@ -428,7 +431,7 @@ impl Boundary {
 // Break markup into lines, split by stmt, parbreak, newline, multiline raw,
 // equation if a line contains text, it will be skipped by the formatter
 // to keep the original format.
-fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr {
+fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
     let mut repr = MarkupRepr {
         lines: vec![],
         start_bound: Boundary::Nil,
@@ -499,7 +502,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr {
                     repr.start_bound = Boundary::NilOrBreak;
                 }
                 Some(it) if it.kind() == SyntaxKind::Space => {
-                    repr.start_bound = Boundary::WeakSpaceOrBreak(1);
+                    repr.start_bound = Boundary::WeakNilOrBreak;
                 }
                 None if !first_line.nodes.is_empty() => repr.start_bound = Boundary::WeakBreak,
                 _ => {}
@@ -513,7 +516,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr {
                     repr.end_bound = Boundary::NilOrBreak;
                 }
                 Some(it) if it.kind() == SyntaxKind::Space => {
-                    repr.end_bound = Boundary::WeakSpaceOrBreak(1);
+                    repr.end_bound = Boundary::WeakNilOrBreak;
                 }
                 None if !last_line.nodes.is_empty() => repr.end_bound = Boundary::WeakBreak,
                 _ => {}

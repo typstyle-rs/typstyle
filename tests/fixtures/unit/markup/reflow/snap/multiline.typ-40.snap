@@ -23,16 +23,18 @@ fn main() {
 More text follows.
 
 A paragraph containing
-/* @typstyle off */ ```python
+/* @typstyle off */
+```python
 def complex_function(param1, param2, param3):
     """
     This is a complex function with multiple parameters
     and a long docstring that explains what it does
     """
     return None
-``` embedded code and more text that
-should wrap properly around the
-multiline content.
+```
+embedded code and more text that should
+wrap properly around the multiline
+content.
 
 #[
   Text before

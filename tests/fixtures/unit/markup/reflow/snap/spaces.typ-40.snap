@@ -5,10 +5,8 @@ input_file: tests/fixtures/unit/markup/reflow/spaces.typ
 /// typstyle: wrap_text
 
 Nested #strong[
-  *
-  bold
-  * *inside
-  * *strong*] with spaces \
+  * bold * *inside * *strong*] with
+spaces \
 and line breaks \
 across multiple lines.
 
