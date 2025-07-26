@@ -19,11 +19,9 @@ Spaces can turn to line breaks in the following cases:
 #[but not in this one  ]
 
 * in strong syntax *
-*
-in
+* in
 multiline
-strong syntax
-*
+strong syntax *
 _
 in emph syntax
 _

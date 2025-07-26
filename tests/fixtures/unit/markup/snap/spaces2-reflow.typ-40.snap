@@ -22,12 +22,8 @@ following cases:
 #[ in content block ]
 #[but not in this one ]
 
-*
-in strong syntax
-*
-*
-in multiline strong syntax
-*
+* in strong syntax *
+* in multiline strong syntax *
 _
 in emph syntax
 _

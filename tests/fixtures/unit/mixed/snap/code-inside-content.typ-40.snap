@@ -4,5 +4,4 @@ input_file: tests/fixtures/unit/mixed/code-inside-content.typ
 ---
 #[#{
     let something = 0
-  }\
-]
+  }\ ]

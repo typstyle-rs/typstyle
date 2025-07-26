@@ -7,10 +7,8 @@ input_file: tests/fixtures/unit/markup/strong-multiline.typ
 *11111
 111*
 
-*
-11111
-111
-*
+* 11111
+111 *
 
 *22222
 222
@@ -20,7 +18,6 @@ input_file: tests/fixtures/unit/markup/strong-multiline.typ
 333
 *
 
-*
-#text(fill: red)[555]
+* #text(fill: red)[555]
 aaaaa
 *

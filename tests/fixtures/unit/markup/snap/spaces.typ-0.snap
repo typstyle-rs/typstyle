@@ -36,8 +36,7 @@ across   multiple   lines.
 - Item  with  spaces and nested    item    together
 + Numbered   list   with   1. Deep    nested    content
 
-#quote[
-  Quoted  text  with  spaces
+#quote[     Quoted  text  with  spaces
   and   multiple   lines
 ]
 
@@ -57,9 +56,7 @@ across   multiple   lines.
   [Another   cell   with   spaces    ],
 
   [More    content],
-  [
-    Even     more     spaced     content
-  ],
+  [    Even     more     spaced     content     ],
 )
 
 Here's `inline  code  with  spaces` and code blocks:

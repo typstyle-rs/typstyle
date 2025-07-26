@@ -48,9 +48,7 @@ breaks. It also has*bold text*without proper spacing and_emphasized_content stuc
   #underline(
     stroke: 2pt
       + blue,
-  )[
-    underlined text
-  ]
+  )[ underlined text ]
 
 #box(
   width: 80%,
@@ -123,8 +121,7 @@ $
   [*Header    2*],
 
   [Cell   1],
-  [
-    Cell with
+  [  Cell with
     #text(
       style: "italic",
       fill: green,

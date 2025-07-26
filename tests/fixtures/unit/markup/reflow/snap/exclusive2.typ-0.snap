@@ -1,0 +1,19 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/markup/reflow/exclusive2.typ
+---
+/// typstyle: wrap_text
+
+To
+this
+neural
+network,
+we
+also
+add
+another
+convex
+term:
+$
+  [frac(abs(x_i)^k x_i, ell)]_i
+$ <eqn:odd_power_term>
