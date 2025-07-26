@@ -4,6 +4,7 @@ import { FloatingErrorCard } from "./components/FloatingErrorCard";
 import { SettingsPanel } from "./components/forms/SettingsPanel";
 import { Header } from "./components/Header";
 import { MainLayout } from "./components/MainLayout";
+import { LoadingSpinner } from "./components/ui";
 import { ShareModal } from "./components/ui/ShareModal";
 import { ToastContainer } from "./components/ui/ToastContainer";
 import {
@@ -16,7 +17,7 @@ import type { OutputType } from "./types";
 
 function Playground() {
   const {
-    state: { sourceCode, deferredSourceCode, formatOptions },
+    state: { sourceCode, deferredSourceCode, formatOptions, isInitializing },
     setSourceCode,
     setFormatOptions,
   } = usePlaygroundState();
@@ -30,6 +31,16 @@ function Playground() {
     activeOutput,
   );
   const shareManager = useShareManager();
+
+  // Show loading while playground state is initializing
+  if (isInitializing) {
+    return (
+      <LoadingSpinner
+        title="Loading Typstyle Playground"
+        description="Initializing states..."
+      />
+    );
+  }
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
