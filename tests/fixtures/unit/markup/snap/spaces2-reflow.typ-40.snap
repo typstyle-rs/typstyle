@@ -1,0 +1,38 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/markup/spaces2-reflow.typ
+---
+/// typstyle: wrap-text
+/// typstyle: include=spaces2.typ
+leading spaces are trimmed
+
+= In Heading
+- In list item
++ In enum item
+
+/ spaces in terms: are trimmed
+
+
+spaces between words are preserved
+without `--collapse-space`
+
+Spaces can turn to line breaks in the
+following cases:
+
+#[ in content block ]
+#[but not in this one ]
+
+*
+in strong syntax
+*
+*
+in multiline strong syntax
+*
+_
+in emph syntax
+_
+
+
+#[- with blocky content inside]
+#[$ "equation is also blocky" $]
+#[= But heading is ok]

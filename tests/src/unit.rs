@@ -47,8 +47,10 @@ pub fn collect_tests() -> Result<Vec<Trial>, Box<dyn Error>> {
 
             if file_type.is_dir() {
                 // Handle directories
-                if path.file_name() == Some("partial".as_ref()) {
-                    // Ignore partial tests
+                // Ignore partial tests and private files
+                if path.file_name().is_some_and(|name| {
+                    name == "partial" || name.to_string_lossy().starts_with('_')
+                }) {
                     continue;
                 }
                 visit_dir(&path, tests)?;
