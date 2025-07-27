@@ -232,10 +232,7 @@ mod tests {
 
     #[test]
     fn cover_markup_empty2() {
-        let res = test(
-            " a   b ",
-            (0, 3)..(0, 3),
-        );
+        let res = test(" a   b ", (0, 3)..(0, 3));
 
         assert_debug_snapshot!(res.source_range, @"2..5");
         assert_snapshot!(res.content, @"");
