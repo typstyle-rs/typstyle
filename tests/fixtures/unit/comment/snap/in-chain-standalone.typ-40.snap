@@ -1,6 +1,6 @@
 ---
 source: tests/src/unit.rs
-input_file: tests/fixtures/unit/comment/in-chain-line-comment.typ
+input_file: tests/fixtures/unit/comment/in-chain-standalone.typ
 ---
 #{
   ()
