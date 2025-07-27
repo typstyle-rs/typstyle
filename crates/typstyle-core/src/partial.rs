@@ -35,7 +35,7 @@ impl Typstyle {
     /// - `utf8_range` - The UTF-8 byte range to format
     ///
     /// # Returns
-    /// A `FormatRangeResult` containing the formatted text and metadata about the operation.
+    /// A `RangeResult` containing the formatted text and metadata about the operation.
     pub fn format_source_range(
         &self,
         source: Source,
@@ -75,7 +75,7 @@ impl Typstyle {
     /// - `utf8_range` - The UTF-8 byte range to analyze
     ///
     /// # Returns
-    /// A `FormatRangeResult` containing the IR representation and metadata about the operation.
+    /// A `RangeResult` containing the IR representation and metadata about the operation.
     pub fn format_source_range_ir(
         &self,
         source: Source,
@@ -113,13 +113,14 @@ fn refine_node_range(
                 .skip_while(|it| it.range().end <= range.start)
                 .take_while(|it| it.range().start < range.end)
                 .collect_vec();
-            if inner.is_empty() {
-                return None; // maybe unreachable?
-            }
-            let sub_range = inner.first().unwrap().range().start..inner.last().unwrap().range().end;
+            let sub_range = inner.first()?.range().start..inner.last()?.range().end;
+
+            // Create a synthetic (mock) syntax node for fine-grained selection.
+            // This is a key part of the functionality, as it allows us to refine
+            // the range to the smallest children covering the specified range.
             let new_node = SyntaxNode::inner(
                 node.kind(),
-                inner.into_iter().map(|it| it.get().clone()).collect_vec(),
+                inner.into_iter().map(|it| it.get().clone()).collect(),
             );
             Some((Cow::Owned(new_node), sub_range))
         }
@@ -164,11 +165,15 @@ fn get_node_cover_range_impl(
         SyntaxKind::Equation => Mode::Math,
         _ => mode,
     };
+
+    // First, try to find a child node that covers the range
     for child in node.children() {
         if let Some(res) = get_node_cover_range_impl(range.clone(), child, mode) {
             return Some(res);
         }
     }
+
+    // If no child covers the range, check if this node covers it
     let node_range = node.range();
     (node_range.start <= range.start
         && node_range.end >= range.end
