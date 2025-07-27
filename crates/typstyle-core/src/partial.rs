@@ -1,9 +1,7 @@
-use std::ops::Range;
+use std::ops::{Deref, Range};
 
-use typst_syntax::{
-    ast::{Expr, Markup, Pattern},
-    LinkedNode, Source, Span, SyntaxKind,
-};
+use itertools::Itertools;
+use typst_syntax::{ast::*, LinkedNode, Source, Span, SyntaxKind, SyntaxNode};
 
 use crate::{pretty::Mode, utils, AttrStore, Error, PrettyPrinter, Typstyle};
 
@@ -34,11 +32,17 @@ impl Typstyle {
         source: Source,
         utf8_range: Range<usize>,
     ) -> Result<RangeResult, Error> {
-        let (node, mode) = get_node_and_mode_for_range(&source, utf8_range)?;
+        let trimmed_range = utils::trim_range(source.text(), utf8_range);
+        let (node, mode) = get_node_and_mode_for_range(&source, trimmed_range.clone())?;
 
-        let node_range = node.range();
+        let Some((node, node_range)) = refine_node_range(node, trimmed_range.clone()) else {
+            return Ok(RangeResult {
+                source_range: trimmed_range.start..trimmed_range.start,
+                content: String::new(),
+            }); // No edit
+        };
 
-        let attrs = AttrStore::new(node.get()); // Here we only compute the attributes of that subtree.
+        let attrs = AttrStore::new(&node); // Here we only compute the attributes of that subtree.
         let printer = PrettyPrinter::new(self.config.clone(), attrs);
         let doc = printer.try_convert_with_mode(&node, mode)?;
 
@@ -71,11 +75,17 @@ impl Typstyle {
         source: Source,
         utf8_range: Range<usize>,
     ) -> Result<RangeResult, Error> {
-        let (node, mode) = get_node_and_mode_for_range(&source, utf8_range)?;
+        let trimmed_range = utils::trim_range(source.text(), utf8_range);
+        let (node, mode) = get_node_and_mode_for_range(&source, trimmed_range.clone())?;
 
-        let node_range = node.range();
+        let Some((node, node_range)) = refine_node_range(node, trimmed_range.clone()) else {
+            return Ok(RangeResult {
+                source_range: trimmed_range.start..trimmed_range.start,
+                content: String::new(),
+            }); // No edit
+        };
 
-        let attrs = AttrStore::new(node.get());
+        let attrs = AttrStore::new(&node);
         let printer = PrettyPrinter::new(self.config.clone(), attrs);
         let doc = printer.try_convert_with_mode(&node, mode)?;
 
@@ -88,21 +98,63 @@ impl Typstyle {
     }
 }
 
+enum MaybeRef<'a, T> {
+    Owned(T),
+    Ref(&'a T),
+}
+
+impl<'a, T> Deref for MaybeRef<'a, T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        match self {
+            MaybeRef::Owned(a) => a,
+            MaybeRef::Ref(a) => a,
+        }
+    }
+}
+
+fn refine_node_range(
+    node: LinkedNode,
+    range: Range<usize>,
+) -> Option<(MaybeRef<SyntaxNode>, Range<usize>)> {
+    match node.kind() {
+        SyntaxKind::Markup | SyntaxKind::Code => {
+            // find the smallest children covering the range
+            let inner = node
+                .children()
+                .skip_while(|it| it.range().end <= range.start)
+                .take_while(|it| it.range().start < range.end)
+                .collect_vec();
+            if inner.is_empty() {
+                return None; // maybe unreachable?
+            }
+            let sub_range = inner.first().unwrap().range().start..inner.last().unwrap().range().end;
+            let new_node = SyntaxNode::inner(
+                node.kind(),
+                inner.into_iter().map(|it| it.get().clone()).collect_vec(),
+            );
+            Some((MaybeRef::Owned(new_node), sub_range))
+        }
+        _ => Some((MaybeRef::Ref(node.get()), node.range())),
+    }
+}
+
 pub fn get_node_for_range(
     source: &Source,
     utf8_range: Range<usize>,
 ) -> Result<LinkedNode<'_>, Error> {
-    get_node_and_mode_for_range(source, utf8_range).map(|(node, _)| node)
+    // Trim the given range to ensure no space aside.
+    let trimmed_range = utils::trim_range(source.text(), utf8_range);
+
+    get_node_and_mode_for_range(source, trimmed_range).map(|(node, _)| node)
 }
 
 fn get_node_and_mode_for_range(
     source: &Source,
     utf8_range: Range<usize>,
 ) -> Result<(LinkedNode<'_>, Mode), Error> {
-    // Trim the given range to ensure no space aside.
-    let trimmed_range = utils::trim_range(source.text(), utf8_range);
-
-    get_node_cover_range(source, trimmed_range)
+    get_node_cover_range(source, utf8_range)
         .filter(|(node, _)| !node.erroneous())
         .ok_or(Error::SyntaxError)
 }
@@ -133,7 +185,12 @@ fn get_node_cover_range_impl(
     let node_range = node.range();
     (node_range.start <= range.start
         && node_range.end >= range.end
-        && (node.is::<Markup>() || node.is::<Expr>() || node.is::<Pattern>()))
+        && (node.is::<Markup>() || node.is::<Code>() || node.is::<Expr>() || node.is::<Pattern>()))
     .then(|| (node.span(), mode))
     // It returns span to avoid problems with borrowing.
+}
+
+#[cfg(test)]
+mod tests {
+    // TODO
 }

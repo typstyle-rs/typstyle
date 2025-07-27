@@ -22,6 +22,9 @@ export default defineConfig({
     toplevelAwait(), // required by wasm
   ],
 
+  optimizeDeps: {
+    exclude: ["typstyle-wasm"],
+  },
   build: {
     rollupOptions: {
       output: {

@@ -53,6 +53,26 @@ impl<'a> PrettyPrinter<'a> {
             })
     }
 
+    /// Only used for partial format.
+    pub(super) fn convert_code(&'a self, ctx: Context, code: Code<'a>) -> ArenaDoc<'a> {
+        let ctx = ctx.with_mode(Mode::Code);
+
+        ListStylist::new(self)
+            .disallow_front_comment()
+            .with_fold_style(FoldStyle::Never)
+            .keep_linebreak(self.config.blank_lines_upper_bound)
+            .process_iterable(ctx, code.to_untyped().children(), |ctx, expr| {
+                self.convert_expr(ctx, expr)
+            })
+            .print_doc(ListStyle {
+                separator: "",
+                delim: ("", ""),
+                tight_delim: true,
+                no_indent: true,
+                ..Default::default()
+            })
+    }
+
     pub(super) fn convert_parenthesized_impl(
         &'a self,
         ctx: Context,

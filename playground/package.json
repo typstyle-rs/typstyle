@@ -37,7 +37,7 @@
     "query-string": "^9.2.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "typstyle-wasm": "file:typstyle-wasm",
+    "typstyle-wasm": "link:typstyle-wasm",
     "vscode-oniguruma": "^2.0.1",
     "vscode-textmate": "^9.2.0"
   },

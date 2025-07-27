@@ -123,6 +123,8 @@ impl<'a> PrettyPrinter<'a> {
         let ctx = Context::default().with_mode(mode);
         let doc = if let Some(markup) = node.cast() {
             self.convert_markup(ctx, markup)
+        } else if let Some(code) = node.cast() {
+            self.convert_code(ctx, code)
         } else if let Some(expr) = node.cast() {
             self.convert_expr(ctx, expr)
         } else if let Some(pattern) = node.cast() {
