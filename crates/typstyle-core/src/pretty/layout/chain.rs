@@ -149,9 +149,8 @@ impl<'a> ChainStylist<'a> {
 
         let mut iter = self.items.into_iter();
 
-        let first_doc = match iter.next().expect("Chain must have at least one item") {
-            ChainItem::Body(body) => body,
-            _ => arena.nil(), // unreachable, as the first item should always be a body
+        let Some(ChainItem::Body(first_doc)) = iter.next() else {
+            panic!("Chain must starts with a body");
         };
 
         // collect follow docs
