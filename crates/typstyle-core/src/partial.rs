@@ -1,4 +1,4 @@
-use std::ops::{Deref, Range};
+use std::{borrow::Cow, ops::Range};
 
 use itertools::Itertools;
 use typst_syntax::{ast::*, LinkedNode, Source, Span, SyntaxKind, SyntaxNode};
@@ -12,6 +12,15 @@ pub struct RangeResult {
     pub source_range: Range<usize>,
     /// The processed content for the range (formatted text, IR, AST, etc.)
     pub content: String,
+}
+
+impl RangeResult {
+    fn empty(pos: usize) -> Self {
+        Self {
+            source_range: pos..pos,
+            content: String::new(),
+        }
+    }
 }
 
 impl Typstyle {
@@ -36,10 +45,7 @@ impl Typstyle {
         let (node, mode) = get_node_and_mode_for_range(&source, trimmed_range.clone())?;
 
         let Some((node, node_range)) = refine_node_range(node, trimmed_range.clone()) else {
-            return Ok(RangeResult {
-                source_range: trimmed_range.start..trimmed_range.start,
-                content: String::new(),
-            }); // No edit
+            return Ok(RangeResult::empty(trimmed_range.start)); // No edit
         };
 
         let attrs = AttrStore::new(&node); // Here we only compute the attributes of that subtree.
@@ -79,10 +85,7 @@ impl Typstyle {
         let (node, mode) = get_node_and_mode_for_range(&source, trimmed_range.clone())?;
 
         let Some((node, node_range)) = refine_node_range(node, trimmed_range.clone()) else {
-            return Ok(RangeResult {
-                source_range: trimmed_range.start..trimmed_range.start,
-                content: String::new(),
-            }); // No edit
+            return Ok(RangeResult::empty(trimmed_range.start)); // No edit
         };
 
         let attrs = AttrStore::new(&node);
@@ -98,28 +101,12 @@ impl Typstyle {
     }
 }
 
-enum MaybeRef<'a, T> {
-    Owned(T),
-    Ref(&'a T),
-}
-
-impl<'a, T> Deref for MaybeRef<'a, T> {
-    type Target = T;
-
-    fn deref(&self) -> &Self::Target {
-        match self {
-            MaybeRef::Owned(a) => a,
-            MaybeRef::Ref(a) => a,
-        }
-    }
-}
-
 fn refine_node_range(
     node: LinkedNode,
     range: Range<usize>,
-) -> Option<(MaybeRef<SyntaxNode>, Range<usize>)> {
+) -> Option<(Cow<SyntaxNode>, Range<usize>)> {
     match node.kind() {
-        SyntaxKind::Markup | SyntaxKind::Code => {
+        SyntaxKind::Markup | SyntaxKind::Code | SyntaxKind::Math => {
             // find the smallest children covering the range
             let inner = node
                 .children()
@@ -134,9 +121,9 @@ fn refine_node_range(
                 node.kind(),
                 inner.into_iter().map(|it| it.get().clone()).collect_vec(),
             );
-            Some((MaybeRef::Owned(new_node), sub_range))
+            Some((Cow::Owned(new_node), sub_range))
         }
-        _ => Some((MaybeRef::Ref(node.get()), node.range())),
+        _ => Some((Cow::Borrowed(node.get()), node.range())),
     }
 }
 
@@ -185,12 +172,124 @@ fn get_node_cover_range_impl(
     let node_range = node.range();
     (node_range.start <= range.start
         && node_range.end >= range.end
-        && (node.is::<Markup>() || node.is::<Code>() || node.is::<Expr>() || node.is::<Pattern>()))
+        && (node.is::<Markup>()
+            || node.is::<Code>()
+            || node.is::<Math>()
+            || node.is::<Expr>()
+            || node.is::<Pattern>()))
     .then(|| (node.span(), mode))
     // It returns span to avoid problems with borrowing.
 }
 
 #[cfg(test)]
 mod tests {
-    // TODO
+    use insta::{assert_debug_snapshot, assert_snapshot};
+
+    use super::*;
+
+    fn test(content: &str, lc_range: Range<(usize, usize)>) -> RangeResult {
+        let source = Source::detached(content);
+        let range = source
+            .line_column_to_byte(lc_range.start.0, lc_range.start.1)
+            .unwrap()
+            ..source
+                .line_column_to_byte(lc_range.end.0, lc_range.end.1)
+                .unwrap();
+
+        let t = Typstyle::default();
+        t.format_source_range(source, range).unwrap()
+    }
+
+    #[test]
+    fn cover_markup() {
+        let res = test(
+            "
+#(1+1)
+#(2+2)
+#(3+3)",
+            (1, 1)..(2, 2),
+        );
+
+        assert_debug_snapshot!(res.source_range, @"2..14");
+        assert_snapshot!(res.content, @r"
+        (1 + 1)
+        #(2 + 2)
+        ");
+    }
+
+    #[test]
+    fn cover_markup_empty() {
+        let res = test(
+            "
+#(1+1)
+#(2+2)",
+            (1, 1)..(1, 1),
+        );
+
+        assert_debug_snapshot!(res.source_range, @"2..7");
+        assert_snapshot!(res.content, @"(1 + 1)");
+    }
+
+    #[test]
+    fn cover_markup_empty2() {
+        let res = test(
+            " a   b ",
+            (0, 3)..(0, 3),
+        );
+
+        assert_debug_snapshot!(res.source_range, @"2..5");
+        assert_snapshot!(res.content, @"");
+    }
+
+    #[test]
+    fn cover_code() {
+        let res = test(
+            r#"""
+#{
+("1"+"1")
+("2"+"2")
+("3"+"3")
+}"""#,
+            (2, 2)..(3, 3),
+        );
+
+        assert_debug_snapshot!(res.source_range, @"6..25");
+        assert_snapshot!(res.content, @r#"
+        ("1" + "1")
+        ("2" + "2")
+        "#);
+    }
+
+    #[test]
+    fn cover_code_empty() {
+        let res = test(
+            r#"""
+#{
+("1"+"1")
+("2"+"2")
+}"""#,
+            (2, 2)..(2, 2),
+        );
+
+        assert_debug_snapshot!(res.source_range, @"7..10");
+        assert_snapshot!(res.content, @r#""1""#);
+    }
+
+    #[test]
+    fn cover_math() {
+        let res = test(
+            r#"""$
+sin( x )
+cos( y )
+tan( z )
+$"""#,
+            (2, 2)..(3, 3),
+        );
+
+        assert_debug_snapshot!(res.source_range, @"13..30");
+        assert_snapshot!(res.content, @r"
+        cos(y)
+        tan(z)
+        ");
+    }
 }
