@@ -14,6 +14,18 @@
   obj
     // first comment
     .method1()
-    // second comment  
+    /* second comment */
     .method2()
+}
+
+#{
+  (
+    1
+      // first comment
+      + 2
+      /* second comment */
+      - 3
+      + 4 // attached
+      - 5
+  )
 }
