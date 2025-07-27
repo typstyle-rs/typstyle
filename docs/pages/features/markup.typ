@@ -4,11 +4,9 @@
 
 #show: render-examples
 
-= Markup Formatting
+= Lists and Enumerations
 
-== Lists and Enumerations
-
-=== List Indentation
+== List Indentation
 
 List indentation is automatically corrected and standardized:
 
@@ -21,7 +19,7 @@ List indentation is automatically corrected and standardized:
       - Tomato
 ```
 
-=== Lists in Content Blocks
+== Lists in Content Blocks
 
 Lists within content blocks are properly formatted with surrounding linebreaks:
 
@@ -44,7 +42,7 @@ Lists within content blocks are properly formatted with surrounding linebreaks:
 }
 ```
 
-== Text Wrapping
+= Text Wrapping
 
 When text wrapping is enabled with `--wrap-text`, typstyle intelligently wraps long lines while preserving important formatting and semantic structure:
 
@@ -52,7 +50,7 @@ When text wrapping is enabled with `--wrap-text`, typstyle intelligently wraps l
 /// typstyle: wrap_text, max_width=30
 Let's say you have a long text that needs to be wrapped in the markup. This is a very long sentence.
 ```
-=== Wrapping Rules
+== Wrapping Rules
 
 typstyle applies specific wrapping logic based on node types:
 
@@ -103,7 +101,7 @@ End
 ````
 
 
-=== Multilingual Text Support
+== Multilingual Text Support
 
 typstyle measures Unicode width and will not break between words if no space exists in the original text.
 

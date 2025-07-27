@@ -3,18 +3,16 @@
 
 #show: book-page.with(title: "Developer Guide")
 
-= Developer Guide
-
 This guide covers environment setup, building, testing, and documentation for typstyle.
 
-== Prerequisites
+= Prerequisites
 
 - Rust stable toolchain with #link("https://doc.rust-lang.org/cargo/")[cargo]
 - Node.js and #link("https://yarnpkg.com/")[yarn] (for web assets)
 - #link("https://nexte.st/")[cargo-nextest] and #link("https://insta.rs/")[cargo-insta] (for testing)
 - #link("https://github.com/Myriad-Dreamin/shiroa")[shiroa] (for documentation)
 
-== Initial Setup
+= Initial Setup
 
 Clone and build the project:
 
@@ -35,7 +33,7 @@ cargo binstall wasm-pack
 cargo binstall shiroa
 ```
 
-== Workspace Layout
+= Workspace Layout
 
 - `crates/typstyle/` — formatter CLI
 - `crates/typstyle-core/` — core formatting logic

@@ -23,71 +23,36 @@
 
   /* Note callout - Blue */
   .callout-note {
-    --callout-bg: rgba(9, 105, 218, 0.1);
-    --callout-border: #0969da;
-    --callout-text: #0969da;
+    --callout-bg: light-dark(rgba(9, 105, 218, 0.1), rgba(59, 130, 246, 0.1));
+    --callout-border: light-dark(#0969da, #3b82f6);
+    --callout-text: light-dark(#0969da, #60a5fa);
   }
 
   /* Important callout - Orange */
   .callout-important {
-    --callout-bg: rgba(217, 119, 6, 0.1);
-    --callout-border: #d97706;
-    --callout-text: #d97706;
+    --callout-bg: light-dark(rgba(217, 119, 6, 0.1), rgba(249, 115, 22, 0.1));
+    --callout-border: light-dark(#d97706, #f97316);
+    --callout-text: light-dark(#d97706, #fb923c);
   }
 
   /* Warning callout - Red */
   .callout-warning {
-    --callout-bg: rgba(220, 38, 38, 0.1);
-    --callout-border: #dc2626;
-    --callout-text: #dc2626;
+    --callout-bg: light-dark(rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.1));
+    --callout-border: light-dark(#dc2626, #ef4444);
+    --callout-text: light-dark(#dc2626, #f87171);
   }
 
   /* Tip callout - Green */
   .callout-tip {
-    --callout-bg: rgba(22, 163, 74, 0.1);
-    --callout-border: #16a34a;
-    --callout-text: #16a34a;
+    --callout-bg: light-dark(rgba(22, 163, 74, 0.1), rgba(34, 197, 94, 0.1));
+    --callout-border: light-dark(#16a34a, #22c55e);
+    --callout-text: light-dark(#16a34a, #4ade80);
   }
 
   /* Caution callout - Purple */
   .callout-caution {
-    --callout-bg: rgba(147, 51, 234, 0.1);
-    --callout-border: #9333ea;
-    --callout-text: #9333ea;
-  }
-
-  /* Dark theme support */
-  :root.coal,
-  :root.navy,
-  :root.ayu {
-    .callout-note {
-      --callout-bg: rgba(59, 130, 246, 0.1);
-      --callout-border: #3b82f6;
-      --callout-text: #60a5fa;
-    }
-
-    .callout-important {
-      --callout-bg: rgba(249, 115, 22, 0.1);
-      --callout-border: #f97316;
-      --callout-text: #fb923c;
-    }
-
-    .callout-warning {
-      --callout-bg: rgba(239, 68, 68, 0.1);
-      --callout-border: #ef4444;
-      --callout-text: #f87171;
-    }
-
-    .callout-tip {
-      --callout-bg: rgba(34, 197, 94, 0.1);
-      --callout-border: #22c55e;
-      --callout-text: #4ade80;
-    }
-
-    .callout-caution {
-      --callout-bg: rgba(147, 51, 234, 0.1);
-      --callout-border: #9333ea;
-      --callout-text: #a855f7;
-    }
+    --callout-bg: light-dark(rgba(147, 51, 234, 0.1), rgba(147, 51, 234, 0.1));
+    --callout-border: light-dark(#9333ea, #9333ea);
+    --callout-text: light-dark(#9333ea, #a855f7);
   }
 }

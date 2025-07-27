@@ -1,47 +1,46 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { OutputEditor, SourceEditor } from "./components/editor";
 import { FloatingErrorCard } from "./components/FloatingErrorCard";
 import { SettingsPanel } from "./components/forms/SettingsPanel";
 import { Header } from "./components/Header";
 import { MainLayout } from "./components/MainLayout";
+import { LoadingSpinner } from "./components/ui";
 import { ShareModal } from "./components/ui/ShareModal";
 import { ToastContainer } from "./components/ui/ToastContainer";
-import { DEFAULT_FORMAT_OPTIONS } from "./constants";
-import { useScreenSize, useShareManager, useTypstFormatter } from "./hooks";
-import type { FormatOptions, OutputType } from "./types";
-import { cleanUrlAfterLoad, getStateFromUrl } from "./utils";
+import {
+  usePlaygroundState,
+  useScreenSize,
+  useShareManager,
+  useTypstFormatter,
+} from "./hooks";
+import type { OutputType } from "./types";
 
 function Playground() {
-  const [sourceCode, setSourceCode] = useState("");
-  const [formatOptions, setFormatOptions] = useState<FormatOptions>(
-    DEFAULT_FORMAT_OPTIONS,
-  );
+  const {
+    state: { sourceCode, deferredSourceCode, formatOptions, isInitializing },
+    setSourceCode,
+    setFormatOptions,
+  } = usePlaygroundState();
   const [activeOutput, setActiveOutput] = useState<OutputType>("formatted");
 
   // Custom hooks
   const screenSize = useScreenSize();
-  const formatter = useTypstFormatter(sourceCode, formatOptions, activeOutput);
+  const formatter = useTypstFormatter(
+    deferredSourceCode,
+    formatOptions,
+    activeOutput,
+  );
   const shareManager = useShareManager();
 
-  // Load state from URL on component mount
-  useEffect(() => {
-    const loadStateFromUrl = async () => {
-      const urlState = await getStateFromUrl();
-      if (urlState) {
-        setSourceCode(urlState.sourceCode || "");
-        setFormatOptions({
-          ...DEFAULT_FORMAT_OPTIONS,
-          ...urlState.formatOptions,
-        });
-        setActiveOutput(urlState.activeOutput || "formatted");
-
-        // Clean the URL after successfully loading the state
-        cleanUrlAfterLoad();
-      }
-    };
-
-    loadStateFromUrl();
-  }, []);
+  // Show loading while playground state is initializing
+  if (isInitializing) {
+    return (
+      <LoadingSpinner
+        title="Loading Typstyle Playground"
+        description="Initializing states..."
+      />
+    );
+  }
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
@@ -64,7 +63,6 @@ function Playground() {
     const playgroundState = {
       sourceCode,
       formatOptions,
-      activeOutput,
     };
     await shareManager.generateShare(playgroundState);
   };
@@ -84,7 +82,8 @@ function Playground() {
       key="source-editor"
       value={sourceCode}
       onChange={handleEditorChange}
-      lineLengthGuide={formatOptions.maxLineLength}
+      lineLengthGuide={formatOptions.lineWidth}
+      formatOptions={formatOptions}
     />
   );
   const formattedPanel = (
@@ -92,8 +91,8 @@ function Playground() {
       key="output-formatted"
       content={formatter.formattedCode}
       language="typst"
-      indentSize={formatOptions.indentSize}
-      lineLengthGuide={formatOptions.maxLineLength}
+      indentSize={formatOptions.indentWidth}
+      lineLengthGuide={formatOptions.lineWidth}
     />
   );
   const astPanel = (

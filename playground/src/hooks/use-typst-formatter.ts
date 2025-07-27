@@ -1,6 +1,8 @@
-import { useDeferredValue, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import * as typstyle from "typstyle-wasm";
-import type { FormatOptions, OutputType } from "@/types";
+import type { OutputType } from "@/types";
+import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
+import { useAsyncError } from "./useErrorHandler";
 
 export interface Formatter {
   formattedCode: string;
@@ -15,26 +17,20 @@ export function useTypstFormatter(
   formatOptions: FormatOptions,
   activeOutput: OutputType,
 ): Formatter {
-  const deferredSourceCode = useDeferredValue(sourceCode);
   const [formattedCode, setFormattedCode] = useState("");
   const [astOutput, setAstOutput] = useState("");
   const [irOutput, setIrOutput] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const captureAsyncError = useAsyncError();
 
   const formatCode = async () => {
-    const config: Partial<typstyle.Config> = {
-      max_width: formatOptions.maxLineLength,
-      tab_spaces: formatOptions.indentSize,
-      collapse_markup_spaces: formatOptions.collapseMarkupSpaces,
-      reorder_import_items: formatOptions.reorderImportItems,
-      wrap_text: formatOptions.wrapText,
-    };
+    const config = formatOptionsToConfig(formatOptions);
 
     try {
       // Only call the WASM function for the currently active output
       switch (activeOutput) {
         case "formatted": {
-          const formatted = typstyle.format(deferredSourceCode, config);
+          const formatted = typstyle.format(sourceCode, config);
           setFormattedCode(formatted);
 
           // Check for convergence on formatted output
@@ -52,27 +48,35 @@ export function useTypstFormatter(
           break;
         }
         case "ast": {
-          const ast = typstyle.parse(deferredSourceCode);
+          const ast = typstyle.parse(sourceCode);
           setAstOutput(ast);
           setError(null);
           break;
         }
         case "ir": {
-          const formatIr = typstyle.format_ir(deferredSourceCode, config);
+          const formatIr = typstyle.format_ir(sourceCode, config);
           setIrOutput(formatIr);
           setError(null);
           break;
         }
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : String(error));
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      setError(errorMessage);
+
+      // Report critical WASM errors to error boundary in development
+      if (error instanceof Error && error.message.includes("RuntimeError")) {
+        captureAsyncError(error);
+      }
+
       // Keep previous outputs on error
     }
   };
 
   useEffect(() => {
     formatCode();
-  }, [deferredSourceCode, formatOptions, activeOutput]);
+  }, [sourceCode, formatOptions, activeOutput]);
 
   return {
     formattedCode,

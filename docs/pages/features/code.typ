@@ -4,9 +4,7 @@
 
 #show: render-examples
 
-= Code Formatting
-
-== Basic Layout
+= Basic Layout
 
 Generally, there are some Typst syntaxes classified as "list-like":
 - Code block (```typc { a }```)
@@ -22,7 +20,7 @@ Typstyle provides the following basic layouts for them:
 - *Fitted*: items are folded if fitted the line
 - *Compact*: (currently only applied to arguments) initial items are placed on the first line while the last combinable item spans multiple lines without extra indentation
 
-=== Flavor Detection
+== Flavor Detection
 
 Typstyle uses *flavor detection* to automatically choose the most suitable formatting style for list-like syntaxes.
 If the first space between items contains a newline, Typstyle treats the list as "multiline" and spreads items across multiple lines (never-folded):
@@ -52,9 +50,9 @@ This can help match the original intent and maintain readability.
   Code will never become less expanded due to flavor detection—if the original code is already multiline, Typstyle will not collapse it into a single line.
 ]
 
-== Code Block Structure
+= Code Block Structure
 
-=== Single-Statement Blocks
+== Single-Statement Blocks
 
 Single-statement blocks remain inline when they fit within the line width, unless they are too long or have multiline flavor:
 
@@ -69,7 +67,7 @@ Single-statement blocks remain inline when they fit within the line width, unles
 #let x = if true { "111111111111" } else { "222222222222222222222222222222" }
 ```
 
-=== Linebreak Management
+== Linebreak Management
 
 Typstyle strips excessive newlines in code blocks:
 
@@ -85,7 +83,7 @@ Typstyle strips excessive newlines in code blocks:
 }
 ```
 
-== Content Blocks
+= Content Blocks
 
 When content blocks have leading or trailing spaces, they break into multiple lines for better readability:
 
@@ -96,7 +94,7 @@ When content blocks have leading or trailing spaces, they break into multiple li
 ```
 
 
-== Parentheses Removal
+= Parentheses Removal
 
 typstyle removes unnecessary parentheses around:
 - Literals
@@ -126,9 +124,9 @@ Parentheses around identifiers are preserved for safety to avoid changing semant
 #let e = (("name"): 1)
 ```
 
-== Function Calls and Arguments
+= Function Calls and Arguments
 
-=== Compact Layout and Combinable Arguments
+== Compact Layout and Combinable Arguments
 
 Typstyle chooses layouts for arguments with the following rules:
 
@@ -207,9 +205,9 @@ context {
   This feature is still experimental and may not always produce the desired results. Its behavior may improve in future versions.
 ]
 
-== Chainable Expressions
+= Chainable Expressions
 
-=== Binary Chains
+== Binary Chains
 
 Binary expressions are formatted as operator chains with proper breaking and alignment:
 
@@ -218,7 +216,7 @@ Binary expressions are formatted as operator chains with proper breaking and ali
 #let _is_block(e,fn)=fn==heading or (fn==math.equation and e.block) or (fn==raw and e.has("block") and e.block) or fn==figure or fn==block or fn==list.item or fn==enum.item or fn==table or fn==grid or fn==align or (fn==quote and e.has("block") and e.block)
 ```
 
-=== Dot Chains
+== Dot Chains
 
 Dot chains are broken intelligently based on complexity and function calls:
 
@@ -236,9 +234,9 @@ Dot chains are broken intelligently based on complexity and function calls:
 #{padding.pairs().map((k, x) => (k, x * 1.5)).to-dict()}
 ```
 
-== Import Statements
+= Import Statements
 
-=== Item Ordering
+== Item Ordering
 
 Import items are sorted alphabetically by default:
 
@@ -246,7 +244,7 @@ Import items are sorted alphabetically by default:
 #import "module.typ": zebra,alpha,beta,gamma
 ```
 
-=== Soft Wrapping
+== Soft Wrapping
 
 Import statements use soft wrapping for long item lists, keeping them compact yet readable:
 

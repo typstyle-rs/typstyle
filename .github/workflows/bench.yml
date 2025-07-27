@@ -33,4 +33,4 @@ jobs:
           comment-on-alert: true
           fail-on-alert: true
           alert-comment-cc-users: '@Enter-tainer'
-          gh-repository: 'github.com/Enter-tainer/typstyle-bench-results'
+          gh-repository: 'github.com/typstyle-rs/typstyle-bench-results'

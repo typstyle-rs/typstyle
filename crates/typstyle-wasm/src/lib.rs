@@ -1,5 +1,8 @@
+use std::ops::Range;
+
 use js_sys::Error;
-use typstyle_core::{Config, Typstyle};
+use typst_syntax::Source;
+use typstyle_core::{partial::get_node_for_range, Config, Typstyle};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(typescript_custom_section)]
@@ -47,19 +50,101 @@ pub fn format_ir(
     t.format_text(text).render_ir().map_err(into_error)
 }
 
+/// The result of formatting a range within content.
+#[wasm_bindgen(getter_with_clone)]
+pub struct FormatRangeResult {
+    /// Start UTF-16 code unit index of the actual formatted range
+    pub start: usize,
+    /// End UTF-16 code unit index of the actual formatted range
+    pub end: usize,
+    /// The formatted text for the range
+    pub text: String,
+}
+
+/// Formats a specific range within the content using the provided configuration.
+/// The `start` and `end` parameters are UTF-16 code unit indices, matching JavaScript string indexing.
+/// Returns the formatted text and the actual UTF-16 range that was formatted.
+///
+/// The returned [`FormatRangeResult`] contains the formatted text for the specified range,
+/// along with the start and end indices (UTF-16) of the formatted region. These indices
+/// can be used directly with JavaScript string methods such as `slice` or `substring`
+/// to replace or extract the corresponding part of the original string.
+#[wasm_bindgen]
+pub fn format_range(
+    text: &str,
+    start: usize,
+    end: usize,
+    #[wasm_bindgen(unchecked_param_type = "Partial<Config>")] config: JsValue,
+) -> Result<FormatRangeResult, Error> {
+    let config = parse_config(config)?;
+    let t = Typstyle::new(config);
+    let source = Source::detached(text);
+    let uft8_range = to_utf16_range(&source, start, end)?;
+
+    match t.format_source_range(source.clone(), uft8_range) {
+        Ok(result) => Ok(FormatRangeResult {
+            start: source
+                .byte_to_utf16(result.source_range.start)
+                .expect("Invalid start index"),
+            end: source
+                .byte_to_utf16(result.source_range.end)
+                .expect("Invalid end index"),
+            text: result.content,
+        }),
+        Err(e) => Err(into_error(e)),
+    }
+}
+
+/// Gets the IR (Intermediate Representation) of a specific range within the content.
+/// Takes UTF-16 code unit indices and returns the IR of the actual range.
+#[wasm_bindgen]
+pub fn format_range_ir(
+    text: &str,
+    start: usize,
+    end: usize,
+    #[wasm_bindgen(unchecked_param_type = "Partial<Config>")] config: JsValue,
+) -> Result<String, Error> {
+    let config = parse_config(config)?;
+    let t = Typstyle::new(config);
+    let source = Source::detached(text);
+    let uft8_range = to_utf16_range(&source, start, end)?;
+
+    match t.format_source_range_ir(source, uft8_range) {
+        Ok(result) => Ok(result.content),
+        Err(e) => Err(into_error(e)),
+    }
+}
+
+/// Gets the AST representation of a specific range within the content.
+/// Takes UTF-16 code unit indices and returns the AST of the actual range.
+#[wasm_bindgen]
+pub fn get_range_ast(text: &str, start: usize, end: usize) -> Result<String, Error> {
+    let source = Source::detached(text);
+    let uft8_range = to_utf16_range(&source, start, end)?;
+
+    match get_node_for_range(&source, uft8_range) {
+        Ok(node) => Ok(format!("{node:#?}")),
+        Err(e) => Err(into_error(e)),
+    }
+}
+
 fn parse_config(config: JsValue) -> Result<Config, Error> {
     serde_wasm_bindgen::from_value(config).map_err(into_error)
 }
 
-fn into_error<E: std::fmt::Display>(err: E) -> Error {
-    Error::new(&err.to_string())
+fn to_utf16_range(source: &Source, start: usize, end: usize) -> Result<Range<usize>, Error> {
+    Ok(utf16_to_byte(source, start)?..utf16_to_byte(source, end)?)
 }
 
-#[wasm_bindgen]
-pub fn pretty_print_wasm(content: &str, width: usize) -> String {
-    let config = Config::new().with_width(width);
-    let t = Typstyle::new(config);
-    t.format_text(content)
-        .render()
-        .unwrap_or_else(|_| content.to_string())
+fn utf16_to_byte(source: &Source, utf16_idx: usize) -> Result<usize, Error> {
+    source.utf16_to_byte(utf16_idx).ok_or_else(|| {
+        Error::new(&format!(
+            "Invalid UTF-16 index: {utf16_idx} in source length: {}",
+            source.len_utf16()
+        ))
+    })
+}
+
+fn into_error<E: std::fmt::Display>(err: E) -> Error {
+    Error::new(&err.to_string())
 }

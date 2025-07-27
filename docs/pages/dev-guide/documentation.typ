@@ -3,21 +3,17 @@
 
 #show: book-page.with(title: "Documentation Development")
 
-= Documentation Development
-
 This section covers building and maintaining the typstyle documentation.
-
-== Documentation System
 
 The documentation uses #link("https://github.com/Myriad-Dreamin/shiroa")[shiroa] to build from Typst source files.
 
-== Building Documentation
+= Building Documentation
 
 #important[
   Documentation build requires CLI help text and the typstyle plugin to be generated first. Use `just build-docs` to handle dependencies automatically, or run `just generate-cli-help` and `just build-plugin` manually before building.
 ]
 
-=== Development Server
+== Development Server
 
 Development server with auto-reload:
 ```bash
@@ -26,7 +22,7 @@ just dev-docs
 shiroa serve docs/pages -w . --mode static-html
 ```
 
-=== Static Build
+== Static Build
 
 Build static documentation:
 ```bash
@@ -35,7 +31,7 @@ just build-docs
 shiroa build docs/pages -w . --mode static-html
 ```
 
-=== Build Plugin
+== Build Plugin
 
 Build the typstyle plugin for embedded usage:
 ```bash
@@ -45,7 +41,7 @@ cargo build -p typstyle-typlugin --release --target wasm32-unknown-unknown
 cp target/wasm32-unknown-unknown/release/typstyle_typlugin.wasm contrib/typstyle-embedded/assets/typstyle.wasm
 ```
 
-=== Generate CLI Help
+== Generate CLI Help
 
 Generate CLI help text:
 ```bash
@@ -56,7 +52,7 @@ cargo run -p typstyle -- --help > docs/assets/generated/cli-help.txt
 
 This is used for #cross-link("/cli-usage.typ")[cli-usage].
 
-== Documentation Structure
+= Documentation Structure
 
 The documentation is organized as follows:
 - `docs/book.typ` — main book configuration and metadata
@@ -69,9 +65,9 @@ The documentation is organized as follows:
   The shiroa root directory is `docs/pages/`. For better organization, the main book configuration is located at `docs/book.typ` and imported by `docs/pages/book.typ`.
 ]
 
-== Writing Documentation
+= Writing Documentation
 
-=== Render Examples
+== Render Examples
 
 To show before/after formatting examples automatically, use the `render-examples` feature:
 
@@ -98,7 +94,7 @@ The system automatically:
 - Displays side-by-side before/after comparison
 - Shows the active configuration options
 
-=== Using Callout Components
+== Using Callout Components
 
 The documentation supports various callout types for highlighting important information:
 
@@ -118,7 +114,7 @@ You can also use custom titles:
   This callout has a custom title instead of the default "Important".
 ]
 
-== Documentation Workflow
+= Documentation Workflow
 
 + Write content in Typst format
 + Test locally with ```sh just dev-docs```

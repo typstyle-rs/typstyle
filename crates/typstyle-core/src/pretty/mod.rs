@@ -24,7 +24,7 @@ use prelude::*;
 use style::FoldStyle;
 use typst_syntax::{ast::*, SyntaxNode};
 
-use crate::{ext::StrExt, AttrStore, Config};
+use crate::{ext::StrExt, AttrStore, Config, Error};
 
 pub struct PrettyPrinter<'a> {
     config: Config,
@@ -113,6 +113,24 @@ impl<'a> PrettyPrinter<'a> {
     /// For leaf only.
     fn convert_trivia_untyped(&'a self, node: &'a SyntaxNode) -> ArenaDoc<'a> {
         self.arena.text(node.text().as_str())
+    }
+
+    pub fn try_convert_with_mode(
+        &'a self,
+        node: &'a SyntaxNode,
+        mode: Mode,
+    ) -> Result<ArenaDoc<'a>, Error> {
+        let ctx = Context::default().with_mode(mode);
+        let doc = if let Some(markup) = node.cast() {
+            self.convert_markup(ctx, markup)
+        } else if let Some(expr) = node.cast() {
+            self.convert_expr(ctx, expr)
+        } else if let Some(pattern) = node.cast() {
+            self.convert_pattern(ctx, pattern)
+        } else {
+            return Err(Error::SyntaxError);
+        };
+        Ok(doc)
     }
 
     pub fn convert_expr(&'a self, ctx: Context, expr: Expr<'a>) -> ArenaDoc<'a> {
