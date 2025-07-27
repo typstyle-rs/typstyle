@@ -12,8 +12,9 @@ use crate::{
 enum ChainItem<'a> {
     Body(ArenaDoc<'a>),
     Op(ArenaDoc<'a>),
+    /// Either line comment or block comment.
     Comment(ArenaDoc<'a>),
-    Attached(ArenaDoc<'a>),
+    /// A soft line break around comments, which only takes effect when not at line start.
     Linebreak,
 }
 
@@ -94,36 +95,30 @@ impl<'a> ChainStylist<'a> {
         rhs_converter: impl Fn(Context, &'a SyntaxNode) -> Option<ArenaDoc<'a>>,
         fallback_converter: impl Fn(Context, &'a SyntaxNode) -> Option<ArenaDoc<'a>>,
     ) -> Self {
-        let mut can_attach = false;
         for node in nodes {
             if operand_pred(node) {
                 self.chain_op_num += 1;
+                let children = node.children().as_slice();
                 let mut seen_op = false;
-                for child in node.children() {
+                for (i, child) in node.children().enumerate() {
                     if let Some(op) = op_converter(child) {
                         seen_op = true;
                         self.items.push(ChainItem::Op(op));
+                    } else if child.kind() == SyntaxKind::Space {
+                        // Then linebreak is kept only if around comments.
+                        if child.text().has_linebreak()
+                            && (matches!(self.items.last(), Some(ChainItem::Comment(_)))
+                                || children.get(i + 1).is_some_and(is_comment_node))
+                        {
+                            self.items.push(ChainItem::Linebreak);
+                        }
                     } else if is_comment_node(child) {
                         let doc = self.printer.convert_comment(ctx, child);
-                        self.items.push(if can_attach {
-                            ChainItem::Attached(doc)
-                        } else {
-                            ChainItem::Comment(doc)
-                        });
+                        self.items.push(ChainItem::Comment(doc));
                         self.has_comment = true;
-                    } else if child.kind() == SyntaxKind::Space {
-                        if child.text().has_linebreak() {
-                            if self.items.last().is_some_and(|last| {
-                                matches!(*last, ChainItem::Attached(_) | ChainItem::Comment(_))
-                            }) {
-                                self.items.push(ChainItem::Linebreak);
-                            }
-                            can_attach = false;
-                        }
                     } else if seen_op {
                         if let Some(rhs) = rhs_converter(ctx, child) {
                             self.items.push(ChainItem::Body(rhs));
-                            can_attach = true;
                         }
                     }
                 }
@@ -152,66 +147,53 @@ impl<'a> ChainStylist<'a> {
 
         let use_simple_layout = self.chain_op_num == 1 && sty.no_break_single && !self.has_comment;
 
-        let mut docs = vec![];
-        let mut has_break = false;
-        let mut leading = true;
+        let mut iter = self.items.into_iter();
+
+        let Some(ChainItem::Body(first_doc)) = iter.next() else {
+            panic!("Chain must starts with a body");
+        };
+
+        // collect follow docs
+        let mut follow_docs = arena.nil();
+        let mut leading = false;
         let mut space_after = true;
-        for item in self.items {
+        for item in iter {
             match item {
                 ChainItem::Body(body) => {
-                    if leading {
-                        docs.push(body);
-                    } else if let Some(last) = docs.last_mut() {
-                        *last += body;
-                    }
+                    follow_docs += body;
                     leading = false;
                     space_after = true;
                 }
                 ChainItem::Op(op) => {
-                    if !(has_break && leading || use_simple_layout) {
-                        docs.push(op_sep.clone());
+                    if !(leading || use_simple_layout) {
+                        follow_docs += op_sep.clone();
                     }
-                    has_break = false;
+                    follow_docs += op;
                     if sty.space_around_op {
-                        docs.push(op + " ");
-                    } else {
-                        docs.push(op);
+                        follow_docs += arena.space();
                     }
                     leading = false;
                     space_after = false;
                 }
                 ChainItem::Comment(cmt) => {
-                    if leading {
-                        docs.push(cmt);
-                    } else if let Some(last) = docs.last_mut() {
-                        *last += if space_after {
-                            arena.space() + cmt
-                        } else {
-                            cmt
-                        }
+                    // For regular comments, flow with the text
+                    if space_after {
+                        follow_docs += arena.space();
                     }
+                    follow_docs += cmt;
                     leading = false;
                     space_after = true;
                 }
-                ChainItem::Attached(cmt) => {
-                    if let Some(last) = docs.last_mut() {
-                        *last += if space_after {
-                            arena.space() + cmt
-                        } else {
-                            cmt
-                        }
-                    }
-                }
                 ChainItem::Linebreak => {
-                    has_break = true;
-                    leading = true;
-                    docs.push(arena.hardline());
+                    if !leading {
+                        leading = true;
+                        space_after = false;
+                        follow_docs += arena.hardline();
+                    }
                 }
             }
         }
 
-        let first_doc = docs.remove(0);
-        let follow_docs = arena.concat(docs);
         if use_simple_layout {
             first_doc + follow_docs
         } else {
