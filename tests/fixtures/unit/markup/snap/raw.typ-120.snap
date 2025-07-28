@@ -1,7 +1,6 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/markup/raw.typ
-snapshot_kind: text
 ---
 ```rs
 let a = 1;
@@ -65,9 +64,9 @@ let a = 1;
 ]
 
 #text[```typ
-  #import "@preview/cetz:0.2.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    ...
-  })
-  ```]
+#import "@preview/cetz:0.2.1"
+#cetz.canvas({
+  import cetz.draw: *
+  ...
+})
+```]

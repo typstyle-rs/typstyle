@@ -159,10 +159,10 @@ input_file: tests/fixtures/packages/simple-paper.typ
     )
     #it
     #par()[#text(
-        size: 0.0em,
-      )[#h(
-          0.0em,
-        )]]
+      size: 0.0em,
+    )[#h(
+      0.0em,
+    )]]
     #v(
       12pt,
     )
@@ -171,10 +171,10 @@ input_file: tests/fixtures/packages/simple-paper.typ
   show image: it => [
     #it
     #par()[#text(
-        size: 0.0em,
-      )[#h(
-          0.0em,
-        )]]
+      size: 0.0em,
+    )[#h(
+      0.0em,
+    )]]
   ]
 
   show table: it => [

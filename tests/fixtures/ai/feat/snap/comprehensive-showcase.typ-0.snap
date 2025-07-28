@@ -174,10 +174,10 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
               it.numbering
                 != none
             ) [#counter(
-                heading,
-              ).display(
-                it.numbering,
-              ) ]
+              heading,
+            ).display(
+              it.numbering,
+            ) ]
             #it.body
           ]
         ]

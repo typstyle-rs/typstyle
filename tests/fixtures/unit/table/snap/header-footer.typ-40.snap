@@ -153,8 +153,8 @@ input_file: tests/fixtures/unit/table/header-footer.typ
       colspan: 3,
     )[Annual Report],
     table.cell(colspan: 3)[#text(
-        blue,
-      )[Financial Performance]],
+      blue,
+    )[Financial Performance]],
     [Q1], [Q2], [Q3],
     [Revenue], [Growth], [Profit],
   ),

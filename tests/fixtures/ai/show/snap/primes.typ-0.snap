@@ -154,8 +154,8 @@ input_file: tests/fixtures/ai/show/primes.typ
             "#e65100",
           ),
         )[#str(
-            num,
-          )]
+          num,
+        )]
       ]
     ]
   } else {
@@ -168,8 +168,8 @@ input_file: tests/fixtures/ai/show/primes.typ
       #align(
         center,
       )[#str(
-          num,
-        )]
+        num,
+      )]
     ]
   }
 }

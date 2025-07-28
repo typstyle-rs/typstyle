@@ -75,14 +75,14 @@ input_file: tests/fixtures/ai/feat/advanced-functions.typ
         [Data C],
 
         [#format-number(
-            123.456,
-          )],
+          123.456,
+        )],
         [#format-number(
-            789.012,
-          )],
+          789.012,
+        )],
         [#format-number(
-            345.678,
-          )],
+          345.678,
+        )],
       ),
     )
 

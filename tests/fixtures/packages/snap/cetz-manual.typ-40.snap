@@ -62,12 +62,12 @@ The name CeTZ is a recursive acronym for "CeTZ, ein Typst Zeichenpaket" (german 
 
 This is the minimal starting point:
 #pad(left: 1em)[```typ
-  #import "@preview/cetz:0.2.1"
-  #cetz.canvas({
-    import cetz.draw: *
-    ...
-  })
-  ```]
+#import "@preview/cetz:0.2.1"
+#cetz.canvas({
+  import cetz.draw: *
+  ...
+})
+```]
 Note that draw functions are imported inside the scope of the `canvas` block. This is recommended as some draw functions override Typst's function's such as `line`.
 
 #show raw.where(

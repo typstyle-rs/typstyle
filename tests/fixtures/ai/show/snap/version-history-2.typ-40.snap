@@ -175,21 +175,21 @@ input_file: tests/fixtures/ai/show/version-history-2.typ
   columns: 4,
   column-gutter: 1.5cm,
   [#text(
-      fill: version-colors.minor,
-      weight: "bold",
-    )[🚀 Major/Minor]],
+    fill: version-colors.minor,
+    weight: "bold",
+  )[🚀 Major/Minor]],
   [#text(
-      fill: version-colors.patch,
-      weight: "bold",
-    )[🔧 Patch]],
+    fill: version-colors.patch,
+    weight: "bold",
+  )[🔧 Patch]],
   [#text(
-      fill: version-colors.rc,
-      weight: "bold",
-    )[🧪 RC]],
+    fill: version-colors.rc,
+    weight: "bold",
+  )[🧪 RC]],
   [#text(
-      fill: rgb("#9ca3af"),
-      weight: "bold",
-    )[⏱️ Time Gap]],
+    fill: rgb("#9ca3af"),
+    weight: "bold",
+  )[⏱️ Time Gap]],
 )
 
 #v(1cm)

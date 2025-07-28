@@ -581,8 +581,8 @@ Comment on an expression as here (there is also `overbrace(..)`).
     columns: 2,
     column-gutter: 1em,
     [$
-        underbrace(x + y, |A|)
-      $],
+      underbrace(x + y, |A|)
+    $],
     [
       ```
       underbrace(x + y, |A|)
@@ -989,8 +989,8 @@ Fix the size with the `lr` function.
     columns: 2,
     column-gutter: 1em,
     [$
-        lr([sum_(k = 0)^n e^(k^2)], size: #50%)
-      $],
+      lr([sum_(k = 0)^n e^(k^2)], size: #50%)
+    $],
     [
       ```
       lr([sum_(k = 0)^n e^(k^2)], size: #50%)
@@ -1007,8 +1007,8 @@ To have them grow with the enclosed formula, also use the `lr` function.
     columns: 2,
     column-gutter: 1em,
     [$
-        lr(angle.l i, 2^(2^i) angle.r)
-      $],
+      lr(angle.l i, 2^(2^i) angle.r)
+    $],
     [
       ```
       lr(angle.l i, 2^(2^i) angle.r)
@@ -1031,8 +1031,8 @@ Fences scale by default if entered directly as codepoints, and don't scale autom
     ),
     column-gutter: 1em,
     [$
-        (1 / n^(alpha))
-      $],
+      (1 / n^(alpha))
+    $],
     [
       ```
       (1 / n^(alpha))
@@ -1040,8 +1040,8 @@ Fences scale by default if entered directly as codepoints, and don't scale autom
     ],
 
     [$
-        paren.l 1 / n^(alpha) paren.r
-      $],
+      paren.l 1 / n^(alpha) paren.r
+    $],
     [
       ```
       paren.l 1 / n^(alpha) paren.r
@@ -1058,8 +1058,8 @@ The `lr` function also allows to scale unmatched delimiters and one-side fences.
     columns: 2,
     column-gutter: 1em,
     [$
-        lr(frac(dif f, dif x) |)_(x_0)
-      $],
+      lr(frac(dif f, dif x) |)_(x_0)
+    $],
     [
       ```
       lr(frac(dif f, dif x) |)_(x_0)
@@ -1077,8 +1077,8 @@ Get a matrix with the `mat` function. You can pass an array to it.
     columns: 2,
     column-gutter: 1em,
     [$
-        mat(a, b; c, d)
-      $],
+      mat(a, b; c, d)
+    $],
     [
       ```
       $ mat(a, b; c, d) $
@@ -1134,8 +1134,8 @@ Display equations in a block level using `$ ... $` with at least one space separ
     columns: 2,
     column-gutter: 1em,
     [$
-        S = k dot lg W
-      $],
+      S = k dot lg W
+    $],
     [
       ```
       $ S = k dot lg W $
@@ -1198,8 +1198,8 @@ The last three here are display style.
     columns: 2,
     column-gutter: 1em,
     [$
-        f: RR -> RR
-      $],
+      f: RR -> RR
+    $],
     [
       ```
       f: RR -> RR
@@ -1207,13 +1207,13 @@ The last three here are display style.
     ],
 
     [$
-        9.8 thin "m/s"^2
-      $],
+      9.8 thin "m/s"^2
+    $],
     [`9.8 thin "m/s"^2` @tricky],
 
     [$
-        lim_(h->0) (f(x+h)-f(x))/h
-      $],
+      lim_(h->0) (f(x+h)-f(x))/h
+    $],
     [
       ```
       lim_(h -> 0) (f(x + h) - f(x)) / h
@@ -1221,8 +1221,8 @@ The last three here are display style.
     ],
 
     [$
-        integral x^2 dif x = x^3 \/ 3 + C
-      $],
+      integral x^2 dif x = x^3 \/ 3 + C
+    $],
     [
       ```
       integral x^2 dif x = x^3 \/ 3 + C
@@ -1230,8 +1230,8 @@ The last three here are display style.
     ],
 
     [$
-        nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
-      $],
+      nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
+    $],
     [
       ```
       nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
@@ -1255,8 +1255,8 @@ For permutations use $n^(underline(r))$ from `n^(underline(r))` (some authors us
     columns: 2,
     column-gutter: 1em,
     [$
-        sigma^2 = sqrt(sum(x_i - mu)^2 \/ N)
-      $],
+      sigma^2 = sqrt(sum(x_i - mu)^2 \/ N)
+    $],
     [
       ```
       sigma^2 = sqrt(sum(x_i - mu)^2 \/ N)
@@ -1264,8 +1264,8 @@ For permutations use $n^(underline(r))$ from `n^(underline(r))` (some authors us
     ],
 
     [$
-        E(X) = mu_X = sum(x_i - P(x_i))
-      $],
+      E(X) = mu_X = sum(x_i - P(x_i))
+    $],
     [
       ```
       E(X) = mu_X = sum(x_i - P(x_i))
@@ -1273,8 +1273,8 @@ For permutations use $n^(underline(r))$ from `n^(underline(r))` (some authors us
     ],
 
     [$
-        1 / sqrt(2 sigma^2 pi) e^(- (x - mu)^2 / (2 sigma^2))
-      $],
+      1 / sqrt(2 sigma^2 pi) e^(- (x - mu)^2 / (2 sigma^2))
+    $],
     [
       ```
       1 / sqrt(2 sigma^2 pi) e^(- (x - mu)^2 / (2 sigma^2))

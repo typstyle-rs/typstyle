@@ -8,13 +8,13 @@ input_file: tests/fixtures/unit/table/large-cell.typ
     rows: (auto, auto),
     gutter: 0em,
     [ #read(
-        "large-cell.typ",
-        encoding: "utf8",
-      ) ],
+      "large-cell.typ",
+      encoding: "utf8",
+    ) ],
     [ #read(
-        "large-cell.typ",
-        encoding: "utf8",
-      ) ],
+      "large-cell.typ",
+      encoding: "utf8",
+    ) ],
   ),
   caption: [],
 )
@@ -26,9 +26,9 @@ input_file: tests/fixtures/unit/table/large-cell.typ
   [Supercritical °C],
 
   [#read(
-      "large-cell.typ",
-      encoding: "utf8",
-    )],
+    "large-cell.typ",
+    encoding: "utf8",
+  )],
   [12.0],
   [92.1],
 

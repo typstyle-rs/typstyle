@@ -5,3 +5,8 @@
     ```
   ],
 ))
+
+#let list = (1,)
+#[#while list.len() > 0 {
+    list.pop()
+  }\ ]

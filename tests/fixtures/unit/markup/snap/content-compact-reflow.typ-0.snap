@@ -1,7 +1,9 @@
 ---
 source: tests/src/unit.rs
-input_file: tests/fixtures/unit/markup/content-compact.typ
+input_file: tests/fixtures/unit/markup/content-compact-reflow.typ
 ---
+/// typstyle: wrap_text
+/// typstyle: include=content-compact.typ
 #[
   - 111
 ]
@@ -38,14 +40,20 @@ input_file: tests/fixtures/unit/markup/content-compact.typ
 *]
 #[_
   emph_]
-#[* _
-  strong-emph
-_ *]
+#[*
+  _
+    strong-emph
+  _
+*]
 
 #[#{}]
 #[#[]]
-#[ #{} ]
-#[ #[ ] ]
+#[
+  #{}
+]
+#[
+  #[ ]
+]
 #[#{
   //
 }]
@@ -56,15 +64,19 @@ _ *]
   aaa
 ]]]]
 
-#[ /*  */
+#[
+  /*  */
   000]
-#[ /*  */
+#[
+  /*  */
   \#
 ]
-#[ /*  */
+#[
+  /*  */
   \\
 ]
-#[ //
+#[
+  //
   --
 ]
 
@@ -77,20 +89,29 @@ _ *]
   2222222222222222222222222222222222222
 $]
 
-#[ $
+#[
+  $
     a
   $
-  \ ]
-#[ $
+  \
+]
+#[
+  $
     b
-  $ \
-  \ ]
+  $
+  \
+  \
+]
 
-#[ $
+#[
+  $
     c
   $
-  <l2> ]
-#[ $
+  <l2>
+]
+#[
+  $
     d
   $ <l1>
-  <l2> ]
+  <l2>
+]
