@@ -43,10 +43,10 @@ input_file: tests/fixtures/ai/basic/presentation.typ
   )
 
   _Presenter
-  Name
-  •
-  Conference
-  2024_
+    Name
+    •
+    Conference
+    2024_
 ]
 
 #pagebreak()

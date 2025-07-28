@@ -1123,18 +1123,18 @@ input_file: tests/fixtures/packages/touying/core.typ
 
 /// Uncover content after the `#pause` mark in next subslide.
 #let pause = [#metadata(
-    (
-      kind: "touying-pause",
-    ),
-  )<touying-temporary-mark>]
+  (
+    kind: "touying-pause",
+  ),
+)<touying-temporary-mark>]
 
 
 /// Display content after the `#meanwhile` mark meanwhile.
 #let meanwhile = [#metadata(
-    (
-      kind: "touying-meanwhile",
-    ),
-  )<touying-temporary-mark>]
+  (
+    kind: "touying-meanwhile",
+  ),
+)<touying-temporary-mark>]
 
 
 /// Uncover content in some subslides. Reserved space when hidden (like `#hide()`).
@@ -3678,10 +3678,10 @@ input_file: tests/fixtures/packages/touying/core.typ
       )
     }
     [#metadata(
-        (
-          kind: "touying-new-slide",
-        ),
-      ) <touying-metadata>]
+      (
+        kind: "touying-new-slide",
+      ),
+    ) <touying-metadata>]
     // add headings for the first subslide
     if (
       self.at(
@@ -3807,10 +3807,10 @@ input_file: tests/fixtures/packages/touying/core.typ
       )
     }
     [#metadata(
-        (
-          kind: "touying-new-subslide",
-        ),
-      ) <touying-metadata>]
+      (
+        kind: "touying-new-subslide",
+      ),
+    ) <touying-metadata>]
     if (
       self.at(
         "enable-frozen-states-and-counters",
@@ -3973,10 +3973,10 @@ input_file: tests/fixtures/packages/touying/core.typ
     self,
   ) = {
     [#metadata(
-        (
-          kind: "touying-new-page",
-        ),
-      ) <touying-metadata>]
+      (
+        kind: "touying-new-page",
+      ),
+    ) <touying-metadata>]
     // 1. slide counter part
     //    if freeze-slide-counter is false, then update the slide-counter
     if (

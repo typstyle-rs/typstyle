@@ -17,13 +17,13 @@ Mixed spacing: * bold*   *bold * *  bold  *
 // Line breaks with strong elements
 Line
 *breaks
-inside* strong and text *across
-multiple
-lines* with content
+  inside* strong and text *across
+  multiple
+  lines* with content
 
 // Complex nesting with inconsistent spacing
 Nested: *bold with _emphasis_ inside* vs * bold with _nested
-emphasis_ across lines*
+    emphasis_ across lines*
 
 // Strong elements in structural elements
 - List item with*no space*around strong
@@ -32,7 +32,7 @@ emphasis_ across lines*
 // Different contexts
 "Quotation with *strong * element"
 #text()[Text function with *strong* and * bad
-  spacing *]
+    spacing *]
 
 // Mixed languages with spacing issues
 English and *中文* mixed with*不同*spacing patterns
@@ -48,4 +48,4 @@ English and *中文* mixed with*不同*spacing patterns
 中文测试：*无空格* text，前空格 *有空格*，后空格 *有空格* text，*内部 空格*，
 行
 *跨越
-换行* 以及 *嵌套 _强调_* *相邻*  *元素*
+  换行* 以及 *嵌套 _强调_* *相邻*  *元素*

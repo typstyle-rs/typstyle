@@ -22,10 +22,10 @@ Spaces can turn to line breaks in the following cases:
 
 * in strong syntax *
 * in
-multiline
-strong syntax *
+  multiline
+  strong syntax *
 _
-in emph syntax
+  in emph syntax
 _
 
 
@@ -33,8 +33,8 @@ _
   - with blocky content inside
 ]
 #[$
-    "equation is also blocky"
-  $]
+  "equation is also blocky"
+$]
 #[
   = But heading is ok
 ]

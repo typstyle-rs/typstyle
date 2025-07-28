@@ -827,8 +827,8 @@ Fix the size with the `lr` function.
   columns: 2,
   column-gutter: 1em,
   [$
-      lr([sum_(k = 0)^n e^(k^2)], size: #50%)
-    $],
+    lr([sum_(k = 0)^n e^(k^2)], size: #50%)
+  $],
   [
     ```
     lr([sum_(k = 0)^n e^(k^2)], size: #50%)
@@ -1012,8 +1012,8 @@ The last three here are display style.
   ],
 
   [$
-      integral x^2 dif x = x^3 \/ 3 + C
-    $],
+    integral x^2 dif x = x^3 \/ 3 + C
+  $],
   [
     ```
     integral x^2 dif x = x^3 \/ 3 + C
@@ -1021,8 +1021,8 @@ The last three here are display style.
   ],
 
   [$
-      nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
-    $],
+    nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
+  $],
   [
     ```
     nabla = bold(i) dif / (dif x) + bold(j) dif / (dif y) + bold(k) dif / (dif z)
@@ -1043,8 +1043,8 @@ For permutations use $n^(underline(r))$ from `n^(underline(r))` (some authors us
   columns: 2,
   column-gutter: 1em,
   [$
-      sigma^2 = sqrt(sum(x_i - mu)^2 \/ N)
-    $],
+    sigma^2 = sqrt(sum(x_i - mu)^2 \/ N)
+  $],
   [
     ```
     sigma^2 = sqrt(sum(x_i - mu)^2 \/ N)
@@ -1059,8 +1059,8 @@ For permutations use $n^(underline(r))$ from `n^(underline(r))` (some authors us
   ],
 
   [$
-      1 / sqrt(2 sigma^2 pi) e^(- (x - mu)^2 / (2 sigma^2))
-    $],
+    1 / sqrt(2 sigma^2 pi) e^(- (x - mu)^2 / (2 sigma^2))
+  $],
   [
     ```
     1 / sqrt(2 sigma^2 pi) e^(- (x - mu)^2 / (2 sigma^2))

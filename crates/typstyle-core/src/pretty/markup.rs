@@ -1,3 +1,4 @@
+use prettyless::Doc;
 use smallvec::SmallVec;
 use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
 
@@ -5,7 +6,7 @@ use super::{
     layout::flow::FlowItem, prelude::*, text::is_enum_marker, util::is_comment_node, Context, Mode,
     PrettyPrinter,
 };
-use crate::ext::StrExt;
+use crate::{ext::StrExt, pretty::util::is_only_one_and};
 
 #[derive(Debug, PartialEq, Eq)]
 enum MarkupScope {
@@ -37,11 +38,8 @@ impl<'a> PrettyPrinter<'a> {
         ctx: Context,
         content_block: ContentBlock<'a>,
     ) -> ArenaDoc<'a> {
-        let content = self.indent(self.convert_markup_impl(
-            ctx,
-            content_block.body(),
-            MarkupScope::ContentBlock,
-        ));
+        let content =
+            self.convert_markup_impl(ctx, content_block.body(), MarkupScope::ContentBlock);
         content.group().brackets()
     }
 
@@ -245,8 +243,21 @@ impl<'a> PrettyPrinter<'a> {
                 Boundary::Break | Boundary::WeakBreak => self.arena.hardline(),
             }
         };
-        body.enclose(get_delim(repr.start_bound), get_delim(repr.end_bound))
-            .group()
+
+        let open = get_delim(repr.start_bound);
+        let close = get_delim(repr.end_bound);
+        // Do not indent (compact), if the opening will not break.
+        let needs_indent = matches!(scope, MarkupScope::ContentBlock | MarkupScope::Strong)
+            && !(matches!(*open, Doc::Nil | Doc::Text(_))
+                && contains_exactly_one_primary_expr(markup));
+        let body_with_before = open + body;
+        let body_with_before = if needs_indent {
+            self.indent(body_with_before)
+        } else {
+            // Use compact layout.
+            body_with_before
+        };
+        (body_with_before + close).group()
     }
 
     fn convert_markup_body(&'a self, ctx: Context, repr: &MarkupRepr<'a>) -> ArenaDoc<'a> {
@@ -397,7 +408,7 @@ struct MarkupRepr<'a> {
 }
 
 /// Markup boundary, deciding whether can break.
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Boundary {
     /// Should add no blank.
     Nil,
@@ -544,4 +555,27 @@ fn is_block_equation(it: &SyntaxNode) -> bool {
 
 fn is_block_raw(it: &SyntaxNode) -> bool {
     it.cast::<Raw>().is_some_and(|raw| raw.block())
+}
+
+/// Returns true if the given markup contains exactly one primary (non-text, non-block) expression,
+/// ignoring spaces, linebreaks, and labels, and no linebreak or parbreak presented.
+fn contains_exactly_one_primary_expr(markup: Markup) -> bool {
+    // Fast fail: if any linebreak or parbreak is present, not a single primary expr.
+    if markup.exprs().any(|expr| {
+        matches!(expr, Expr::Space(_)) && expr.to_untyped().text().has_linebreak()
+            || matches!(expr, Expr::Parbreak(_))
+    }) {
+        return false;
+    }
+    is_only_one_and(
+        markup
+            .exprs()
+            .filter(|it| !matches!(it, Expr::Space(_) | Expr::Linebreak(_) | Expr::Label(_))),
+        |it| {
+            // Blocky expressions may produce new breaks.
+            // Other markup expressions are safe, as they must span only one line,
+            // or can be covered in boundary check.
+            !matches!(it, Expr::Text(_))
+        },
+    )
 }

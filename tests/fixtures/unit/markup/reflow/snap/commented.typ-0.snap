@@ -40,7 +40,7 @@ with
 mixed
 with
 *strong
-text*
+  text*
 and
 $"math" "equations"$
 to
@@ -79,7 +79,7 @@ case
 mixing
 everything:
 *bold
-text*
+  text*
 // comment after strong
 `code block`
 /* block comment */

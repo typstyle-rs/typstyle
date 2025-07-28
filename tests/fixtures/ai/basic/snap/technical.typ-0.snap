@@ -92,19 +92,19 @@ Authorization: Bearer YOUR_API_KEY
 
 == Rate Limiting
 - *Standard
-  users:*
+    users:*
   100
   requests
   per
   minute
 - *Premium
-  users:*
+    users:*
   1000
   requests
   per
   minute
 - *Enterprise
-  users:*
+    users:*
   10000
   requests
   per
@@ -457,7 +457,7 @@ languages:
   ),
 )[
   *Need
-  Help?*
+    Help?*
   Contact
   our
   developer

@@ -53,20 +53,20 @@ cases:
 ]
 
 *
-in
-strong
-syntax
+  in
+  strong
+  syntax
 *
 *
-in
-multiline
-strong
-syntax
+  in
+  multiline
+  strong
+  syntax
 *
 _
-in
-emph
-syntax
+  in
+  emph
+  syntax
 _
 
 
@@ -77,8 +77,8 @@ _
     inside
 ]
 #[$
-    "equation is also blocky"
-  $]
+  "equation is also blocky"
+$]
 #[
   = But heading is ok
 ]

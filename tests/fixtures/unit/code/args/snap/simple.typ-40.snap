@@ -28,7 +28,7 @@ input_file: tests/fixtures/unit/code/args/simple.typ
 #f(())
 #pad(left: 1em)[```typ
 
-  ```]
+```]
 
 #f({})
 #f(

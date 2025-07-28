@@ -649,8 +649,8 @@ input_file: tests/fixtures/packages/touying/core.typ
 
 /// Display content after the `#meanwhile` mark meanwhile.
 #let meanwhile = [#metadata((
-    kind: "touying-meanwhile",
-  ))<touying-temporary-mark>]
+  kind: "touying-meanwhile",
+))<touying-temporary-mark>]
 
 
 /// Uncover content in some subslides. Reserved space when hidden (like `#hide()`).

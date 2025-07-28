@@ -242,8 +242,8 @@ These results have important implications for future research directions and pra
 
 #align(center)[
   _This document contains #{
-    // Count total words approximately
-    let content-words = 850 // Approximate word count
-    content-words
-  } words and was automatically formatted using Typstyle._
+      // Count total words approximately
+      let content-words = 850 // Approximate word count
+      content-words
+    } words and was automatically formatted using Typstyle._
 ]

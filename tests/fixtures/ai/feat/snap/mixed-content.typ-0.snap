@@ -252,50 +252,50 @@ The research methodology consists of several phases:
     [Mean],
     ..datasets.map(
       d => [#calc.round(
-          d
-            .stats
-            .mean,
-          digits: 3,
-        )],
+        d
+          .stats
+          .mean,
+        digits: 3,
+      )],
     ),
     [Std Dev],
     ..datasets.map(
       d => [#calc.round(
-          d
-            .stats
-            .std,
-          digits: 3,
-        )],
+        d
+          .stats
+          .std,
+        digits: 3,
+      )],
     ),
     [Min],
     ..datasets.map(
       d => [#calc.round(
-          d
-            .stats
-            .min,
-          digits: 3,
-        )],
+        d
+          .stats
+          .min,
+        digits: 3,
+      )],
     ),
     [Max],
     ..datasets.map(
       d => [#calc.round(
-          d
-            .stats
-            .max,
-          digits: 3,
-        )],
+        d
+          .stats
+          .max,
+        digits: 3,
+      )],
     ),
     [Range],
     ..datasets.map(
       d => [#calc.round(
-          d
+        d
+          .stats
+          .max
+          - d
             .stats
-            .max
-            - d
-              .stats
-              .min,
-          digits: 3,
-        )],
+            .min,
+        digits: 3,
+      )],
     ),
   )
 }
@@ -515,8 +515,8 @@ These results have important implications for future research directions and pra
   center,
 )[
   _This document contains #{
-    // Count total words approximately
-    let content-words = 850 // Approximate word count
-    content-words
-  } words and was automatically formatted using Typstyle._
+      // Count total words approximately
+      let content-words = 850 // Approximate word count
+      content-words
+    } words and was automatically formatted using Typstyle._
 ]

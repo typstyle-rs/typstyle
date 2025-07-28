@@ -1,0 +1,24 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/markup/content-compact2.typ
+---
+#align(
+  center,
+  table(
+    [
+      ```
+      underbrace(x + y, |A|)
+      ```
+    ],
+  ),
+)
+
+#let list = (
+  1,
+)
+#[#while (
+  list.len()
+    > 0
+) {
+  list.pop()
+}\ ]

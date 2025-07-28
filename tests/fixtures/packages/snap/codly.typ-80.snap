@@ -1270,11 +1270,11 @@ input_file: tests/fixtures/packages/codly.typ
 
     // Always push the formatted line number
     let l = [#raw.line(
-        line.number + offset,
-        line.count,
-        line.text,
-        line.body,
-      )<codly-highlighted>]
+      line.number + offset,
+      line.count,
+      line.text,
+      line.body,
+    )<codly-highlighted>]
 
     // Must be done before the smart indentation code.
     // Otherwise it results in two paragraphs.
@@ -1282,11 +1282,11 @@ input_file: tests/fixtures/packages/codly.typ
       items.push(numbers-format(line.number + offset))
     } else {
       l = [#raw.line(
-          line.number + offset,
-          line.count,
-          line.text,
-          box(height: height, width: 0pt) + line.body,
-        )<codly-highlighted>]
+        line.number + offset,
+        line.count,
+        line.text,
+        box(height: height, width: 0pt) + line.body,
+      )<codly-highlighted>]
     }
 
     if (

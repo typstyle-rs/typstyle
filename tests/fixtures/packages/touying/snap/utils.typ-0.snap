@@ -371,8 +371,8 @@ input_file: tests/fixtures/packages/touying/utils.typ
 
 
 #let typst-builtin-styled = [#set text(
-    fill: red,
-  )].func()
+  fill: red,
+)].func()
 
 /// Determine if a content is styled
 ///

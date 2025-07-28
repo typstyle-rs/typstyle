@@ -25,7 +25,7 @@ term / definition // comment after slash
 heading = title // comment after equals
 
 A complex case mixing everything: *bold
-text* // comment after strong
+  text* // comment after strong
 `code block` /* block comment */ with
 $"math"$ // final comment
 and #text(red)[colored text] // with formatting

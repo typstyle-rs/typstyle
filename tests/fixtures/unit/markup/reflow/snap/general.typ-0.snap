@@ -102,7 +102,7 @@ This
 line
 contains
 *strong
-text*
+  text*
 mixed
 with
 `raw code`
@@ -145,7 +145,7 @@ $F = m a$
 inline
 with
 _emphasized
-words_
+  words_
 and
 `code snippets`.
 
@@ -173,7 +173,7 @@ like
 mixed
 with
 *important
-notes*
+  notes*
 and
 $sum_(i=1)^n x_i$.
 
@@ -184,7 +184,7 @@ $sum_(i=1)^n x_i$.
   item
   with
   *bold
-  text*
+    text*
   and
   $alpha$
   equation
@@ -445,7 +445,7 @@ item:
   It
   contains
   *strong
-  text*,
+    text*,
   `inline code`,
   and
   $"math" = "elements"$

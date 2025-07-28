@@ -23,6 +23,12 @@
   ```
   This change enables switching equations between inline and block by altering the direct space after the opening `$`.
 
+- Feature: Raw blocks are combinable now.
+
+- Feature: Compact layout for markup. For a content block, strong, or emph, if its open boundary is non-breakable, it contains no linebreak or parbreak, and it contains exactly one primary expression (excluding labels, linebreak symbols, and text), do not indent it.
+
+- Feature: The body of a strong or emph expression is now indented, if not compact.
+
 ## v0.13.16 - [2025-07-19]
 
 - Due to ci configuration issues, we failed to publish v0.13.15. This release is a re-publish of v0.13.15 with the correct version number.

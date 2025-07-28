@@ -31,7 +31,7 @@ Testing _multiple_ `inline` $"elements"$ in a single line with various _spacing_
 patterns.
 
 Some text with equations $E = m c^2$ and $F = m a$ inline with _emphasized
-words_ and `code snippets`.
+  words_ and `code snippets`.
 
 Here's a paragraph with line breaks and multiple spaces to test reflow behavior
 with $"complex" = (a + b)^2$ equations.

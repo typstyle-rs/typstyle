@@ -61,8 +61,8 @@ input_file: tests/fixtures/articles/physics-experiment.typ
       .map(
         x => {
           let blank = [#h(
-              2em,
-            )]
+            2em,
+          )]
           let res = (
             (
               x,

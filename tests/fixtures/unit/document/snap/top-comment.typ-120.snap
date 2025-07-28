@@ -1,11 +1,10 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/document/top-comment.typ
-snapshot_kind: text
 ---
 /// This is a module
 /// A module!
 
 Something else
 1*
-2* 3
+  2* 3
