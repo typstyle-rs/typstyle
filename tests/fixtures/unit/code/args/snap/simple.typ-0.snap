@@ -49,3 +49,16 @@ input_file: tests/fixtures/unit/code/args/simple.typ
 )[```typ
 
   ```]
+
+#f({})
+#f(
+  `
+`,
+)
+#f(
+  ```
+  ```,
+)
+#f(
+  (),
+)

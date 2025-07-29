@@ -23,11 +23,22 @@ input_file: tests/fixtures/unit/code/args/simple.typ
   `xx
 `,
 )
-#f(
-  ```aa
-  ```,
-)
+#f(```aa
+```)
 #f(())
 #pad(left: 1em)[```typ
 
   ```]
+
+#f({})
+#f(
+  `
+`,
+)
+#f(
+  ```
+  ```,
+)
+#f(
+  (),
+)
