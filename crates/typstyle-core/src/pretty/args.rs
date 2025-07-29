@@ -51,6 +51,7 @@ pub fn is_blocky(expr: Expr) -> bool {
 /// Identify simple expressions we can “smoosh” on one line.
 pub fn is_combinable(expr: Expr) -> bool {
     match expr {
+        Expr::Raw(raw) => raw.block(),
         Expr::Content(content) => content.body().exprs().next().is_some(),
         Expr::Array(array) => array.items().next().is_some(),
         Expr::Dict(dict) => dict.items().next().is_some(),
