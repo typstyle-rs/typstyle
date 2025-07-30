@@ -2,7 +2,8 @@ use smallvec::SmallVec;
 use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
 
 use super::{
-    layout::flow::FlowItem, prelude::*, util::is_comment_node, Context, Mode, PrettyPrinter,
+    layout::flow::FlowItem, prelude::*, text::is_enum_marker, util::is_comment_node, Context, Mode,
+    PrettyPrinter,
 };
 use crate::ext::StrExt;
 
@@ -289,8 +290,10 @@ impl<'a> PrettyPrinter<'a> {
         ///
         /// Besides, reflowing labels to the next line is not desired.
         fn cannot_break_before(node: &&SyntaxNode) -> bool {
-            matches!(node.text().as_str(), "=" | "+" | "-" | "/")
+            let text = node.text();
+            matches!(text.as_str(), "=" | "+" | "-" | "/")
                 || matches!(node.kind(), SyntaxKind::Label)
+                || is_enum_marker(text)
         }
 
         /// For space -> hard-line: \

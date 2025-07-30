@@ -141,3 +141,10 @@ This might be yet a bit cleaner.
 #highlight[Actually, it's muuuuuch worse in
 performance. Moreover the first version can be optimized to compute many marks
 at once. ]
+
+// Special characters that form syntax
+Text with -- en-dash and --- em-dash.
+
+// Escape sequences
+Text with \\ backslash and \* escaped asterisk.
+Newline escape \n and tab \t characters.
