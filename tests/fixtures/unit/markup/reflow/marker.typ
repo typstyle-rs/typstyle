@@ -1,0 +1,48 @@
+/// typstyle: wrap_text
+// Focus: prevent normal text "1." from being reflowed to create false enum items
+
+// === BASIC CASES ===
+Version 0.
+Text with version 1. followed by chapter 2. and section 3. all in one paragraph.
+References to items 4. and 5. and 6. should stay together.
+
+// === SPACING VARIATIONS ===
+// Spaces AFTER markers
+Normal text ending 1. with single space.
+Text ending 2.  with double space.
+Line ending 3.	with tab.
+
+// Spaces BEFORE markers
+Word 4. Single space before marker.
+Word  5. Double space before marker.
+Word	6. Tab before marker.
+
+// Spaces BOTH before and after markers
+Text  7.  double before and after.
+Text	8.	tab before and after.
+Text  9.   mixed double before, triple after.
+
+// === NON-ENUM MARKERS ===
+// These can break normally
+a. This can break normally.
+1.5 This is not an enum marker.
+1.. This has double dots.
+v1.0 Version numbers can break.
+
+// === EDGE CASES ===
+-1. 00. 01.
+Text about version 18446744073709551615. should stay glued.
+Reference to item 18446744073709551616. should break (overflow).
+
+// Punctuation after potential markers
+Sentence about version 1. (with parentheses).
+Text mentioning chapter 2. "with quotes".
+Discussion of point 3. *with emphasis*.
+Reference to section 4. `with code`.
+Price is \$5. New sentence starts here.
+
+// === enum markers ===
+01. Item with leading zero.
+007. Another item with leading zeros.
+18446744073709551615. That's OK
+18446744073709551616. This will overflow
