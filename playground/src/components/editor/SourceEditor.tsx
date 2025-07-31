@@ -1,5 +1,5 @@
 import diff from "fast-diff";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as typstyle from "typstyle-wasm";
 import type { editor, Monaco } from "@/monaco/types";
 import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
@@ -19,11 +19,17 @@ export function SourceEditor({
   formatOptions,
 }: SourceEditorProps) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const [wordWrap, setWordWrap] = useState(false);
+
   // Keep latest options in a ref to ensure formatting functions always use current values
   const formatOptionsRef = useRef(formatOptions);
   useEffect(() => {
     formatOptionsRef.current = formatOptions;
   }, [formatOptions]);
+
+  const toggleWordWrap = () => {
+    setWordWrap((prev) => !prev);
+  };
 
   const handleEditorMount = (
     editor: editor.IStandaloneCodeEditor,
@@ -42,6 +48,13 @@ export function SourceEditor({
       monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyF,
       formatSelection,
       "Format Selection",
+    );
+
+    // Add word wrap toggle command
+    editor.addCommand(
+      monaco.KeyMod.Alt | monaco.KeyCode.KeyZ,
+      toggleWordWrap,
+      "Toggle Word Wrap",
     );
 
     // Add context menu actions
@@ -65,6 +78,16 @@ export function SourceEditor({
       contextMenuGroupId: "1_modification",
       contextMenuOrder: 1.6,
       run: formatSelection,
+    });
+
+    // Add word wrap toggle action
+    editor.addAction({
+      id: "toggle-word-wrap",
+      label: "Toggle Word Wrap",
+      keybindings: [monaco.KeyMod.Alt | monaco.KeyCode.KeyZ],
+      contextMenuGroupId: "9_view",
+      contextMenuOrder: 1.5,
+      run: toggleWordWrap,
     });
   };
 
@@ -165,7 +188,7 @@ export function SourceEditor({
       indentSize={0}
       readOnly={false}
       options={{
-        wordWrap: "on",
+        wordWrap: wordWrap ? "on" : "off",
         minimap: { enabled: true },
         rulers: lineLengthGuide ? [lineLengthGuide] : [],
       }}
