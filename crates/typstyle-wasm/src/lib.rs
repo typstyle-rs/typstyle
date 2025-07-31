@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use js_sys::Error;
 use typst_syntax::Source;
-use typstyle_core::{partial::get_node_for_range, Config, Typstyle};
+use typstyle_core::{format_ast, partial::format_range_ast, Config, Typstyle};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(typescript_custom_section)]
@@ -25,7 +25,7 @@ pub fn run() {
 #[wasm_bindgen]
 pub fn parse(text: &str) -> Result<String, Error> {
     let root = typst_syntax::parse(text);
-    Ok(format!("{root:#?}"))
+    Ok(format_ast(&root))
 }
 
 /// Formats the content using the provided configuration.
@@ -79,9 +79,9 @@ pub fn format_range(
     let config = parse_config(config)?;
     let t = Typstyle::new(config);
     let source = Source::detached(text);
-    let uft8_range = to_utf16_range(&source, start, end)?;
+    let utf8_range = to_utf16_range(&source, start, end)?;
 
-    match t.format_source_range(source.clone(), uft8_range) {
+    match t.format_source_range(source.clone(), utf8_range) {
         Ok(result) => Ok(FormatRangeResult {
             start: source
                 .byte_to_utf16(result.source_range.start)
@@ -107,9 +107,9 @@ pub fn format_range_ir(
     let config = parse_config(config)?;
     let t = Typstyle::new(config);
     let source = Source::detached(text);
-    let uft8_range = to_utf16_range(&source, start, end)?;
+    let utf8_range = to_utf16_range(&source, start, end)?;
 
-    match t.format_source_range_ir(source, uft8_range) {
+    match t.format_source_range_ir(source, utf8_range) {
         Ok(result) => Ok(result.content),
         Err(e) => Err(into_error(e)),
     }
@@ -120,10 +120,10 @@ pub fn format_range_ir(
 #[wasm_bindgen]
 pub fn get_range_ast(text: &str, start: usize, end: usize) -> Result<String, Error> {
     let source = Source::detached(text);
-    let uft8_range = to_utf16_range(&source, start, end)?;
+    let utf8_range = to_utf16_range(&source, start, end)?;
 
-    match get_node_for_range(&source, uft8_range) {
-        Ok(node) => Ok(format!("{node:#?}")),
+    match format_range_ast(&source, utf8_range) {
+        Ok(result) => Ok(result.content),
         Err(e) => Err(into_error(e)),
     }
 }

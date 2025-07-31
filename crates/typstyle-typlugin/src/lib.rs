@@ -1,4 +1,4 @@
-use typstyle_core::{Config, Typstyle};
+use typstyle_core::{format_ast, Config, Typstyle};
 use wasm_minimal_protocol::*;
 
 initiate_protocol!();
@@ -12,7 +12,7 @@ pub fn parse(text: &[u8]) -> WasmResult {
     let text = parse_text(text)?;
 
     let root = typst_syntax::parse(text);
-    let ret = format!("{root:#?}");
+    let ret = format_ast(&root);
 
     Ok(ret.into_bytes())
 }

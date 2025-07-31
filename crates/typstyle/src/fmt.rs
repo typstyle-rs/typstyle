@@ -12,7 +12,7 @@ use anyhow::{bail, Context, Result};
 use itertools::Itertools;
 use log::{debug, error, info, warn};
 use typst_syntax::Source;
-use typstyle_core::{Config, Typstyle};
+use typstyle_core::{format_ast, Config, Typstyle};
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{
@@ -212,7 +212,7 @@ fn format_debug(content: &str, typstyle: &Typstyle, args: &DebugArgs) -> FormatR
     let source = Source::detached(content);
     let root = source.root();
     if args.ast {
-        println!("{root:#?}");
+        println!("{}", format_ast(root));
     }
 
     let start_time = Instant::now();

@@ -139,24 +139,24 @@ fn test_stdin_debug_ast() {
     exit_code: 0
     ----- stdout -----
     Markup: 16 [
-        Hash: "#",
-        LetBinding: 15 [
-            Let: "let",
-            Space: "  ",
-            Ident: "x",
-            Space: "  ",
-            Eq: "=",
-            Space: " ",
-            Parenthesized: 5 [
-                LeftParen: "(",
-                Binary: 3 [
-                    Int: "1",
-                    Plus: "+",
-                    Int: "2",
-                ],
-                RightParen: ")",
-            ],
+      Hash: "#",
+      LetBinding: 15 [
+        Let: "let",
+        Space: "  ",
+        Ident: "x",
+        Space: "  ",
+        Eq: "=",
+        Space: " ",
+        Parenthesized: 5 [
+          LeftParen: "(",
+          Binary: 3 [
+            Int: "1",
+            Plus: "+",
+            Int: "2",
+          ],
+          RightParen: ")",
         ],
+      ],
     ]
     #let x = (1 + 2)
 
