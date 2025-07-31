@@ -4,6 +4,22 @@
 
 #show: render-examples
 
+= Flavor Detection
+
+Typstyle uses flavor detection for equations, which is decided on the direct space after the opening `$`.
+
+```typst
+$ sin $
+
+$ cos
+$
+
+$
+tan $
+```
+
+You can easily switch equations between inline and block by altering the direct space after the opening `$`.
+
 = Formatting Rules
 
 typstyle applies specific formatting rules to math equations:
@@ -37,18 +53,6 @@ b&=matrix(
 ) \
 c&=sum_(i=1)^n x_i
 $
-```
-
-= Block vs Inline Equations
-
-typstyle uses flavor detection for equations. Block equations with newlines are formatted with proper indentation:
-
-```typst
-$ F(x) = integral_0^x f(t) dif t
-$
-
-$
-F(x) = integral_0^x f(t) dif t $
 ```
 
 = Comments in Math
