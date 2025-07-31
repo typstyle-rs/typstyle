@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import * as typstyle from "typstyle-wasm";
-import type { OutputType } from "@/types";
+import type { OutputType, RangeFormatterOptions } from "@/types";
 import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
 import { useAsyncError } from "./useErrorHandler";
 
@@ -16,6 +16,8 @@ export function useTypstFormatter(
   sourceCode: string,
   formatOptions: FormatOptions,
   activeOutput: OutputType,
+  rangeOptions?: RangeFormatterOptions,
+  isRangeMode: boolean = false,
 ): Formatter {
   const [formattedCode, setFormattedCode] = useState("");
   const [astOutput, setAstOutput] = useState("");
@@ -27,34 +29,65 @@ export function useTypstFormatter(
     const config = formatOptionsToConfig(formatOptions);
 
     try {
+      // Determine if we should use range operations
+      const useRange =
+        isRangeMode && rangeOptions && !rangeOptions.selection.isEmpty;
+
       // Only call the WASM function for the currently active output
       switch (activeOutput) {
         case "formatted": {
-          const formatted = typstyle.format(sourceCode, config);
+          const formatted = useRange
+            ? typstyle.format_range(
+                rangeOptions.fullText,
+                rangeOptions.selection.startOffset,
+                rangeOptions.selection.endOffset,
+                config,
+              ).text
+            : typstyle.format(sourceCode, config);
+
           setFormattedCode(formatted);
 
-          // Check for convergence on formatted output
-          const secondFormatted = typstyle.format(formatted, config);
-          if (secondFormatted !== formatted) {
-            setError(
-              "Format doesn't converge! " +
-                "This means formatting the output again will result in a different output. " +
-                "This is a bug in the formatter. " +
-                "Please report it to https://github.com/typstyle-rs/typstyle with the input code.",
-            );
+          // Check for convergence on formatted output (only for full document)
+          if (!useRange) {
+            const secondFormatted = typstyle.format(formatted, config);
+            if (secondFormatted !== formatted) {
+              setError(
+                "Format doesn't converge! " +
+                  "This means formatting the output again will result in a different output. " +
+                  "This is a bug in the formatter. " +
+                  "Please report it to https://github.com/typstyle-rs/typstyle with the input code.",
+              );
+            } else {
+              setError(null);
+            }
           } else {
             setError(null);
           }
           break;
         }
         case "ast": {
-          const ast = typstyle.parse(sourceCode);
+          const ast = useRange
+            ? typstyle.get_range_ast(
+                rangeOptions.fullText,
+                rangeOptions.selection.startOffset,
+                rangeOptions.selection.endOffset,
+              )
+            : typstyle.parse(sourceCode);
+
           setAstOutput(ast);
           setError(null);
           break;
         }
         case "ir": {
-          const formatIr = typstyle.format_ir(sourceCode, config);
+          const formatIr = useRange
+            ? typstyle.format_range_ir(
+                rangeOptions.fullText,
+                rangeOptions.selection.startOffset,
+                rangeOptions.selection.endOffset,
+                config,
+              )
+            : typstyle.format_ir(sourceCode, config);
+
           setIrOutput(formatIr);
           setError(null);
           break;
@@ -76,7 +109,7 @@ export function useTypstFormatter(
 
   useEffect(() => {
     formatCode();
-  }, [sourceCode, formatOptions, activeOutput]);
+  }, [sourceCode, formatOptions, activeOutput, rangeOptions, isRangeMode]);
 
   return {
     formattedCode,

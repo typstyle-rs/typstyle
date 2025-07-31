@@ -2,6 +2,10 @@ import diff from "fast-diff";
 import { useEffect, useRef, useState } from "react";
 import * as typstyle from "typstyle-wasm";
 import type { editor, Monaco } from "@/monaco/types";
+import {
+  convertSelectionToOffsets,
+  type DetailedEditorSelection,
+} from "@/utils/editor-selection";
 import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
 import { CodeEditor } from "./CodeEditor";
 
@@ -10,6 +14,7 @@ export interface SourceEditorProps {
   onChange: (value: string | undefined) => void;
   lineLengthGuide?: number;
   formatOptions: FormatOptions;
+  onSelectionChange?: (selection: DetailedEditorSelection) => void;
 }
 
 export function SourceEditor({
@@ -17,6 +22,7 @@ export function SourceEditor({
   onChange,
   lineLengthGuide,
   formatOptions,
+  onSelectionChange,
 }: SourceEditorProps) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [wordWrap, setWordWrap] = useState(false);
@@ -36,6 +42,24 @@ export function SourceEditor({
     monaco: Monaco,
   ) => {
     editorRef.current = editor;
+
+    // Track selection changes
+    if (onSelectionChange) {
+      const updateSelection = () => {
+        const selection = editor.getSelection();
+        const model = editor.getModel();
+        if (selection && model) {
+          const detailedSelection = convertSelectionToOffsets(selection, model);
+          onSelectionChange(detailedSelection);
+        }
+      };
+
+      // Initial selection
+      updateSelection();
+
+      // Listen for selection changes
+      editor.onDidChangeCursorSelection(updateSelection);
+    }
 
     // Add keyboard shortcuts
     editor.addCommand(
@@ -157,17 +181,15 @@ export function SourceEditor({
       if (!selection || selection.isEmpty()) return;
 
       try {
-        // Convert Monaco line/column positions to character offsets
-        const start = model.getOffsetAt({
-          lineNumber: selection.startLineNumber,
-          column: selection.startColumn,
-        });
-        const end = model.getOffsetAt({
-          lineNumber: selection.endLineNumber,
-          column: selection.endColumn,
-        });
+        // Use the utility function to avoid duplication
+        const detailedSelection = convertSelectionToOffsets(selection, model);
 
-        const result = typstyle.format_range(fullText, start, end, config);
+        const result = typstyle.format_range(
+          fullText,
+          detailedSelection.startOffset,
+          detailedSelection.endOffset,
+          config,
+        );
         const originalRangeText = fullText.slice(result.start, result.end);
         applyFormattingEdits(
           editor,
