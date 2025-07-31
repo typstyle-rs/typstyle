@@ -13,6 +13,7 @@ homepage.workspace = true
 [lib]
 crate-type = ["cdylib", "rlib"]
 bench = false
+test = false
 
 [features]
 default = ["console_error_panic_hook"]

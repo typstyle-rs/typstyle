@@ -11,7 +11,9 @@ pub use attr::AttrStore;
 pub use config::Config;
 use pretty::{prelude::*, PrettyPrinter};
 use thiserror::Error;
-use typst_syntax::Source;
+use typst_syntax::{Source, SyntaxNode};
+
+use crate::utils::indent_4_to_2;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -61,7 +63,7 @@ impl<'a> Formatter<'a> {
     /// Renders the document's pretty IR.
     pub fn render_ir(&'a self) -> Result<String, Error> {
         let doc = self.build_doc()?;
-        Ok(format!("{doc:#?}"))
+        Ok(indent_4_to_2(&format!("{doc:#?}")))
     }
 
     /// Renders the formatted document to a string.
@@ -83,4 +85,9 @@ impl<'a> Formatter<'a> {
         let doc = self.printer.convert_markup(Default::default(), markup);
         Ok(doc)
     }
+}
+
+/// Formats a `SyntaxNode` as a debug AST string with 2-space indentation.
+pub fn format_ast(root: &SyntaxNode) -> String {
+    indent_4_to_2(&format!("{root:#?}"))
 }

@@ -13,6 +13,7 @@ homepage.workspace = true
 [lib]
 crate-type = ["cdylib"]
 bench = false
+test = false
 
 [dependencies]
 typstyle-core = { workspace = true, features = ["serde"] }

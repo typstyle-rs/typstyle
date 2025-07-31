@@ -1,16 +1,28 @@
+//! Range-based formatting and analysis utilities for Typstyle.
+//!
+//! All byte ranges in this module are specified as UTF-8 offsets.
+//! If you have a UTF-16 range or line-column range (as used in LSP or some editors),
+//! you must convert it to a UTF-8 byte offset before calling these functions.
+//! The `typst_syntax::Source` API provides helpers for converting between line-column,
+//! UTF-16, and UTF-8 offsets.
+
 use std::{borrow::Cow, ops::Range};
 
 use itertools::Itertools;
 use typst_syntax::{ast::*, LinkedNode, Source, Span, SyntaxKind, SyntaxNode};
 
-use crate::{pretty::Mode, utils, AttrStore, Error, PrettyPrinter, Typstyle};
+use crate::{
+    pretty::Mode,
+    utils::{self, indent_4_to_2},
+    AttrStore, Error, PrettyPrinter, Typstyle,
+};
 
-/// Result of a range operation (formatting, IR generation, etc.).
+/// Result of a range-based formatting or analysis operation.
 #[derive(Debug, Clone)]
 pub struct RangeResult {
-    /// The actual source range that was processed (may be larger than requested to include complete nodes)
+    /// The actual source range that was processed (may be larger than requested to include complete nodes).
     pub source_range: Range<usize>,
-    /// The processed content for the range (formatted text, IR, AST, etc.)
+    /// The output for the range (formatted text, IR, AST, etc.).
     pub content: String,
 }
 
@@ -24,24 +36,22 @@ impl RangeResult {
 }
 
 impl Typstyle {
-    /// Format the node with minimal span that covering the given range.
+    /// Format the smallest syntax node that fully covers the given byte range.
     ///
-    /// This function finds the smallest complete syntax node that encompasses the given range
-    /// and formats it. The actual formatted range may be larger than the input range to ensure
-    /// syntactically valid formatting.
+    /// The formatted range may be larger than the input to ensure valid syntax.
     ///
     /// # Arguments
-    /// - `source` - The source code to format
-    /// - `utf8_range` - The UTF-8 byte range to format
+    /// - `source`: The source code.
+    /// - `utf8_range`: The UTF-8 byte range to format.
     ///
     /// # Returns
-    /// A `RangeResult` containing the formatted text and metadata about the operation.
+    /// A `RangeResult` with the formatted text and actual node range.
     pub fn format_source_range(
         &self,
         source: Source,
         utf8_range: Range<usize>,
     ) -> Result<RangeResult, Error> {
-        let trimmed_range = utils::trim_range(source.text(), utf8_range);
+        let trimmed_range = trim_range(source.text(), utf8_range);
         let (node, mode) = get_node_and_mode_for_range(&source, trimmed_range.clone())?;
 
         let Some((node, node_range)) = refine_node_range(node, trimmed_range.clone()) else {
@@ -65,23 +75,20 @@ impl Typstyle {
         })
     }
 
-    /// Get the pretty IR representation of the node with minimal span that covers the given range.
-    ///
-    /// This function finds the smallest complete syntax node that encompasses the given range
-    /// and returns its pretty IR representation.
+    /// Get the pretty IR for the smallest syntax node covering the given byte range.
     ///
     /// # Arguments
-    /// - `source` - The source code to analyze
-    /// - `utf8_range` - The UTF-8 byte range to analyze
+    /// - `source`: The source code.
+    /// - `utf8_range`: The UTF-8 byte range to analyze.
     ///
     /// # Returns
-    /// A `RangeResult` containing the IR representation and metadata about the operation.
+    /// A `RangeResult` with the IR and actual node range.
     pub fn format_source_range_ir(
         &self,
         source: Source,
         utf8_range: Range<usize>,
     ) -> Result<RangeResult, Error> {
-        let trimmed_range = utils::trim_range(source.text(), utf8_range);
+        let trimmed_range = trim_range(source.text(), utf8_range);
         let (node, mode) = get_node_and_mode_for_range(&source, trimmed_range.clone())?;
 
         let Some((node, node_range)) = refine_node_range(node, trimmed_range.clone()) else {
@@ -92,13 +99,30 @@ impl Typstyle {
         let printer = PrettyPrinter::new(self.config.clone(), attrs);
         let doc = printer.try_convert_with_mode(&node, mode)?;
 
-        let ir = format!("{doc:#?}");
+        let ir = indent_4_to_2(&format!("{doc:#?}"));
 
         Ok(RangeResult {
             source_range: node_range,
             content: ir,
         })
     }
+}
+
+/// Formats the smallest syntax node covering the given byte range as a debug AST string
+/// with 2-space indentation. Returns the node's actual source range and formatted AST.
+///
+/// # Arguments
+/// - `source`: The source code.
+/// - `utf8_range`: The UTF-8 byte range to analyze.
+///
+/// # Returns
+/// A `RangeResult` with the node's range and formatted AST.
+pub fn format_range_ast(source: &Source, utf8_range: Range<usize>) -> Result<RangeResult, Error> {
+    let node = get_node_for_range(source, utf8_range)?;
+    Ok(RangeResult {
+        source_range: node.range(),
+        content: indent_4_to_2(&format!("{node:#?}")),
+    })
 }
 
 fn refine_node_range(
@@ -128,14 +152,18 @@ fn refine_node_range(
     }
 }
 
-pub fn get_node_for_range(
-    source: &Source,
-    utf8_range: Range<usize>,
-) -> Result<LinkedNode<'_>, Error> {
+fn get_node_for_range(source: &Source, utf8_range: Range<usize>) -> Result<LinkedNode<'_>, Error> {
     // Trim the given range to ensure no space aside.
-    let trimmed_range = utils::trim_range(source.text(), utf8_range);
+    let trimmed_range = trim_range(source.text(), utf8_range);
 
     get_node_and_mode_for_range(source, trimmed_range).map(|(node, _)| node)
+}
+
+/// Get the range of the string obtained from trimming in the original string.
+fn trim_range(s: &str, mut rng: Range<usize>) -> Range<usize> {
+    rng.end = rng.start + s[rng.clone()].trim_end().len();
+    rng.start = rng.end - s[rng.clone()].trim_start().len();
+    rng
 }
 
 fn get_node_and_mode_for_range(
