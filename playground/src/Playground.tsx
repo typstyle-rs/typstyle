@@ -1,19 +1,21 @@
 import { useState } from "react";
 import { OutputEditor, SourceEditor } from "./components/editor";
 import { FloatingErrorCard } from "./components/FloatingErrorCard";
+import { RangeControls } from "./components/forms/RangeControls";
 import { SettingsPanel } from "./components/forms/SettingsPanel";
 import { Header } from "./components/Header";
 import { MainLayout } from "./components/MainLayout";
-import { LoadingSpinner } from "./components/ui";
+import { LoadingSpinner, StatusBar } from "./components/ui";
 import { ShareModal } from "./components/ui/ShareModal";
 import { ToastContainer } from "./components/ui/ToastContainer";
 import {
+  useEditorSelection,
   usePlaygroundState,
   useScreenSize,
   useShareManager,
   useTypstFormatter,
 } from "./hooks";
-import type { OutputType } from "./types";
+import type { OutputType, RangeFormatterOptions } from "./types";
 
 function Playground() {
   const {
@@ -22,13 +24,26 @@ function Playground() {
     setFormatOptions,
   } = usePlaygroundState();
   const [activeOutput, setActiveOutput] = useState<OutputType>("formatted");
+  const [isRangeMode, setIsRangeMode] = useState(false);
 
   // Custom hooks
   const screenSize = useScreenSize();
+  const editorSelection = useEditorSelection();
+
+  // Create range options for the formatter
+  const rangeOptions: RangeFormatterOptions | undefined = isRangeMode
+    ? {
+        selection: editorSelection.selection,
+        fullText: sourceCode,
+      }
+    : undefined;
+
   const formatter = useTypstFormatter(
     deferredSourceCode,
     formatOptions,
     activeOutput,
+    rangeOptions,
+    isRangeMode,
   );
   const shareManager = useShareManager();
 
@@ -72,10 +87,18 @@ function Playground() {
   };
 
   const optionsPanel = (
-    <SettingsPanel
-      formatOptions={formatOptions}
-      setFormatOptions={setFormatOptions}
-    />
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-hidden">
+        <SettingsPanel
+          formatOptions={formatOptions}
+          setFormatOptions={setFormatOptions}
+        />
+      </div>
+      <RangeControls
+        isRangeMode={isRangeMode}
+        onRangeModeChange={setIsRangeMode}
+      />
+    </div>
   );
   const sourcePanel = (
     <SourceEditor
@@ -84,6 +107,7 @@ function Playground() {
       onChange={handleEditorChange}
       lineLengthGuide={formatOptions.lineWidth}
       formatOptions={formatOptions}
+      onSelectionChange={editorSelection.updateSelection}
     />
   );
   const formattedPanel = (
@@ -129,6 +153,9 @@ function Playground() {
         irPanel={irPanel}
         onActiveTabChange={handleActiveTabChange}
       />
+
+      {/* Status Bar */}
+      <StatusBar detailedSelection={editorSelection.detailedSelection} />
 
       {/* Global floating error card */}
       <FloatingErrorCard error={formatter.error} />
