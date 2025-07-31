@@ -6,7 +6,7 @@
 
 = Basic Layout
 
-Generally, there are some Typst syntaxes classified as "list-like":
+Typstyle classifies several Typst syntaxes as "list-like" structures:
 - Code block (```typc { a }```)
 - Array (```typc (1, 2, 3)```)
 - Dictionary (```typc (a: 1, b: 2)```)
@@ -14,36 +14,51 @@ Generally, there are some Typst syntaxes classified as "list-like":
 - Arguments (```typc f(a, b)```)
 - Destructuring (```typc let (a, b) = c```)
 
-Typstyle provides the following basic layouts for them:
-- *Always-folded*: items are always put on one line regardless of width limit
-- *Never-folded*: items are spread across multiple lines
-- *Fitted*: items are folded if fitted the line
-- *Compact*: (currently only applied to arguments) initial items are placed on the first line while the last combinable item spans multiple lines without extra indentation
+Typstyle provides three basic layouts for these structures:
+- *Flat*: All items are placed on a single line
+- *Expanded*: Items are spread across multiple lines with proper indentation
+- *Compact*: (currently only for arguments) Initial items stay on the first line while the last combinable item spans multiple lines without extra indentation
+
+Typstyle selects the optimal layout using this decision process:
+- If the structure has multiline flavor, use *expanded* layout exclusively
+- Otherwise, try *flat* and *compact* (if supported) layouts in order until finding one that fits within width constraints
+- Fall back to *expanded* layout if neither fits
 
 == Flavor Detection
 
-Typstyle uses *flavor detection* to automatically choose the most suitable formatting style for list-like syntaxes.
-If the first space between items contains a newline, Typstyle treats the list as "multiline" and spreads items across multiple lines (never-folded):
-
-This can help match the original intent and maintain readability.
+Typstyle employs *flavor detection* to determine the appropriate formatting style for list-like syntaxes.
+When a line break appears before the first item, Typstyle interprets this as a "multiline" preference and formats the entire structure using expanded layout.
+This approach respects user intent and preserves code readability.
 
 ```typst
 #let a = (1, 2, 3)
-#let a = (1 , 2, 3)
+#let a = (1,
+  2, 3)
 #let a = (
   1, 2, 3)
-#let a = (1,
-2, 3)
 ```
 
 ```typst
-#let my-f(arg1,
- arg2,
-  args: none) = {
-}
-#let my-f(arg1, arg2,
-  args: none) = {
-}
+#let f(arg1, arg2) = {}
+#let f(arg1,
+ arg2) = {}
+#let f(
+  arg1,
+ arg2) = {}
+```
+
+```typst
+#arguments(red,stroke: blue)
+#arguments(red, stroke: blue)
+#arguments(red,stroke: blue,
+ yellow)
+#arguments(red, stroke: blue,
+ green)
+#arguments(stroke:
+ blue, red)
+#arguments(
+  stroke:
+ blue, red)
 ```
 
 #callout.note[
@@ -128,29 +143,30 @@ Parentheses around identifiers are preserved for safety to avoid changing semant
 
 == Compact Layout and Combinable Arguments
 
-Typstyle chooses layouts for arguments with the following rules:
+Typstyle determines argument layouts using the following rules:
 
-*Rules:*
+*Layout Rules:*
 + *Empty argument list* ⟶ *always folded*
 + *Single combinable argument*:
   - The only argument is a function call ⟶ *compact*
   - Otherwise ⟶ *always folded*
-+ *Multiple arguments without multiline flavor* with following conditions ⟶ *compact*
-  - The last argument is *combinable* (e.g., nested call, array, dictionary, or parenthesized group)
++ *Multiple arguments without multiline flavor* meeting all conditions ⟶ *compact*
+  - The last argument is *combinable* (see below)
   - All preceding arguments are simple (non-blocky)
-  - The last argument must not be an array (or dictionary) if any previous argument is also an array (or dictionary).
+  - The last argument must not be an array (or dictionary) if any previous argument is also an array (or dictionary)
   - No comments or intentional line breaks in arguments
   - Initial arguments can be flattened on one line
 + *Otherwise* ⟶ the original fold style (follows its flavor)
 
-*Combinable Expression Types*:
+*Combinable Arguments:*
+When determining if an argument is combinable, Typstyle first removes any outer parentheses to examine the inner expression. An argument is considered combinable if it contains:
 - *Blocky expressions*: code blocks, conditionals, loops, context expressions, closures
 - *Structured data*: arrays, dictionaries
-- *Nested calls*: function calls, parenthesized expressions
-- *Content blocks*: markup content in square brackets
+- *Function calls*: nested function invocations
+- *Content blocks*: markup content in square brackets, raw blocks
 
 #callout.note[
-  We also have fine-grained check to avoid making simple expressions combinable.
+  Typstyle uses extra checks to prevent overly simple expressions from being treated as combinable. These heuristics may be refined in future versions.
 ]
 
 ```typst
@@ -201,9 +217,16 @@ context {
 #assert.eq(parse(("asd",)), (description: "asd", types: none))
 ```
 
-#callout.warning[
-  This feature is still experimental and may not always produce the desired results. Its behavior may improve in future versions.
-]
+````typst
+#f(```
+With compact layout
+```)
+#f(
+  ```
+  With expanded layout
+  ```
+)
+````
 
 = Chainable Expressions
 
