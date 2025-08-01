@@ -1,13 +1,31 @@
-@layer components, utilities;
+@layer theme, components, utilities;
 
 /* override existing styles, which are defined outside layers */
 
-:root {
-  --content-max-width: 960px;
-}
+/* Patch starlight theme */
+@layer theme {
+  /* Reduce heading size */
+  @media (min-width: 50em) {
+    :root {
+      --sl-text-h1: var(--sl-text-4xl);
+      --sl-text-h2: var(--sl-text-3xl);
+      --sl-text-h3: var(--sl-text-2xl);
+      --sl-text-h4: var(--sl-text-1xl);
+    }
+  }
 
-.content {
-  padding: 0 2em 50px 2em;
+  /* Fix excessive spacing between content-panel siblings */
+  .content-panel + .content-panel {
+    margin-top: calc(-1 * var(--sl-content-pad-y, 1rem));
+  }
+  .content-panel:not(:first-child) {
+    padding-top: 0;
+  }
+
+  /* General fix for consecutive headings with excessive spacing */
+  .sl-heading-wrapper + .sl-heading-wrapper {
+    margin-top: -1.5rem;
+  }
 }
 
 @layer components {
