@@ -109,5 +109,6 @@
     html.elem("style", read("styles/callout.css"))
     html.elem("style", read("styles/example.css"))
     html.elem("style", read("styles/hypraw.css"))
+    html.elem("script", read("../packages/hypraw/examples/copy-to-clipboard.js"))
   }
 }
