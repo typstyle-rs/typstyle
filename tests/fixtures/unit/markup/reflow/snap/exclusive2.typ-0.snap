@@ -17,3 +17,12 @@ term:
 $
   [frac(abs(x_i)^k x_i, ell)]_i
 $ <eqn:odd_power_term>
+
+Another
+equation$
+  "no space around!"
+$aha!
+Another
+equation$
+  "labeled"
+$<eqn:tricky>!

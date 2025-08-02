@@ -33,6 +33,4 @@ _
 #[$
   "equation is also blocky"
 $]
-#[
-  = But heading is ok
-]
+#[= But heading is ok]
