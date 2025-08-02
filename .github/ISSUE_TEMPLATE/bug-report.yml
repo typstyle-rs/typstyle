@@ -20,30 +20,10 @@ body:
       required: true
 
   - type: textarea
-    id: code
-    attributes:
-      label: Code
-      description: Minimal Typst code that reproduces the issue
-      placeholder: |
-        ```typst
-        // Your minimal example here
-        ```
-      render: typst
-    validations:
-      required: true
-
-  - type: textarea
     id: playground
     attributes:
-      label: Playground link (recommended)
-      description: If you tested in the playground, paste the URL here
+      label: Playground link
+      description: Test your issue in the playground and paste the URL here. https://typstyle-rs.github.io/typstyle/playground
       placeholder: https://typstyle-rs.github.io/typstyle/playground/#...
-
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected vs actual
-      description: What you expected vs what happened
-      placeholder: |
-        Expected: code formatted like ...
-        Actual: code formatted like ...
+    validations:
+      required: true
