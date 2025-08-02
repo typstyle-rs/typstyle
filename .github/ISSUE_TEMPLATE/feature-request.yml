@@ -6,22 +6,22 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for suggesting a new feature! Please describe what you'd like to see.
+        Thanks for suggesting a new feature!
 
   - type: textarea
     id: description
     attributes:
-      label: What would you like to see?
-      description: Describe the feature you want
+      label: What would you like?
+      description: Describe what you want typstyle to do
       placeholder: |
-        A clear description of what you'd like typstyle to do.
+        A clear description of the feature or change you'd like to see.
 
-        For formatting features, you can show before/after:
+        For formatting examples, show before/after:
         ```typst
-        // Current behavior
+        // Current
         let x=1+2
 
-        // What I want
+        // Desired
         let x = 1 + 2
         ```
     validations:
@@ -30,8 +30,6 @@ body:
   - type: textarea
     id: why
     attributes:
-      label: Why is this useful?
-      description: What problem does this solve?
-      placeholder: Explain why this feature would be helpful
-    validations:
-      required: true
+      label: Why?
+      description: Brief explanation of why this would be helpful
+      placeholder: This would help because...
