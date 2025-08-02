@@ -11,6 +11,8 @@ on:
       - "crates/typstyle-wasm/**"
       - "crates/typstyle-typlugin/**"
       - ".github/workflows/gh-pages.yml"
+      - ".github/workflows/build-docs.yml"
+      - ".github/workflows/build-playground.yml"
       - "CHANGELOG.md"
   workflow_dispatch:
 
@@ -29,82 +31,42 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       should_skip: ${{ steps.skip_check.outputs.should_skip }}
+      paths_result: ${{ steps.skip_check.outputs.paths_result }}
     steps:
       - id: skip_check
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: "true"
-          paths: '["playground/**", "docs/**", "crates/typstyle-core/**", "crates/typstyle-wasm/**", "crates/typstyle-typlugin/**", ".github/workflows/gh-pages.yml", "CHANGELOG.md"]'
+          paths: '[".github/workflows/gh-pages.yml"]'
+          paths_filter: |
+            docs:
+              paths:
+                - 'docs/**'
+                - 'crates/typstyle-core/**'
+                - 'crates/typstyle-typlugin/**'
+                - '.github/workflows/build-docs.yml'
+                - 'CHANGELOG.md'
+            playground:
+              paths:
+                - 'playground/**'
+                - 'crates/typstyle-core/**'
+                - 'crates/typstyle-wasm/**'
+                - '.github/workflows/build-playground.yml'
           do_not_skip: '["workflow_dispatch", "push"]'
 
-  build-gh-pages:
-    needs: [pre_job]
-    if: needs.pre_job.outputs.should_skip != 'true'
-    name: Build Docs & Playground and Prepare Artifact
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      # 1. Checkout and Setup
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
+  build-docs:
+    needs: pre_job
+    if: needs.pre_job.outputs.should_skip != 'true' || !fromJSON(needs.skip_check.outputs.paths_result).docs.should_skip
+    uses: ./.github/workflows/build-docs.yml
 
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          target: wasm32-unknown-unknown
-      - name: Install tools
-        uses: taiki-e/install-action@v2
-        with:
-          tool: just,wasm-pack
-      - name: Setup Rust cache
-        uses: Swatinem/rust-cache@v2
-
-      # 2. Node.js and pnpm setup
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-          run_install: false
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-          cache: 'pnpm'
-          cache-dependency-path: 'playground/pnpm-lock.yaml'
-
-      # 3. Build documentation
-      - name: Download & install shiroa
-        run: |
-          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/Myriad-Dreamin/shiroa/releases/download/v0.3.1-rc3/shiroa-installer.sh | sh
-      - name: Build Book
-        run: just build-docs-gh
-
-      # 4. Build playground
-      - name: Build playground
-        working-directory: playground
-        run: |
-          pnpm build:wasm
-          pnpm install
-          # Assumes vite.config.ts has base: '/<repo>/playground/'
-          pnpm build
-
-      # 5. Prepare deployment
-      - name: Assemble deployment artifact
-        run: |
-          mkdir -p github-pages
-          cp -r docs/dist/* github-pages/
-          cp -r playground/dist github-pages/playground
-
-      - name: Upload artifact for deployment
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: "./github-pages"
+  build-playground:
+    needs: pre_job
+    if: needs.pre_job.outputs.should_skip != 'true' || !fromJSON(needs.skip_check.outputs.paths_result).playground.should_skip
+    uses: ./.github/workflows/build-playground.yml
 
   deploy:
     name: Deploy to GitHub Pages
-    needs: build-gh-pages
+    needs: [build-docs, build-playground]
     # Deploy on push to master, or manual workflow dispatch
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
@@ -115,6 +77,29 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Download docs artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-dist
+          path: ./docs-dist
+
+      - name: Download playground artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: playground-dist
+          path: ./playground-dist
+
+      - name: Assemble deployment artifact
+        run: |
+          mkdir -p github-pages
+          cp -r docs-dist/* github-pages/
+          cp -r playground-dist github-pages/playground
+
+      - name: Upload artifact for deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "./github-pages"
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 

@@ -1,0 +1,45 @@
+name: Build Documentation
+
+on:
+  workflow_call:
+    outputs:
+      artifact-path:
+        description: "Path to the documentation artifact"
+        value: "./docs/dist"
+  workflow_dispatch:
+
+jobs:
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          target: wasm32-unknown-unknown
+
+      - name: Install tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: just
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Download & install shiroa
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/Myriad-Dreamin/shiroa/releases/download/v0.3.1-rc3/shiroa-installer.sh | sh
+
+      - name: Build Book
+        run: just build-docs-gh
+
+      - name: Upload docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-dist
+          path: ./docs/dist
+          retention-days: 1
