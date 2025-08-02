@@ -316,7 +316,14 @@ impl<'a> PrettyPrinter<'a> {
         /// For NOT hard-line -> soft-line: \
         /// Should always break after block elements or line comments.
         fn should_break_after(node: &SyntaxNode) -> bool {
-            is_block_elem(node) || matches!(node.kind(), SyntaxKind::LineComment)
+            matches!(
+                node.kind(),
+                SyntaxKind::Heading
+                    | SyntaxKind::ListItem
+                    | SyntaxKind::EnumItem
+                    | SyntaxKind::TermItem
+                    | SyntaxKind::LineComment
+            )
         }
 
         /// For NOT hard-line -> soft-line: \
@@ -446,6 +453,16 @@ impl Boundary {
 // equation if a line contains text, it will be skipped by the formatter
 // to keep the original format.
 fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
+    /// A subset of "blocky" elements that we cannot safely handle currently.
+    /// By default show rule, these elements seem to have weak spaces on both sides.
+    /// But this behavior can be changed by wrapping them in a box.
+    fn is_special_block_elem(it: &SyntaxNode) -> bool {
+        matches!(
+            it.kind(),
+            SyntaxKind::ListItem | SyntaxKind::EnumItem | SyntaxKind::TermItem
+        )
+    }
+
     let mut repr = MarkupRepr {
         lines: vec![],
         start_bound: Boundary::Nil,
@@ -459,6 +476,8 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
                 true
             }
             SyntaxKind::Space if current_line.nodes.is_empty() => {
+                // Due to the logic of line-slitting, it must also be the first node in the markup.
+                debug_assert!(repr.lines.is_empty());
                 repr.start_bound = Boundary::from_space(node.text());
                 continue;
             }
@@ -473,7 +492,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
                 ) {
                     current_line.mixed_text = true;
                 }
-                if current_line.nodes.is_empty() && is_block_elem(node) {
+                if current_line.nodes.is_empty() && is_special_block_elem(node) {
                     repr.start_bound = repr.start_bound.strip_space();
                 }
                 current_line.nodes.push(node);
@@ -500,7 +519,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
                 repr.end_bound = Boundary::from_space(last.text());
                 last_line.nodes.pop();
             } else {
-                if is_block_elem(last) {
+                if is_special_block_elem(last) {
                     repr.end_bound = repr.end_bound.strip_space();
                 }
                 break;
@@ -512,7 +531,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
     if repr.start_bound == Boundary::Nil {
         if let Some(first_line) = repr.lines.first() {
             match first_line.nodes.iter().find(|it| !is_comment_node(it)) {
-                Some(it) if is_block_elem(it) => {
+                Some(it) if is_special_block_elem(it) => {
                     repr.start_bound = Boundary::NilOrBreak;
                 }
                 Some(it) if it.kind() == SyntaxKind::Space => {
@@ -526,7 +545,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
     if repr.end_bound == Boundary::Nil {
         if let Some(last_line) = repr.lines.last() {
             match last_line.nodes.iter().rfind(|it| !is_comment_node(it)) {
-                Some(it) if is_block_elem(it) => {
+                Some(it) if is_special_block_elem(it) => {
                     repr.end_bound = Boundary::NilOrBreak;
                 }
                 Some(it) if it.kind() == SyntaxKind::Space => {
@@ -539,13 +558,6 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
     }
 
     repr
-}
-
-fn is_block_elem(it: &SyntaxNode) -> bool {
-    matches!(
-        it.kind(),
-        SyntaxKind::Heading | SyntaxKind::ListItem | SyntaxKind::EnumItem | SyntaxKind::TermItem
-    )
 }
 
 fn is_block_equation(it: &SyntaxNode) -> bool {

@@ -21,9 +21,7 @@ input_file: tests/fixtures/unit/markup/content-compact.typ
   / 666:
 ]
 #[$12345$]
-#[
-  = 123
-]
+#[= 123]
 
 #[
   - aaa
