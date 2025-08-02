@@ -1,0 +1,73 @@
+name: Playground Check, Test & Build
+
+on:
+  workflow_call:
+    outputs:
+      artifact-path:
+        description: "Path to the playground build artifact"
+        value: "./playground/dist"
+  workflow_dispatch:
+
+jobs:
+  playground:
+    name: Playground Check, Test & Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          target: wasm32-unknown-unknown
+
+      - name: Install tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Setup Rust cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: "pnpm"
+          cache-dependency-path: "playground/pnpm-lock.yaml"
+
+      - name: Build WASM
+        working-directory: playground
+        run: pnpm build:wasm
+
+      - name: Install dependencies
+        working-directory: playground
+        run: pnpm install
+
+      - name: Lint and format check
+        working-directory: playground
+        run: pnpm check
+
+      - name: Type check
+        working-directory: playground
+        run: npx tsc --noEmit
+
+      - name: Run tests
+        working-directory: playground
+        run: pnpm test:run
+
+      - name: Build playground
+        working-directory: playground
+        run: pnpm build
+
+      - name: Upload playground artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: playground-dist
+          path: ./playground/dist
+          retention-days: 1
