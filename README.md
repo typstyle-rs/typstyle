@@ -10,6 +10,12 @@ A beautiful and reliable code formatter for [Typst](https://typst.app/).
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/typstyle.svg)](https://repology.org/project/typstyle/versions)
 
+## Try Online First
+
+Try typstyle instantly in your browser: **[🎮 Playground](https://typstyle-rs.github.io/typstyle/playground)**
+
+The playground runs the latest version of typstyle with live formatting. Perfect for testing formatting behavior before installing locally.
+
 ## Installation and Usage
 
 ### Use as a CLI
@@ -101,6 +107,10 @@ Log Levels:
 ### Use in your editor
 
 Typstyle has been integrated into [tinymist](https://github.com/Myriad-Dreamin/tinymist). You can use it in your editor by installing the tinymist plugin and set `tinymist.formatterMode` to `typstyle`.
+
+### Use in typst.app
+
+Checkout [typstyle-tampermonkey](https://github.com/typstyle-rs/typstyle-tampermonkey), a userscript that integrates typstyle into the [typst.app](https://typst.app/) editor.
 
 ### Use as a web app
 
