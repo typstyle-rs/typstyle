@@ -2,32 +2,109 @@
 
 ## Unreleased
 
-- Feature: Improved flavor detection for list-like syntaxes.
-  Previously, flavor detection checked only if the first space contained a linebreak, which could be counter-intuitive due to linebreaks or spaces within child expressions.
-  Now, a list-like syntax is considered multiline if there is a space containing a linebreak before its first child expression.
+### Core
 
-  For example, the following code was viewed as multiline-flavored due to the linebreak before `)`. Now it is fixed and can properly use the compact layout.
+- Feature: Improved flavor detection for list-like syntaxes.
+  Previously, flavor detection checked only whether the first space contained a line break, leading to unexpected multiline layout when child expressions contained line breaks or spaces. Now, a list-like syntax is considered multiline only if there is a space containing a line break **before** its first child expression.
+  For example, this code was previously treated as multiline due to the line break before `)`, but now uses the compact layout:
   ```typst
   #f(it => it
   )
   ```
 
-  The flavor detection of equations is now consistent with others. For example,
+- Feature: Aligned equation flavor detection with other nodes.
+  For example,
   ```typst
   $ a
   $
   ```
-  The equation above was regarded as multiline-flavored due to the line break before the closing `$`. Now it will be formatted to
+  was previously regarded as multiline due to the break before the closing `$`. Now it formats as
   ```typst
   $ a $
   ```
-  This change enables switching equations between inline and block by altering the direct space after the opening `$`.
+  enabling inline  block switching by adjusting the space after the opening `$`.
 
 - Feature: Raw blocks are combinable now.
 
-- Feature: Compact layout for markup. For a content block, strong, or emph, if its open boundary is non-breakable, it contains no linebreak or parbreak, and it contains exactly one primary expression (excluding labels, linebreak symbols, and text), do not indent it.
+- Feature: Compact layout for markup.
+  For a content block, strong, or emph node, if its opening boundary is non-breakable, contains no breaks, and has exactly one primary expression (excluding labels, break symbols, and plain text), it is rendered without indentation.
 
-- Feature: The body of a strong or emph expression is now indented, if not compact.
+- Feature: Indent the body of strong or emph expressions when not using the compact layout.
+
+- Feature (breaking): Changed the return type of `Typstyle::format_source_range` from a tuple to the struct `RangeResult`.
+
+- Feature: Added WASM bindings of range formatting in `typstyle-wasm` and `typstyle-typlugin`.
+
+- Feature: Improved range coverage in range formatting.
+  In this example,
+  ```typst
+  line1
+  line2
+  line3
+  ```
+  when the given range only covers `line1` and `line2`, `line3` was also formatted. Now only the specified lines are formatted. Applies to Markup, Code, and Math nodes.
+
+- Feature: Reduced indentation size in the output AST/IR from 4 spaces to 2.
+
+- Fix: Corrected misplaced standalone comments in method chains.
+  In this example,
+  ```typst
+  #(
+    foo
+      // comment
+      .bar()
+  )
+  ```
+  it previously formatted as
+  ```typst
+  #(
+    foo // comment
+      .bar()
+  )
+  ```
+  Now the comment correctly stays on its own line.
+
+- Fix: Prevent reflow of text segments that can be parsed as enum item markers.
+  ```typst
+  text 01.
+  ```
+  Previously formatted as
+  ```typst
+  text
+  01.
+  ```
+  which created an unintended enum item. Now it remains on one line.
+
+- Fix: Do not insert an extra break at a nil boundary for headings. Now the code
+  ```typst
+  #[= h1]
+  ```
+  will not be formatted as
+  ```typst
+  #[
+    = h1
+  ]
+  ```
+  in any case.
+
+### Playground
+
+- Feature: Use system color preference as the default theme.
+- Feature: Persist the current state (code and options) in the URL for easy sharing.
+- Feature: Store source code in local storage; if absent from the URL, the stored code is used as a fallback.
+- Feature: Enable in-place formatting (full document or selection) in the source editor.
+- Feature: Added a loading spinner and error boundary.
+- Feature: Toggle word wrap in the source editor.
+- Feature: Option to display only the formatted selection’s output.
+
+### Documentation
+
+- Feature: Switched documentation theme from mdBook to Starlight.
+- Feature: Added “copy code” support.
+
+### Miscellaneous
+
+- Moved the benchmark-results repository to the `typstyle-rs` organization.
 
 ## v0.13.16 - [2025-07-19]
 
