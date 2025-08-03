@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.13.17 - [2025-08-03]
 
 ### Core
 
@@ -22,7 +22,7 @@
   ```typst
   $ a $
   ```
-  enabling inline  block switching by adjusting the space after the opening `$`.
+  enabling inline block switching by adjusting the space after the opening `$`.
 
 - Feature: Raw blocks are combinable now.
 
@@ -30,21 +30,6 @@
   For a content block, strong, or emph node, if its opening boundary is non-breakable, contains no breaks, and has exactly one primary expression (excluding labels, break symbols, and plain text), it is rendered without indentation.
 
 - Feature: Indent the body of strong or emph expressions when not using the compact layout.
-
-- Feature (breaking): Changed the return type of `Typstyle::format_source_range` from a tuple to the struct `RangeResult`.
-
-- Feature: Added WASM bindings of range formatting in `typstyle-wasm` and `typstyle-typlugin`.
-
-- Feature: Improved range coverage in range formatting.
-  In this example,
-  ```typst
-  line1
-  line2
-  line3
-  ```
-  when the given range only covers `line1` and `line2`, `line3` was also formatted. Now only the specified lines are formatted. Applies to Markup, Code, and Math nodes.
-
-- Feature: Reduced indentation size in the output AST/IR from 4 spaces to 2.
 
 - Fix: Corrected misplaced standalone comments in method chains.
   In this example,
@@ -96,6 +81,7 @@
 - Feature: Added a loading spinner and error boundary.
 - Feature: Toggle word wrap in the source editor.
 - Feature: Option to display only the formatted selection’s output.
+- Feature: Reduced indentation size in the output AST/IR from 4 spaces to 2.
 
 ### Documentation
 
