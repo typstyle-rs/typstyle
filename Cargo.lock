@@ -3923,7 +3923,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle"
-version = "0.13.16"
+version = "0.13.17"
 dependencies = [
  "anstream",
  "anyhow",
@@ -3946,7 +3946,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-consistency"
-version = "0.13.16"
+version = "0.13.17"
 dependencies = [
  "anyhow",
  "rustc-hash",
@@ -3960,7 +3960,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-core"
-version = "0.13.16"
+version = "0.13.17"
 dependencies = [
  "criterion",
  "ecow",
@@ -3977,7 +3977,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-tests"
-version = "0.13.16"
+version = "0.13.17"
 dependencies = [
  "anyhow",
  "console",
@@ -3993,7 +3993,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-typlugin"
-version = "0.13.16"
+version = "0.13.17"
 dependencies = [
  "serde_json",
  "typst-syntax",
@@ -4003,7 +4003,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-wasm"
-version = "0.13.16"
+version = "0.13.17"
 dependencies = [
  "console_error_panic_hook",
  "js-sys",
