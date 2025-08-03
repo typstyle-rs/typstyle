@@ -33,7 +33,7 @@
   --size-selector: 0.21875rem;
   --size-field: 0.1875rem;
   --border: 1.5px;
-  --depth: 1;
+  --depth: 0;
   --noise: 1;
 }
 
@@ -73,6 +73,6 @@
   --size-selector: 0.21875rem;
   --size-field: 0.1875rem;
   --border: 1.5px;
-  --depth: 1;
+  --depth: 0;
   --noise: 1;
 }

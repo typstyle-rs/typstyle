@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Playground
+
+- Feature: Added some loadable sample documents.
+
 ## v0.13.17 - [2025-08-03]
 
 ### Core

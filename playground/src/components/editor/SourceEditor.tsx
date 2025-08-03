@@ -7,7 +7,7 @@ import {
   type DetailedEditorSelection,
 } from "@/utils/editor-selection";
 import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
-import { CodeEditor } from "./CodeEditor";
+import { CodeEditor, type CodeEditorRef } from "./CodeEditor";
 
 export interface SourceEditorProps {
   value: string;
@@ -15,6 +15,7 @@ export interface SourceEditorProps {
   lineLengthGuide?: number;
   formatOptions: FormatOptions;
   onSelectionChange?: (selection: DetailedEditorSelection) => void;
+  ref?: React.Ref<CodeEditorRef>;
 }
 
 export function SourceEditor({
@@ -23,6 +24,7 @@ export function SourceEditor({
   lineLengthGuide,
   formatOptions,
   onSelectionChange,
+  ref,
 }: SourceEditorProps) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const [wordWrap, setWordWrap] = useState(false);
@@ -205,6 +207,7 @@ export function SourceEditor({
 
   return (
     <CodeEditor
+      ref={ref}
       value={value}
       language="typst"
       indentSize={0}

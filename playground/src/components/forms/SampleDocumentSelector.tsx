@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { SAMPLE_DOCUMENTS } from "@/constants";
-import { loadSample } from "@/utils/sample-loader";
+import { loadSample, SAMPLES } from "@/utils/sample-loader";
 
 interface SampleDocumentSelectorProps {
   onSampleSelect: (content: string) => void;
@@ -28,7 +27,7 @@ export function SampleDocumentSelector({
 
   const handleSampleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    if (value && value in SAMPLE_DOCUMENTS) {
+    if (value && value in SAMPLES) {
       loadSampleDocument(value);
     } else {
       setSelectedSample("");
@@ -47,7 +46,7 @@ export function SampleDocumentSelector({
         <option value="" disabled>
           Select a sample...
         </option>
-        {Object.entries(SAMPLE_DOCUMENTS).map(([key, sample]) => (
+        {Object.entries(SAMPLES).map(([key, sample]) => (
           <option key={key} value={key}>
             {sample.name}
           </option>

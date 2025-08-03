@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import type { CodeEditorRef } from "./components/editor";
 import { OutputEditor, SourceEditor } from "./components/editor";
 import { FloatingErrorCard } from "./components/FloatingErrorCard";
 import { RangeControls } from "./components/forms/RangeControls";
@@ -25,6 +26,12 @@ function Playground() {
   } = usePlaygroundState();
   const [activeOutput, setActiveOutput] = useState<OutputType>("formatted");
   const [isRangeMode, setIsRangeMode] = useState(false);
+
+  // Editor refs for scrolling
+  const sourceEditorRef = useRef<CodeEditorRef>(null);
+  const formattedEditorRef = useRef<CodeEditorRef>(null);
+  const astEditorRef = useRef<CodeEditorRef>(null);
+  const irEditorRef = useRef<CodeEditorRef>(null);
 
   // Custom hooks
   const screenSize = useScreenSize();
@@ -65,6 +72,11 @@ function Playground() {
 
   const handleSampleSelect = (content: string) => {
     setSourceCode(content);
+    // Scroll all editors to top
+    sourceEditorRef.current?.scrollToTop();
+    formattedEditorRef.current?.scrollToTop();
+    astEditorRef.current?.scrollToTop();
+    irEditorRef.current?.scrollToTop();
   };
 
   const handleActiveTabChange = (tabId: string) => {
@@ -102,6 +114,7 @@ function Playground() {
   );
   const sourcePanel = (
     <SourceEditor
+      ref={sourceEditorRef}
       key="source-editor"
       value={sourceCode}
       onChange={handleEditorChange}
@@ -112,6 +125,7 @@ function Playground() {
   );
   const formattedPanel = (
     <OutputEditor
+      ref={formattedEditorRef}
       key="output-formatted"
       content={formatter.formattedCode}
       language="typst"
@@ -121,18 +135,20 @@ function Playground() {
   );
   const astPanel = (
     <OutputEditor
+      ref={astEditorRef}
       key="output-ast"
       content={formatter.astOutput}
       language="json"
-      indentSize={4}
+      indentSize={2}
     />
   );
   const irPanel = (
     <OutputEditor
+      ref={irEditorRef}
       key="output-ir"
       content={formatter.irOutput}
       language="python"
-      indentSize={4}
+      indentSize={2}
     />
   );
 
