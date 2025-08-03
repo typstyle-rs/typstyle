@@ -1,5 +1,5 @@
 import MonacoEditor from "@monaco-editor/react";
-import { useMemo } from "react";
+import { useImperativeHandle, useMemo, useRef } from "react";
 import { getEditorTheme } from "@/config/monaco";
 import { useTheme } from "@/hooks";
 import type { editor, Monaco } from "@/monaco/types";
@@ -16,6 +16,11 @@ export interface CodeEditorProps {
     editor: editor.IStandaloneCodeEditor,
     monaco: Monaco,
   ) => void;
+  ref?: React.Ref<CodeEditorRef>;
+}
+
+export interface CodeEditorRef {
+  scrollToTop: () => void;
 }
 
 export function CodeEditor({
@@ -27,8 +32,30 @@ export function CodeEditor({
   options = {},
   onChange,
   onEditorMount,
+  ref,
 }: CodeEditorProps) {
   const { theme } = useTheme();
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+
+  // Expose scroll functionality through ref
+  useImperativeHandle(
+    ref,
+    () => ({
+      scrollToTop: () => {
+        editorRef.current?.setScrollTop(0);
+      },
+    }),
+    [],
+  );
+
+  const handleEditorMount = (
+    editor: editor.IStandaloneCodeEditor,
+    monaco: Monaco,
+  ) => {
+    editorRef.current = editor;
+    // Call the original onEditorMount if provided
+    onEditorMount?.(editor, monaco);
+  };
 
   const editorTheme = useMemo(() => getEditorTheme(theme), [theme]);
 
@@ -54,7 +81,7 @@ export function CodeEditor({
         theme={editorTheme}
         onChange={onChange}
         options={editorOptions}
-        onMount={onEditorMount}
+        onMount={handleEditorMount}
       />
     </div>
   );

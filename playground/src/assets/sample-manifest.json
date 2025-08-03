@@ -1,0 +1,100 @@
+{
+  "default": "Basic Document",
+  "samples": [
+    {
+      "id": "academic",
+      "name": "Academic Paper"
+    },
+    {
+      "id": "basic",
+      "name": "Basic Document"
+    },
+    {
+      "id": "cookbook",
+      "name": "Recipe Cookbook"
+    },
+    {
+      "id": "mathematics",
+      "name": "Advanced Mathematics"
+    },
+    {
+      "id": "presentation",
+      "name": "Presentation Slides"
+    },
+    {
+      "id": "technical",
+      "name": "Technical Report"
+    },
+
+    {
+      "id": "advanced-functions",
+      "name": "Advanced Functions"
+    },
+    {
+      "id": "argument-patterns",
+      "name": "Argument Patterns"
+    },
+    {
+      "id": "comments-code",
+      "name": "Comments & Code"
+    },
+    {
+      "id": "comprehensive-showcase",
+      "name": "Comprehensive Showcase"
+    },
+    {
+      "id": "data-processing",
+      "name": "Data Processing"
+    },
+    {
+      "id": "data-structures",
+      "name": "Complex Data Structures"
+    },
+    {
+      "id": "math-expressions",
+      "name": "Math Expressions"
+    },
+    {
+      "id": "mixed-content",
+      "name": "Mixed Content"
+    },
+    {
+      "id": "mixed-markup",
+      "name": "Mixed Markup"
+    },
+    {
+      "id": "table-showcase",
+      "name": "Table Showcase"
+    },
+
+    {
+      "id": "code-blocks",
+      "name": "Code Blocks (Ugly)"
+    },
+    {
+      "id": "comment-formatting",
+      "name": "Comment Formatting (Ugly)"
+    },
+    {
+      "id": "data-structures-simple",
+      "name": "Simple Data Structures (Ugly)"
+    },
+    {
+      "id": "function-calls",
+      "name": "Function Calls (Ugly)"
+    },
+    {
+      "id": "table-formatting",
+      "name": "Table Formatting (Ugly)"
+    },
+
+    {
+      "id": "primes",
+      "name": "Primes Table"
+    },
+    {
+      "id": "version-history-3",
+      "name": "Typst Version History"
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import react from "@vitejs/plugin-react";
 import toplevelAwait from "vite-plugin-top-level-await";
 import tailwindcss from "@tailwindcss/vite";
 import * as path from "node:path";
+import { viteStaticCopy } from "vite-plugin-static-copy";
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -21,6 +22,14 @@ export default defineConfig({
     tailwindcss(),
     wasm(),
     toplevelAwait(), // required by wasm
+    viteStaticCopy({
+      targets: [
+        {
+          src: "../tests/fixtures/ai/**/*.typ",
+          dest: "samples",
+        },
+      ],
+    }),
   ],
 
   optimizeDeps: {

@@ -1,10 +1,11 @@
-import { CodeEditor } from "./CodeEditor";
+import { CodeEditor, type CodeEditorRef } from "./CodeEditor";
 
 export interface OutputEditorProps {
   content: string;
   language: string;
   indentSize: number;
   lineLengthGuide?: number;
+  ref?: React.Ref<CodeEditorRef>;
 }
 
 export function OutputEditor({
@@ -12,9 +13,11 @@ export function OutputEditor({
   language,
   indentSize,
   lineLengthGuide,
+  ref,
 }: OutputEditorProps) {
   return (
     <CodeEditor
+      ref={ref}
       value={content}
       indentSize={indentSize}
       language={language}
