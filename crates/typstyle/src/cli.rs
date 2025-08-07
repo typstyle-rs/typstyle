@@ -72,28 +72,30 @@ pub struct StyleArgs {
         long,
         visible_short_alias = 'c',
         visible_alias = "column",
-        default_value_t = 80,
-        global = true
+        default_value_t = 80
     )]
     pub line_width: usize,
 
     /// Number of spaces per indentation level.
-    #[arg(
-        short = 't',
-        long,
-        visible_alias = "tab-width",
-        default_value_t = 2,
-        global = true
-    )]
+    #[arg(short = 't', long, visible_alias = "tab-width", default_value_t = 2)]
     pub indent_width: usize,
 
     /// Disable alphabetical reordering of import items.
-    #[arg(long, default_value_t = false, global = true)]
+    #[arg(long, default_value_t = false)]
     pub no_reorder_import_items: bool,
 
     /// Wrap text in markup to fit within the line width. Implies `--collapse-spaces`.
-    #[arg(long, default_value_t = false, global = true)]
+    #[arg(long, default_value_t = false)]
     pub wrap_text: bool,
+
+    #[arg(long, default_value_t = false)]
+    pub format_doc_comments: bool,
+
+    #[arg(long, default_value_t = false)]
+    pub wrap_doc_comments: bool,
+
+    #[arg(long, default_value_t = 80)]
+    pub doc_comment_width: usize,
 }
 
 #[derive(Args)]
