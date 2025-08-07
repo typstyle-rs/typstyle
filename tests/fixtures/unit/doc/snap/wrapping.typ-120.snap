@@ -1,0 +1,24 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/doc/wrapping.typ
+---
+/// typstyle: format_doc_comments wrap_doc_comments
+// Test cases for doc comment wrapping behavior
+
+/// Short comment that should not wrap
+#let short = 1
+
+/// This is a moderately long comment that might wrap depending on the doc_comment_width setting
+#let moderate = 2
+
+/// This is an extremely long comment that will definitely need to be wrapped when wrap_doc_comments is enabled because it
+/// contains far too much text to fit on a single line
+#let very_long = 3
+
+/// Comment with long words: Antidisestablishmentarianism and Floccinaucinihilipilification These unbreakable words need
+/// special handling
+#let long_words = 4
+
+/// Comment with multiple sentences. This is the first sentence. This is the second sentence. This is the third sentence
+/// that demonstrates wrapping.
+#let multiple_sentences = 5

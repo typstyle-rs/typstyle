@@ -1,0 +1,158 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/doc/blocks.typ
+---
+/// typstyle: format_doc_comments
+// Test cases for doc comments inside various block types
+
+/// Doc comments in content blocks with code: `#for i in range(3){i}`
+#let content_block = [
+  /// Doc comment inside content block
+  /// Should be handled correctly
+  Some content here
+
+  /// Another doc comment in content
+  More content
+
+  /// Trailing
+]
+
+/// Doc comments inside code blocks:
+#let code_with_docs = {
+  ///  This doc comment is inside a code block
+  ///  It should be formatted properly
+  let x = 5
+
+  ///  Another doc comment inside the same block
+  ///  With multiple lines
+  let y = 10
+
+  x + y
+
+  /// Trailing
+}
+
+/// Doc comments in nested blocks:
+#let nested_blocks = {
+  ///  Outer doc comment in code block
+  let outer = [
+    /// Doc comment inside content block which is inside code block
+    /// This tests deep nesting
+    Content here
+  ]
+
+  ///  Another doc comment in the code block
+  outer
+}
+
+/// Doc comments in function definitions:
+#let documented_function = (
+  ///  Doc comment for parameter inside function
+  x,
+  y,
+) => {
+  ///  Doc comment inside function body
+  ///  Explains the implementation
+  x + y
+}
+
+/// Doc comments in function parameters:
+#let func_with_param_docs = (
+  ///  Parameter x: the input value
+  ///  Should be a positive number
+  x,
+  ///  Parameter y: the multiplier
+  y: 1,
+  ///  Rest parameters documentation
+  ..args,
+) => {
+  ///  Function body documentation
+  ///  Describes the implementation
+  x * y
+}
+
+/// Doc comments in loops:
+#let loop_with_docs = {
+  ///  Documentation before the loop
+  for i in range(3) {
+    ///  Doc comment inside loop body
+    ///  Executed on each iteration
+    [Item #i]
+  }
+}
+
+/// Doc comments in while loops:
+#let while_with_docs = {
+  ///  Counter initialization documentation
+  let count = 0
+
+  ///  While loop documentation
+  while count < 3 {
+    ///  Loop body documentation
+    count += 1
+  }
+
+  count
+}
+
+/// Doc comments in conditional expressions:
+#let conditional_with_docs = {
+  ///  Condition documentation
+  let condition = true
+
+  /// If-else documentation
+  if condition {
+    ///  True branch documentation
+    ///  Multiple lines in true case
+    "condition is true"
+  } else {
+    ///  False branch documentation
+    "condition is false"
+  }
+}
+
+/// Doc comments in match expressions:
+#let match_with_docs = {
+  ///  Value to match documentation
+  let value = 1
+
+  ///  Match expression documentation
+  if value == 1 {
+    /// Case 1 documentation
+    "one"
+  } else if value == 2 {
+    /// Case 2 documentation
+    "two"
+  } else {
+    /// Default case documentation
+    "other"
+  }
+}
+
+/// Doc comments in nested function calls:
+#let nested_calls_with_docs = {
+  ///  Outer function call documentation
+  calc.max(
+    ///  First argument documentation
+    10,
+    ///  Second argument documentation
+    ///  With multiple lines
+    20,
+  )
+}
+
+/// Doc comments in show rules:
+#show heading: it => {
+  ///  Show rule documentation
+  ///  Explains the heading transformation
+  text(weight: "bold")[#it.body]
+}
+
+/// Doc comments in set rules context:
+#let set_rule_context = {
+  ///  Documentation for the set rule
+  set text(size: 12pt)
+
+  ///  Content after set rule
+  [Some text content]
+}

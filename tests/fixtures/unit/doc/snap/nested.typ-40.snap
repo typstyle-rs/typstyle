@@ -1,0 +1,69 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/doc/nested.typ
+---
+/// typstyle: format_doc_comments
+// Test cases for nested doc comments
+
+/// Simple nested doc comment:
+/// /// This is nested level 1
+/// Back to normal level
+#let simple_nested = 1
+
+/// Multiple levels of nesting:
+/// /// Level 1 nested
+/// /// /// Level 2 nested
+/// /// /// /// Level 3 nested
+/// /// Back to level 1
+/// Back to normal level
+#let deep_nested = 2
+
+/// Mixed nesting patterns:
+/// Normal doc comment
+/// /// Nested comment
+/// Normal again
+/// /// /// Double nested
+/// /// Back to single nested
+/// Normal conclusion
+#let mixed_nesting = 3
+
+/// Nested with empty lines:
+/// /// Nested comment
+/// /// Another nested after empty line
+/// /// Final nested comment
+#let nested_with_empty = 4
+
+/// Irregular nesting patterns:
+/// ///Nested without space
+/// /// Nested with space
+/// ///   Nested with extra spaces
+/// ////  Four slashes
+/// ///// Five slashes
+#let irregular_nesting = 5
+
+/// Nested comments in consecutive blocks:
+/// /// First nested
+/// /// Second nested
+/// Normal comment
+#let nested_in_consecutive = 6
+
+/// Another consecutive block with nesting:
+/// Normal comment
+/// /// Nested comment
+/// /// Another nested
+#let another_nested_consecutive = 7
+
+/// Complex nesting scenario:
+/// This is a normal doc comment line
+/// /// This is nested level 1
+/// /// /// This is nested level 2
+/// /// /// Another line at level 2
+/// /// Back to level 1
+/// /// /// Deep again to level 2
+/// /// /// /// Even deeper to level 3
+/// /// /// Back to level 2
+/// /// Back to level 1
+/// Back to normal level
+/// /// One more nested
+/// Final normal line
+#let complex_nesting = 8

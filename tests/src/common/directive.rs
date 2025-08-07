@@ -80,6 +80,19 @@ pub fn parse_directives(content: &str) -> Result<Options> {
                         .with_context(|| format!("Invalid tab_spaces value: {v}"))?;
                 }
             }
+            "format_doc_comments" => {
+                config.format_doc_comments = value != Some("false");
+            }
+            "wrap_doc_comments" => {
+                config.wrap_doc_comments = value != Some("false");
+            }
+            "doc_comment_width" => {
+                if let Some(v) = value {
+                    config.doc_comment_width = v
+                        .parse()
+                        .with_context(|| format!("Invalid doc_comment_width value: {v}"))?;
+                }
+            }
             _ => bail!("unknown directive: {key}"),
         }
         Ok(())

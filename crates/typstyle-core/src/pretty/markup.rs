@@ -197,6 +197,8 @@ impl<'a> PrettyPrinter<'a> {
         let repr = collect_markup_repr(markup);
         let body = if self.config.wrap_text && scope != MarkupScope::InlineItem {
             self.convert_markup_body_reflow(ctx, &repr)
+        } else if self.config.format_doc_comments {
+            self.convert_markup_body_with_doc_comments_formatted(ctx, &repr)
         } else {
             self.convert_markup_body(ctx, &repr)
         };
@@ -289,6 +291,67 @@ impl<'a> PrettyPrinter<'a> {
             }
             if breaks > 0 {
                 doc += self.arena.hardline().repeat(breaks);
+            }
+        }
+        doc
+    }
+
+    fn convert_markup_body_with_doc_comments_formatted(
+        &'a self,
+        ctx: Context,
+        repr: &MarkupRepr<'a>,
+    ) -> ArenaDoc<'a> {
+        let mut doc = self.arena.nil();
+        let mut doc_comments = vec![];
+        for (i, line) in repr.lines.iter().enumerate() {
+            let &MarkupLine {
+                ref nodes,
+                breaks,
+                mixed_text,
+            } = line;
+            if nodes.len() == 1
+                && nodes[0].kind() == SyntaxKind::LineComment
+                && nodes[0].text().starts_with("///")
+            {
+                doc_comments.push(nodes[0]);
+                continue;
+            }
+            if !doc_comments.is_empty() {
+                doc += self.format_doc_comments(ctx, std::mem::take(&mut doc_comments));
+                // SAFETY: i > 0 due to non-empty doc_comments.
+                let last_line = &repr.lines[i - 1];
+                if last_line.breaks > 0 {
+                    doc += self.arena.hardline().repeat(last_line.breaks);
+                }
+            }
+            for node in nodes.iter() {
+                doc += if node.kind() == SyntaxKind::Space {
+                    self.convert_space_untyped(ctx, node)
+                } else if let Some(text) = node.cast::<Text>() {
+                    self.convert_text(text)
+                } else if let Some(expr) = node.cast::<Expr>() {
+                    let ctx = if mixed_text {
+                        ctx.suppress_breaks()
+                    } else {
+                        ctx
+                    };
+                    self.convert_expr(ctx, expr)
+                } else if is_comment_node(node) {
+                    self.convert_comment(ctx, node)
+                } else {
+                    // can be Hash, Semicolon, Shebang
+                    self.convert_trivia_untyped(node)
+                };
+            }
+            if breaks > 0 {
+                doc += self.arena.hardline().repeat(breaks);
+            }
+        }
+        if !doc_comments.is_empty() {
+            doc += self.format_doc_comments(ctx, std::mem::take(&mut doc_comments));
+            let last_line = &repr.lines.last().expect("lines should not be empty");
+            if last_line.breaks > 0 {
+                doc += self.arena.hardline().repeat(last_line.breaks);
             }
         }
         doc
