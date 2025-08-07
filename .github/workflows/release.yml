@@ -97,6 +97,10 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
+      - name: Remove WASM artifacts from release upload
+        run: |
+          # Remove WASM artifacts since they are published to NPM, not meant for direct download
+          find artifacts -name "typstyle-wasm-*" -type d -exec rm -rf {} + || true
       - name: Display structure of downloaded files
         run: ls -R artifacts
       - name: Extract release notes
