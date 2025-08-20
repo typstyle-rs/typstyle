@@ -247,7 +247,7 @@ impl<'a> PrettyPrinter<'a> {
         let open = get_delim(repr.start_bound);
         let close = get_delim(repr.end_bound);
         // Do not indent (compact), if the opening will not break.
-        let needs_indent = matches!(scope, MarkupScope::ContentBlock | MarkupScope::Strong)
+        let needs_indent = matches!(scope, MarkupScope::ContentBlock)
             && !(matches!(*open, Doc::Nil | Doc::Text(_))
                 && contains_exactly_one_primary_expr(markup));
         let body_with_before = open + body;

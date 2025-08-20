@@ -29,7 +29,7 @@ break (overflow).
 
 // Punctuation after potential markers
 Sentence about version 1. (with parentheses). Text mentioning chapter 2. "with quotes". Discussion of point 3. *with
-  emphasis*. Reference to section 4. `with code`. Price is \$5. New sentence starts here.
+emphasis*. Reference to section 4. `with code`. Price is \$5. New sentence starts here.
 
 // === enum markers ===
 01. Item with leading zero.

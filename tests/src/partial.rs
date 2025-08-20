@@ -1,4 +1,4 @@
-use std::{env, ops::Range, path::Path};
+use std::{ops::Range, path::Path};
 
 use insta::internals::Content;
 use libtest_mimic::{Failed, Trial};

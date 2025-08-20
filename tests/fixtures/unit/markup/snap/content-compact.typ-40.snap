@@ -23,9 +23,9 @@ input_file: tests/fixtures/unit/markup/content-compact.typ
 #[*strong
 *]
 #[_
-  emph_]
+emph_]
 #[* _
-  strong-emph
+strong-emph
 _ *]
 
 #[#{}]
