@@ -22,11 +22,11 @@ input_file: tests/fixtures/unit/markup/content-compact-reflow.typ
 #[*strong
 *]
 #[_
-  emph_]
+emph_]
 #[*
-  _
-    strong-emph
-  _
+_
+strong-emph
+_
 *]
 
 #[#{}]

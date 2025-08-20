@@ -21,7 +21,7 @@ typst-book serve
 // connection is used to trigger the client-side refresh.
 
 ***Note:*** *The `serve` command is for testing a book's HTML output, and is not
-  intended to be a complete HTTP server for a website.*
+intended to be a complete HTTP server for a website.*
 
 == Specify a directory
 
