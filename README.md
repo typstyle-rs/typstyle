@@ -181,7 +181,7 @@ See <https://typstyle-rs.github.io/typstyle/>.
 
 ## Roadmap
 
-See the [tracking issue](https://github.com/typstyle-rs/typstyle/issues/15).
+See the [tracking issue](https://github.com/typstyle-rs/typstyle/issues/214).
 
 ## Known Issues
 
