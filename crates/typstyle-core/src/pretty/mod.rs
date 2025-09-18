@@ -8,6 +8,7 @@ mod code_flow;
 mod code_list;
 mod code_misc;
 mod comment;
+mod doc_comment;
 mod func_call;
 mod import;
 mod layout;

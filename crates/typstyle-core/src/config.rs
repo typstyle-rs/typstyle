@@ -16,6 +16,13 @@ pub struct Config {
     /// When `true`, text in markup will be wrapped to fit within `max_width`.
     /// Implies `collapse_markup_spaces`.
     pub wrap_text: bool,
+
+    /// When `true`, doc comments (`/// ...`) will be formatted as markup according to style rules.
+    pub format_doc_comments: bool,
+    /// When `true`, doc comments will be wrapped to fit within `doc_comment_width`.
+    pub wrap_doc_comments: bool,
+    /// The maximum width for contents of doc comments.
+    pub doc_comment_width: usize,
 }
 
 impl Default for Config {
@@ -27,6 +34,9 @@ impl Default for Config {
             reorder_import_items: true,
             collapse_markup_spaces: false,
             wrap_text: false,
+            format_doc_comments: false,
+            wrap_doc_comments: false,
+            doc_comment_width: 80,
         }
     }
 }

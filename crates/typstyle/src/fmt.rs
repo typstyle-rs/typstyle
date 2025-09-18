@@ -50,6 +50,9 @@ impl StyleArgs {
             tab_spaces: self.indent_width,
             reorder_import_items: !self.no_reorder_import_items,
             wrap_text: self.wrap_text,
+            format_doc_comments: self.format_doc_comments,
+            wrap_doc_comments: self.format_doc_comments && self.wrap_doc_comments,
+            doc_comment_width: self.doc_comment_width,
             ..Default::default()
         }
     }

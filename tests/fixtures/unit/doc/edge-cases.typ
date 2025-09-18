@@ -1,0 +1,63 @@
+/// typstyle: format_doc_comments
+// Test cases for edge cases in doc comment formatting
+
+/// Doc comment with mixed indentation and spacing:
+///    Extra spaces at the beginning
+///     And varying indentation levels
+/// Back to normal
+///        Deep indentation here
+#let mixed_indentation = 1
+
+/// Doc comment with empty lines and whitespace:
+///
+/// Line with content after empty line
+///
+///
+/// Multiple empty lines above #(1)
+///
+/// Line with trailing spaces #(2)
+///
+#let whitespace_handling = 2
+
+///
+/// Doc comment starting with empty line (1)
+#let starts_with_empty = 3
+
+/// Doc comment ending with empty line (1)
+///
+#let ends_with_empty = 4
+
+/// Multiple spaces    between    words    should    be    handled
+/// Tabs	and	mixed	whitespace	characters
+/// Various    spacing     patterns      throughout
+#let multiple_spaces = 5
+
+/// Very long line that should be wrapped when wrap_doc_comments is enabled and the line exceeds the doc_comment_width setting
+#let long_line = 6
+
+/// Doc comment with nested doc-like patterns:
+/// This looks like /// a doc comment but isn't
+/// Also this: ///not a real doc comment
+/// But this is normal text
+#let pseudo_nested = 7
+
+/// Mixed comment types: #(1)
+/// Regular doc comment line #(2)
+// Regular comment (not doc) #(3)
+/// Back to doc comment #(4)
+/// /// Nested doc comment #(5)
+// Another regular comment #(6)
+/// Final doc comment line #(7)
+#let mixed_comments = 8
+
+/// Doc comment with /// inline doc patterns #(1)
+/// Text with #(0) /// embedded patterns that /// should be handled #(2)
+/// Properly without /// breaking formatting #(3)
+#let inline_doc_patterns = 9
+
+/// Doc comment with line breaks #(1)
+
+/// after paragraph breaks #(2)
+#let with_breaks = 10
+
+/// Trailing doc comment

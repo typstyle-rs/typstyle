@@ -3,7 +3,7 @@ use std::{env, error::Error, fs, path::Path};
 use insta::internals::Content;
 use libtest_mimic::{Failed, Trial};
 use typst_syntax::Source;
-use typstyle_core::Typstyle;
+use typstyle_core::{Config, Typstyle};
 
 use crate::common::{fixtures_dir, read_source_with_options};
 
@@ -103,7 +103,6 @@ pub fn collect_tests() -> Result<Vec<Trial>, Box<dyn Error>> {
 
 fn check_snapshot(path: &Path, width: usize) -> Result<(), Failed> {
     let (source, opt) = read_source_with_options(path)?;
-    let mut cfg = opt.config;
 
     let mut settings = insta::Settings::clone_current();
     settings.set_prepend_module_to_snapshot(false);
@@ -118,8 +117,8 @@ fn check_snapshot(path: &Path, width: usize) -> Result<(), Failed> {
         if source.root().erroneous() {
             insta::assert_snapshot!(snap_name, "");
         } else {
-            cfg.max_width = width;
-            let mut formatted = Typstyle::new(cfg).format_source(source).render().unwrap();
+            let t = Typstyle::new(config_width(opt.config, width));
+            let mut formatted = t.format_source(source).render().unwrap();
             if formatted.starts_with('\n') {
                 formatted.insert_str(0, "// DUMMY\n");
             }
@@ -135,13 +134,11 @@ fn check_snapshot(path: &Path, width: usize) -> Result<(), Failed> {
 
 fn check_convergence(path: &Path, width: usize) -> Result<(), Failed> {
     let (source, opt) = read_source_with_options(path)?;
-    let mut cfg = opt.config;
     if source.root().erroneous() {
         return Ok(());
     }
 
-    cfg.max_width = width;
-    let t = Typstyle::new(cfg);
+    let t = Typstyle::new(config_width(opt.config, width));
     let mut first_pass = t.format_source(source).render()?;
     for i in 0..=opt.relax_convergence {
         let new_source = Source::detached(&first_pass);
@@ -177,13 +174,11 @@ fn check_output_consistency(path: &Path, width: usize) -> Result<(), Failed> {
     use typstyle_consistency::{ErrorSink, FormattedSources, FormatterHarness};
 
     let (source, opt) = read_source_with_options(path)?;
-    let mut cfg = opt.config;
     if source.root().erroneous() {
         return Ok(());
     }
 
-    cfg.max_width = width;
-    let t = Typstyle::new(cfg);
+    let t = Typstyle::new(config_width(opt.config, width));
 
     let mut err_sink = ErrorSink::new(format!("consistency {}", path.display()));
 
@@ -208,4 +203,10 @@ fn check_output_consistency(path: &Path, width: usize) -> Result<(), Failed> {
     } else {
         Err(err_sink.into())
     }
+}
+
+fn config_width(mut config: Config, max_width: usize) -> Config {
+    config.max_width = max_width;
+    config.doc_comment_width = max_width;
+    config
 }

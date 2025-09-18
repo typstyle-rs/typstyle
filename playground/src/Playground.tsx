@@ -100,7 +100,7 @@ function Playground() {
 
   const optionsPanel = (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-auto">
         <SettingsPanel
           formatOptions={formatOptions}
           setFormatOptions={setFormatOptions}

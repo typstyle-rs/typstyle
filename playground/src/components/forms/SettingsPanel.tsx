@@ -17,6 +17,9 @@ export function SettingsPanel({
   const collapseMarkupSpacesId = useId();
   const reorderImportItemsId = useId();
   const wrapTextId = useId();
+  const formatDocCommentsId = useId();
+  const wrapDocCommentsId = useId();
+  const DocCommentWidthId = useId();
 
   const lineWidthValues = [0, 20, 40, 60, 80, 100, 120];
 
@@ -25,8 +28,8 @@ export function SettingsPanel({
   };
 
   return (
-    <div className="p-2 overflow-y-auto flex flex-wrap gap-3 text-sm">
-      <div className="flex items-center justify-between w-full">
+    <div className="p-2 overflow-y-auto flex flex-wrap gap-3 text-sm *:flex *:items-center *:justify-between *:w-full">
+      <div>
         <label htmlFor={lineWidthSelectId}>Line Width:</label>
         <div className="flex gap-1 flex-shrink-0">
           <select
@@ -74,7 +77,7 @@ export function SettingsPanel({
         </div>
       </div>
 
-      <div className="flex items-center justify-between w-full">
+      <div>
         <label htmlFor={indentWidthSelectId}>Indent:</label>
         <div className="flex gap-1 flex-shrink-0">
           <select
@@ -118,7 +121,7 @@ export function SettingsPanel({
         </div>
       </div>
 
-      <div className="flex items-center justify-between w-full">
+      <div>
         <label htmlFor={collapseMarkupSpacesId}>Collapse Markup Spaces:</label>
         <input
           id={collapseMarkupSpacesId}
@@ -134,7 +137,7 @@ export function SettingsPanel({
         />
       </div>
 
-      <div className="flex items-center justify-between w-full">
+      <div>
         <label htmlFor={reorderImportItemsId}>Reorder Import Items:</label>
         <input
           id={reorderImportItemsId}
@@ -150,7 +153,7 @@ export function SettingsPanel({
         />
       </div>
 
-      <div className="flex items-center justify-between w-full">
+      <div>
         <label htmlFor={wrapTextId}>Wrap Text:</label>
         <input
           id={wrapTextId}
@@ -164,6 +167,59 @@ export function SettingsPanel({
             }))
           }
         />
+      </div>
+
+      <div>
+        <label htmlFor={formatDocCommentsId}>Format doc comments:</label>
+        <input
+          id={formatDocCommentsId}
+          type="checkbox"
+          className="checkbox"
+          checked={formatOptions.formatDocComments}
+          onChange={(e) =>
+            setFormatOptions((prev) => ({
+              ...prev,
+              formatDocComments: e.target.checked,
+            }))
+          }
+        />
+      </div>
+
+      <div>
+        <label htmlFor={wrapDocCommentsId}>Wrap doc comments:</label>
+        <input
+          id={wrapDocCommentsId}
+          type="checkbox"
+          className="checkbox"
+          checked={formatOptions.wrapDocComments}
+          onChange={(e) =>
+            setFormatOptions((prev) => ({
+              ...prev,
+              wrapDocComments: e.target.checked,
+            }))
+          }
+        />
+      </div>
+
+      <div>
+        <label htmlFor={DocCommentWidthId}>Doc comment Width:</label>
+        <div className="flex gap-1 flex-shrink-0">
+          <input
+            id={lineWidthInputId}
+            type="number"
+            className="input w-16"
+            min="0"
+            max="200"
+            aria-label="Custom Doc Comment Width"
+            value={formatOptions.docCommentWidth}
+            onChange={(e) =>
+              setFormatOptions((prev) => ({
+                ...prev,
+                docCommentWidth: Number.parseInt(e.target.value),
+              }))
+            }
+          />
+        </div>
       </div>
 
       <button type="button" className="btn w-full" onClick={handleReset}>

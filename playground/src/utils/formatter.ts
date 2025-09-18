@@ -1,4 +1,4 @@
-import * as typstyle from "typstyle-wasm";
+import type * as typstyle from "typstyle-wasm";
 
 export interface FormatOptions {
   lineWidth: number;
@@ -6,6 +6,9 @@ export interface FormatOptions {
   collapseMarkupSpaces: boolean;
   reorderImportItems: boolean;
   wrapText: boolean;
+  formatDocComments: boolean;
+  wrapDocComments: boolean;
+  docCommentWidth: number;
 }
 
 // Default format style options
@@ -15,6 +18,9 @@ export const DEFAULT_FORMAT_OPTIONS: FormatOptions = {
   collapseMarkupSpaces: false,
   reorderImportItems: true,
   wrapText: false,
+  formatDocComments: false,
+  wrapDocComments: false,
+  docCommentWidth: 80,
 };
 
 /**
@@ -44,5 +50,8 @@ export function formatOptionsToConfig(
     collapse_markup_spaces: options.collapseMarkupSpaces,
     reorder_import_items: options.reorderImportItems,
     wrap_text: options.wrapText,
+    format_doc_comments: options.formatDocComments,
+    wrap_doc_comments: options.wrapDocComments,
+    doc_comment_width: options.docCommentWidth,
   };
 }
