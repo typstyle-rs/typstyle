@@ -46,12 +46,16 @@ impl<'a> PrettyPrinter<'a> {
             if let Some(arg) = node.cast::<Arg>() {
                 match arg {
                     Arg::Pos(Expr::FuncCall(func_call)) if is_header_footer(func_call) => {
-                        collector.push_row(
+                        // This func_call does not pass the escape-hatch check in `convert_expr`.
+                        let doc = if let Some(res) = self.check_disabled(func_call.to_untyped()) {
+                            res
+                        } else {
                             self.convert_expr(ctx, func_call.callee())
                                 + self.convert_args(ctx, func_call.args(), |nodes| {
                                     self.convert_table(ctx, nodes, columns)
-                                }),
-                        );
+                                })
+                        };
+                        collector.push_row(doc);
                     }
                     Arg::Pos(expr) => {
                         collector.push_cell(self.convert_expr(ctx, expr));

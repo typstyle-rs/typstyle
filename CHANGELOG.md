@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Bug fix: Previously, `@typstyle off` is not correctly recognized for `{table,grid}.{header,footer}`. Now it is fixed.
+
 ### Playground
 
 - Feature: Added some loadable sample documents.
