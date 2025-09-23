@@ -60,7 +60,7 @@ Format Configuration:
   -l, --line-width <LINE_WIDTH>      Maximum width of each line [default: 80] [aliases: column] [short aliases: c]
   -t, --indent-width <INDENT_WIDTH>  Number of spaces per indentation level [default: 2] [aliases: tab-width]
       --no-reorder-import-items      Disable alphabetical reordering of import items
-      --wrap-text                    Wrap text in markup to fit within the line width. Implies `--collapse-spaces`
+      --wrap-text                    Wrap text in markup to fit within the line width, and collapse spaces in markup
 
 Debug Options:
   -a, --ast         Print the AST of the input file

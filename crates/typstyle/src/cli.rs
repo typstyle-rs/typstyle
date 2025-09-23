@@ -91,7 +91,7 @@ pub struct StyleArgs {
     #[arg(long, default_value_t = false, global = true)]
     pub no_reorder_import_items: bool,
 
-    /// Wrap text in markup to fit within the line width. Implies `--collapse-spaces`.
+    /// Wrap text in markup to fit within the line width, and collapse spaces in markup
     #[arg(long, default_value_t = false, global = true)]
     pub wrap_text: bool,
 }
