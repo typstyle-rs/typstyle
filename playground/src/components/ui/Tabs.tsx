@@ -16,6 +16,7 @@ export interface TabsProps {
   children?: ReactNode;
   onTabChange?: (tabId: string) => void;
   defaultActiveTab?: string;
+  activeTab?: string;
   className?: string;
   tabClassName?: string;
   contentClassName?: string;
@@ -31,6 +32,7 @@ export function Tabs({
   children,
   onTabChange,
   defaultActiveTab,
+  activeTab,
   className = "",
   tabClassName = "",
   contentClassName = "",
@@ -51,22 +53,27 @@ export function Tabs({
     : [];
 
   // Internal state management
-  const [activeTab, setActiveTab] = useState<string>(
+  const activeTabProp = activeTab;
+  const [internalActiveTab, setInternalActiveTab] = useState<string>(
     defaultActiveTab || tabs[0]?.key || "",
   );
 
   const handleTabChange = (tabId: string) => {
-    setActiveTab(tabId);
+    if (activeTabProp === undefined) {
+      setInternalActiveTab(tabId);
+    }
     onTabChange?.(tabId);
   };
-
-  const activeTabContent = tabs.find((tab) => tab.key === activeTab)?.content;
+  const currentActiveTab = activeTabProp ?? internalActiveTab;
+  const activeTabContent = tabs.find(
+    (tab) => tab.key === currentActiveTab,
+  )?.content;
 
   return (
     <div className={`flex flex-col h-full min-h-0 ${className}`}>
       <div className="tabs tabs-border flex-shrink-0">
         {tabs.map((tab) => {
-          const isActive = activeTab === tab.key;
+          const isActive = currentActiveTab === tab.key;
           const buttonClasses = ["tab", isActive && "tab-active", tabClassName]
             .filter(Boolean)
             .join(" ");

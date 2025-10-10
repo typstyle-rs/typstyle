@@ -1,16 +1,19 @@
 import * as lz from "lz-string";
 import queryString from "query-string";
+import type { OutputType } from "../types";
 import { DEFAULT_FORMAT_OPTIONS, type FormatOptions } from "./formatter";
 import { fetchFromPastebin, uploadToPastebin } from "./pastebin";
 
 export interface PlaygroundState {
   sourceCode: string;
   formatOptions: Partial<FormatOptions>;
+  tab: OutputType;
 }
 
 export interface PlaygroundUrlState {
   sourceCode?: string;
   formatOptions: Partial<FormatOptions>;
+  tab?: OutputType;
 }
 
 // Maximum URL length before using pastebin for source code storage
@@ -23,11 +26,17 @@ const MAX_URL_LENGTH = 1024;
 export function updateUrlWithState(
   sourceCode: string,
   options: Partial<FormatOptions>,
+  tab?: OutputType,
 ): void {
-  const query = {
+  const currentUrl = new URL(window.location.href);
+  const existingTab = parseTabParam(currentUrl.searchParams.get("tab"));
+  const tabParam = normalizeTabParam(tab ?? existingTab);
+
+  const query: Record<string, unknown> = {
     ...options,
     code:
       sourceCode === "" ? null : lz.compressToEncodedURIComponent(sourceCode),
+    tab: tabParam,
   };
   const qs = queryString.stringify(query, {
     skipNull: true,
@@ -85,9 +94,12 @@ export async function getStateFromUrl(): Promise<PlaygroundUrlState> {
     },
   );
 
+  const tab = parseTabParam(params.get("tab"));
+
   return {
     sourceCode,
     formatOptions: query as Partial<FormatOptions>,
+    tab,
   };
 }
 
@@ -106,10 +118,29 @@ export async function generateShareUrl(
       const url = new URL(window.location.href);
       url.searchParams.delete("code");
       url.searchParams.set("paste", pasteId);
+      if (state.tab && state.tab !== "formatted") {
+        url.searchParams.set("tab", state.tab);
+      } else {
+        url.searchParams.delete("tab");
+      }
       return { url: url.toString(), usedPastebin: true };
     }
   }
 
   // If pastebin fails, use current URL as-is
   return { url: window.location.href, usedPastebin: false };
+}
+
+function parseTabParam(value: string | null): OutputType | undefined {
+  if (value === "ast" || value === "pir") {
+    return value;
+  }
+  return undefined;
+}
+
+function normalizeTabParam(tab: OutputType | undefined): OutputType | null {
+  if (!tab || tab === "formatted") {
+    return null;
+  }
+  return tab;
 }

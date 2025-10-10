@@ -78,7 +78,7 @@ export function useTypstFormatter(
           setError(null);
           break;
         }
-        case "ir": {
+        case "pir": {
           const formatIr = useRange
             ? typstyle.format_range_ir(
                 rangeOptions.fullText,

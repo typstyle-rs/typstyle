@@ -1,4 +1,5 @@
 import { useDeferredValue, useEffect, useRef, useState } from "react";
+import type { OutputType } from "@/types";
 import {
   DEFAULT_FORMAT_OPTIONS,
   type FormatOptions,
@@ -12,11 +13,13 @@ const STORAGE_KEY = "playground-code";
 export interface PlaygroundState {
   sourceCode: string;
   formatOptions: FormatOptions;
+  activeOutput: OutputType;
 }
 
 export function usePlaygroundState() {
   const [sourceCode, setSourceCode] = useState("");
   const [formatOptions, setFormatOptions] = useState(DEFAULT_FORMAT_OPTIONS);
+  const [activeOutput, setActiveOutput] = useState<OutputType>("formatted");
   const [isInitializing, setIsInitializing] = useState(true);
   const captureAsyncError = useAsyncError();
 
@@ -38,6 +41,7 @@ export function usePlaygroundState() {
           ...DEFAULT_FORMAT_OPTIONS,
           ...urlState.formatOptions,
         });
+        setActiveOutput(urlState.tab ?? "formatted");
       } catch (error) {
         console.error("Error loading state:", error);
 
@@ -66,8 +70,8 @@ export function usePlaygroundState() {
     const nondefaultOptions = filterNonDefaultOptions(formatOptions);
 
     // Update URL with current state
-    updateUrlWithState(deferredSourceCode, nondefaultOptions);
-  }, [deferredSourceCode, formatOptions]);
+    updateUrlWithState(deferredSourceCode, nondefaultOptions, activeOutput);
+  }, [deferredSourceCode, formatOptions, activeOutput]);
 
   // Save code to local storage
   useEffect(() => {
@@ -79,9 +83,16 @@ export function usePlaygroundState() {
   }, [deferredSourceCode]);
 
   return {
-    state: { sourceCode, deferredSourceCode, formatOptions, isInitializing },
+    state: {
+      sourceCode,
+      deferredSourceCode,
+      formatOptions,
+      isInitializing,
+      activeOutput,
+    },
     setSourceCode,
     setFormatOptions,
+    setActiveOutput,
   };
 }
 

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ScreenSizeType } from "@/types";
+import type { OutputType, ScreenSizeType } from "@/types";
 import { Tab, Tabs } from "./ui";
 
 interface MainLayoutProps {
@@ -9,6 +9,7 @@ interface MainLayoutProps {
   formattedPanel: ReactNode;
   astPanel: ReactNode;
   irPanel: ReactNode;
+  activeOutputTab?: OutputType;
   onActiveTabChange?: (activeTab: string) => void;
 }
 
@@ -19,6 +20,7 @@ export function MainLayout({
   formattedPanel,
   astPanel,
   irPanel,
+  activeOutputTab,
   onActiveTabChange,
 }: MainLayoutProps) {
   return (
@@ -38,10 +40,11 @@ export function MainLayout({
             <div className="panel-content">
               <Tabs
                 defaultActiveTab="formatted"
+                activeTab={activeOutputTab}
                 className="bg-base-300"
                 tabClassName="font-semibold flex-1"
                 contentClassName="bg-base-100 border-base-300"
-                onTabChange={(tabId) => onActiveTabChange?.(tabId)}
+                onTabChange={onActiveTabChange}
               >
                 <Tab tid="formatted" label="Formatted">
                   {formattedPanel}
@@ -49,7 +52,7 @@ export function MainLayout({
                 <Tab tid="ast" label="AST">
                   {astPanel}
                 </Tab>
-                <Tab tid="ir" label="Pretty IR">
+                <Tab tid="pir" label="Pretty IR">
                   {irPanel}
                 </Tab>
               </Tabs>
@@ -63,11 +66,15 @@ export function MainLayout({
         <div className="panel flex-1 min-w-0 card card-border">
           <div className="panel-content">
             <Tabs
-              defaultActiveTab="source"
+              defaultActiveTab={
+                activeOutputTab && activeOutputTab !== "formatted"
+                  ? activeOutputTab
+                  : "source"
+              }
               className="bg-base-300"
               tabClassName="font-semibold flex-1"
               contentClassName="bg-base-100 border-base-300"
-              onTabChange={(tabId) => onActiveTabChange?.(tabId)}
+              onTabChange={onActiveTabChange}
             >
               <Tab tid="options" label="Settings">
                 {optionsPanel}
@@ -81,7 +88,7 @@ export function MainLayout({
               <Tab tid="ast" label="AST">
                 {astPanel}
               </Tab>
-              <Tab tid="ir" label="Pretty IR">
+              <Tab tid="pir" label="Pretty IR">
                 {irPanel}
               </Tab>
             </Tabs>
