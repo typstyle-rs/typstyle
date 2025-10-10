@@ -55,7 +55,7 @@ export function usePlaygroundState() {
     };
 
     loadState();
-  }, []);
+  }, [captureAsyncError]);
 
   // Save state to URL (only non-default options)
   useEffect(() => {
@@ -66,7 +66,7 @@ export function usePlaygroundState() {
     const nondefaultOptions = filterNonDefaultOptions(formatOptions);
 
     // Update URL with current state
-    updateUrlWithState(sourceCode, nondefaultOptions);
+    updateUrlWithState(deferredSourceCode, nondefaultOptions);
   }, [deferredSourceCode, formatOptions]);
 
   // Save code to local storage

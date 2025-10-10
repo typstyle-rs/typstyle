@@ -27,7 +27,11 @@ export function LoadingSpinner({
               {error}
             </p>
             {onRetry && (
-              <button className="btn btn-primary mt-4" onClick={onRetry}>
+              <button
+                type="button"
+                className="btn btn-primary mt-4"
+                onClick={onRetry}
+              >
                 Retry
               </button>
             )}

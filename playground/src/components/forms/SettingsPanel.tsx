@@ -42,7 +42,7 @@ export function SettingsPanel({
               if (e.target.value !== "custom") {
                 setFormatOptions((prev) => ({
                   ...prev,
-                  lineWidth: Number.parseInt(e.target.value),
+                  lineWidth: Number.parseInt(e.target.value, 10),
                 }));
               }
             }}
@@ -67,7 +67,7 @@ export function SettingsPanel({
             onChange={(e) =>
               setFormatOptions((prev) => ({
                 ...prev,
-                lineWidth: Number.parseInt(e.target.value),
+                lineWidth: Number.parseInt(e.target.value, 10),
               }))
             }
           />
@@ -89,7 +89,7 @@ export function SettingsPanel({
             onChange={(e) => {
               setFormatOptions((prev) => ({
                 ...prev,
-                indentWidth: Number.parseInt(e.target.value),
+                indentWidth: Number.parseInt(e.target.value, 10),
               }));
             }}
           >
@@ -111,7 +111,7 @@ export function SettingsPanel({
             onChange={(e) =>
               setFormatOptions((prev) => ({
                 ...prev,
-                indentWidth: Number.parseInt(e.target.value),
+                indentWidth: Number.parseInt(e.target.value, 10),
               }))
             }
           />

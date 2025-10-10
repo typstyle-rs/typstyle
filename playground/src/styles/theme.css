@@ -52,8 +52,8 @@
 
   --color-secondary: oklch(75% 0.08 140); /* Light green secondary */
   --color-secondary-content: oklch(25% 0.06 140);
-  --color-accent: oklch(70% 0.2 340); /* Bright magenta-pink accent for titles */
-  --color-accent-content: oklch(15% 0.05 340); /* Dark text on magenta background */
+  --color-accent: oklch(70% 0.2 340); /* Bright magenta-pink accent */
+  --color-accent-content: oklch(15% 0.05 340); /* Dark text on magenta */
 
   --color-neutral: oklch(59% 0.293 322.896);
   --color-neutral-content: oklch(96% 0.02 290);

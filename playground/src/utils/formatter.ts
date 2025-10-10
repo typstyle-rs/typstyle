@@ -1,4 +1,4 @@
-import * as typstyle from "typstyle-wasm";
+import type * as typstyle from "typstyle-wasm";
 
 export interface FormatOptions {
   lineWidth: number;
