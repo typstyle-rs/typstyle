@@ -2,21 +2,13 @@
 // Based on: https://github.com/janpoem/react-monaco/blob/main/packages/plugin-textmate/src/monaco-editor-textmate
 // Logic remain unchanged.
 
-import { INITIAL, type Registry } from "vscode-textmate";
+import { INITIAL, type Registry, type StateStack } from "vscode-textmate";
 import type { monaco } from "./types";
 
-interface StackElement {
-  _stackElementBrand: unknown;
-  readonly depth: number;
-
-  clone(): StackElement;
-  equals(other: StackElement): boolean;
-}
-
 class TokenizerState implements monaco.languages.IState {
-  constructor(private _ruleStack: StackElement) {}
+  constructor(private _ruleStack: StateStack) {}
 
-  public get ruleStack(): StackElement {
+  public get ruleStack(): StateStack {
     return this._ruleStack;
   }
 
@@ -55,9 +47,7 @@ export async function wireTmGrammar(
 
   _monaco.languages.setTokensProvider(languageId, {
     getInitialState: () => new TokenizerState(INITIAL),
-    // @ts-ignore
     tokenize: (line: string, state: TokenizerState) => {
-      // @ts-ignore
       const res = grammar.tokenizeLine(line, state.ruleStack);
       return {
         endState: new TokenizerState(res.ruleStack),
@@ -115,19 +105,17 @@ const TMToMonacoToken = (
       if (char === ".") {
         const token = scope.slice(0, i);
         if (
-          // @ts-ignore
-          // biome-ignore lint/complexity/useLiteralKeys: explanation
-          editor["_themeService"]._theme._tokenTheme._match(
+          // biome-ignore lint/suspicious/noExplicitAny: property injection
+          (editor as any)._themeService._theme._tokenTheme._match(
             `${token}.${scopeName}`,
           )._foreground > 1
         ) {
           return `${token}.${scopeName}`;
         }
         if (
-          // @ts-ignore
-          // biome-ignore lint/complexity/useLiteralKeys: explanation
-          editor["_themeService"]._theme._tokenTheme._match(token)._foreground >
-          1
+          // biome-ignore lint/suspicious/noExplicitAny: property injection
+          (editor as any)._themeService._theme._tokenTheme._match(token)
+            ._foreground > 1
         ) {
           return token;
         }

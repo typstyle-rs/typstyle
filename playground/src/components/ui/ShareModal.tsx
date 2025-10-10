@@ -8,10 +8,6 @@ interface ShareModalProps {
 }
 
 export function ShareModal({ shareState, onCopy, onClose }: ShareModalProps) {
-  const handleCopy = async () => {
-    await onCopy();
-  };
-
   const handleOverlayClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -22,23 +18,24 @@ export function ShareModal({ shareState, onCopy, onClose }: ShareModalProps) {
   useEffect(() => {
     if (!shareState.isOpen) return;
 
-    const handleKeyDown = (e: KeyboardEvent) => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
       } else if ((e.ctrlKey || e.metaKey) && e.key === "c") {
         e.preventDefault();
-        handleCopy();
+        await onCopy();
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [shareState.isOpen, onClose, handleCopy]);
+  }, [shareState.isOpen, onClose, onCopy]);
 
   if (!shareState.isOpen) return null;
 
   return (
     <div
+      role="none"
       className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-40"
       onClick={handleOverlayClick}
     >
@@ -92,7 +89,7 @@ export function ShareModal({ shareState, onCopy, onClose }: ShareModalProps) {
           />
           <button
             type="button"
-            onClick={handleCopy}
+            onClick={onCopy}
             className={`btn ${
               shareState.copied ? "btn-success" : "btn-primary"
             }`}

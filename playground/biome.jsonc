@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.1.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.2.5/schema.json",
   "vcs": {
     "enabled": false,
     "clientKind": "git",
@@ -15,11 +15,14 @@
   },
   "linter": {
     "enabled": true,
-    "includes": ["!src/styles/*.css"],
+    "includes": [
+      "!src/styles/*.css" // tailwindcss
+    ],
     "rules": {
       "recommended": true,
       "a11y": {
-        "noSvgWithoutTitle": "off"
+        "noSvgWithoutTitle": "off",
+        "useKeyWithClickEvents": "off"
       }
     }
   },

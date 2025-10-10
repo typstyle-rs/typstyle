@@ -46,7 +46,7 @@ export async function getStateFromUrl(): Promise<PlaygroundUrlState> {
   const url = new URL(window.location.href);
   const params = url.searchParams;
 
-  let sourceCode: string | undefined = undefined;
+  let sourceCode: string | undefined;
 
   // Check for code parameter first
   const codeParam = params.get("code");

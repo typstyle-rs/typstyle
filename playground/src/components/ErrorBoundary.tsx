@@ -93,10 +93,15 @@ export class ErrorBoundary extends Component<
 
               {/* Action buttons */}
               <div className="flex gap-3 justify-center">
-                <button className="btn btn-primary" onClick={this.handleRetry}>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={this.handleRetry}
+                >
                   Try Again
                 </button>
                 <button
+                  type="button"
                   className="btn btn-ghost"
                   onClick={() => window.location.reload()}
                 >

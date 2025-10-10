@@ -12,6 +12,10 @@ export interface ToastState {
 export function useToast() {
   const [toasts, setToasts] = useState<ToastState[]>([]);
 
+  const dismissToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
   const showToast = useCallback(
     (message: string, type: ToastType = "info") => {
       // Check if there's already a toast with the same message and type
@@ -52,23 +56,33 @@ export function useToast() {
 
       return id;
     },
-    [toasts],
+    [toasts, dismissToast],
   );
 
-  const dismissToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  }, []);
-
-  const makeToast = (type: ToastType) =>
-    useCallback((message: string) => showToast(message, type), [showToast]);
+  const success = useCallback(
+    (message: string) => showToast(message, "success"),
+    [showToast],
+  );
+  const error = useCallback(
+    (message: string) => showToast(message, "error"),
+    [showToast],
+  );
+  const info = useCallback(
+    (message: string) => showToast(message, "info"),
+    [showToast],
+  );
+  const warning = useCallback(
+    (message: string) => showToast(message, "warning"),
+    [showToast],
+  );
 
   return {
     toasts,
     showToast,
     dismissToast,
-    success: makeToast("success"),
-    error: makeToast("error"),
-    info: makeToast("info"),
-    warning: makeToast("warning"),
+    success,
+    error,
+    info,
+    warning,
   };
 }

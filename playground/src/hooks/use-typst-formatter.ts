@@ -107,6 +107,7 @@ export function useTypstFormatter(
     }
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: spurious
   useEffect(() => {
     formatCode();
   }, [sourceCode, formatOptions, activeOutput, rangeOptions, isRangeMode]);
