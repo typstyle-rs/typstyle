@@ -7,6 +7,7 @@
 ### Playground
 
 - Feature: Added some loadable sample documents.
+- Feature: The active output tab is now persisted in the URL.
 
 ## v0.13.17 - [2025-08-03]
 

@@ -20,11 +20,17 @@ import type { OutputType, RangeFormatterOptions } from "./types";
 
 function Playground() {
   const {
-    state: { sourceCode, deferredSourceCode, formatOptions, isInitializing },
+    state: {
+      sourceCode,
+      deferredSourceCode,
+      formatOptions,
+      isInitializing,
+      activeOutput,
+    },
     setSourceCode,
     setFormatOptions,
+    setActiveOutput,
   } = usePlaygroundState();
-  const [activeOutput, setActiveOutput] = useState<OutputType>("formatted");
   const [isRangeMode, setIsRangeMode] = useState(false);
 
   // Editor refs for scrolling
@@ -81,7 +87,7 @@ function Playground() {
 
   const handleActiveTabChange = (tabId: string) => {
     // Only update activeOutput if the tab is an output type
-    if (tabId === "formatted" || tabId === "ast" || tabId === "ir") {
+    if (tabId === "formatted" || tabId === "ast" || tabId === "pir") {
       setActiveOutput(tabId);
     }
   };
@@ -90,6 +96,7 @@ function Playground() {
     const playgroundState = {
       sourceCode,
       formatOptions,
+      tab: activeOutput,
     };
     await shareManager.generateShare(playgroundState);
   };
@@ -167,6 +174,7 @@ function Playground() {
         formattedPanel={formattedPanel}
         astPanel={astPanel}
         irPanel={irPanel}
+        activeOutputTab={activeOutput}
         onActiveTabChange={handleActiveTabChange}
       />
 

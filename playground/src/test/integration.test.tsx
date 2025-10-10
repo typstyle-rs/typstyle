@@ -45,7 +45,7 @@ describe("Playground Integration Tests", () => {
       const testCode = '#hello("world")';
 
       const { result } = renderHook(() =>
-        useTypstFormatter(testCode, DEFAULT_FORMAT_OPTIONS, "ir"),
+        useTypstFormatter(testCode, DEFAULT_FORMAT_OPTIONS, "pir"),
       );
 
       await waitFor(() => {
