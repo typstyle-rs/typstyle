@@ -71,9 +71,3 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         working-directory: crates/typstyle-wasm/pkg
         run: npm publish --provenance --access public
-
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: typstyle-wasm-${{ matrix.target }}
-          path: crates/typstyle-wasm/pkg/
