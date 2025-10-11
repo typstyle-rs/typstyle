@@ -38,7 +38,7 @@ impl<'a> PrettyPrinter<'a> {
                         self.arena.space()
                     } else if pending_sentence_break {
                         pending_sentence_break = false;
-                        self.arena.hardline()
+                        self.arena.hard_line()
                     } else if nodes
                         .get(j + 1)
                         .is_some_and(|node| reflow_prefers_exclusive(node))
@@ -46,7 +46,7 @@ impl<'a> PrettyPrinter<'a> {
                             .get(j - 1)
                             .is_some_and(|node| reflow_prefers_exclusive(node))
                     {
-                        self.arena.hardline()
+                        self.arena.hard_line()
                     } else {
                         self.arena.softline()
                     };
@@ -57,7 +57,7 @@ impl<'a> PrettyPrinter<'a> {
                 // survives until the following whitespace.
                 let defer_break = sentence_breaks && is_sentence_closer(node);
                 let leading_break = if pending_sentence_break && !defer_break {
-                    self.arena.hardline()
+                    self.arena.hard_line()
                 } else {
                     self.arena.nil()
                 };
@@ -101,7 +101,7 @@ impl<'a> PrettyPrinter<'a> {
             {
                 doc += self.arena.softline();
             } else if breaks > 0 {
-                doc += self.arena.hardline().repeat(breaks);
+                doc += self.arena.hard_line().repeat(breaks);
                 pending_sentence_break = false;
             }
         }
@@ -130,7 +130,7 @@ impl<'a> PrettyPrinter<'a> {
                         {
                             self.arena.space()
                         } else {
-                            self.arena.hardline()
+                            self.arena.hard_line()
                         }
                     } else {
                         self.arena.space()
@@ -139,7 +139,7 @@ impl<'a> PrettyPrinter<'a> {
                     let (text_doc, ended_sentence) =
                         convert_text_sentence_split(&self.arena, &segmenter, text, false);
                     let leading_break = if pending_sentence_break {
-                        self.arena.hardline()
+                        self.arena.hard_line()
                     } else {
                         self.arena.nil()
                     };
@@ -149,7 +149,7 @@ impl<'a> PrettyPrinter<'a> {
                     self.convert_trivia_untyped(node)
                 } else if let Some(expr) = node.cast::<Expr>() {
                     let leading_break = if pending_sentence_break {
-                        self.arena.hardline()
+                        self.arena.hard_line()
                     } else {
                         self.arena.nil()
                     };
@@ -160,7 +160,7 @@ impl<'a> PrettyPrinter<'a> {
                     self.convert_comment(ctx, node)
                 } else {
                     let leading_break = if pending_sentence_break {
-                        self.arena.hardline()
+                        self.arena.hard_line()
                     } else {
                         self.arena.nil()
                     };
@@ -169,7 +169,7 @@ impl<'a> PrettyPrinter<'a> {
                 };
             }
             if line.breaks > 0 {
-                doc += self.arena.hardline().repeat(line.breaks);
+                doc += self.arena.hard_line().repeat(line.breaks);
                 pending_sentence_break = false;
             }
         }
@@ -211,7 +211,7 @@ fn convert_text_sentence_split<'a>(
                         arena.space()
                     }
                 } else {
-                    arena.hardline()
+                    arena.hard_line()
                 };
             }
             doc += if fill {

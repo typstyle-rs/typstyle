@@ -123,7 +123,7 @@ impl<'a> PrettyPrinter<'a> {
                 inner_nodes = rest;
                 if first.leaf_text().has_linebreak() {
                     has_open_linebreak = true;
-                    self.arena.hardline()
+                    self.arena.hard_line()
                 } else {
                     self.arena.space()
                 }
