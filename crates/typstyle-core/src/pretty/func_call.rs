@@ -199,7 +199,7 @@ impl<'a> PrettyPrinter<'a> {
                     peek_hashed_arg = at_hashed_arg || at_arg;
                     if child.leaf_text().has_linebreak() {
                         peek_linebreak = true;
-                        FlowItem::tight(self.arena.hardline())
+                        FlowItem::tight(self.arena.hard_line())
                     } else {
                         FlowItem::none()
                     }
