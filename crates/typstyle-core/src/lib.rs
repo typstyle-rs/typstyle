@@ -72,9 +72,6 @@ impl<'a> Formatter<'a> {
         let mut buf = String::new();
         doc.render_fmt(self.printer.config().max_width, &mut buf)
             .map_err(|_| Error::RenderError)?;
-        if !buf.ends_with('\n') {
-            buf.push('\n'); // Ensure at least one newline for empty documents
-        }
         Ok(buf)
     }
 
