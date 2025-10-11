@@ -39,6 +39,9 @@ impl Typstyle {
     /// Format the smallest syntax node that fully covers the given byte range.
     ///
     /// The formatted range may be larger than the input to ensure valid syntax.
+    /// Whitespace handling matches [`crate::Formatter::render`], but line endings
+    /// follow the selected node's layout; code fragments do not receive an extra
+    /// final newline solely because they are formatted.
     ///
     /// # Arguments
     /// - `source`: The source code.
@@ -66,7 +69,7 @@ impl Typstyle {
         let indent = utils::count_spaces_after_last_newline(source.text(), node_range.start);
         let text = doc
             .nest(indent as isize)
-            .print(self.config.max_width)
+            .print_with(printer.render_options())
             .to_string();
 
         Ok(RangeResult {

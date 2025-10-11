@@ -80,7 +80,7 @@ impl<'a> FlowStylist<'a> {
 
     pub fn push_doc(&mut self, doc: ArenaDoc<'a>, space_before: bool, space_after: bool) {
         if space_before && self.space_after {
-            self.doc += self.printer.arena.space();
+            self.doc += self.printer.arena.weak_space();
         }
         self.doc += doc;
         self.space_after = space_after;

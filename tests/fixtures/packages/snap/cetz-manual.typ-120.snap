@@ -475,7 +475,7 @@ line((0,0), (angle: 30deg, radius: 1cm))
 The implicit form is an array of the angle then the radius `(angle, radius)` or `(angle, (x, y))`.
 
 ```example
-line((0,0), (30deg, 1), (60deg, 1),
+line((0,0), (30deg, 1), (60deg, 1), 
      (90deg, 1), (120deg, 1), (150deg, 1), (180deg, 1))
 ```
 

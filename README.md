@@ -159,6 +159,12 @@ Typstyle also gives up formatting **part** of the code if it is not able to form
 
 And please let us know the issue by creating an issue on the [GitHub repository](https://github.com/typstyle-rs/typstyle)
 
+### Whitespace Preservation
+
+Typstyle preserves trailing spaces and whitespace-only lines inside multiline strings, raw blocks, and format-disabled source. These spaces can affect content, so the formatter does not trim every output line. Generated indentation and flow spacing avoid adding trailing padding to blank lines or line boundaries. Comments are normalized by their own formatting rules.
+
+Whole-document formatting supplies the final newline through the document layout. Partial formatting follows the selected node's layout rather than appending a newline to every formatted fragment.
+
 ### Testing
 
 We maintain a comprehensive suite of tests to ensure the correctness and reliability of typstyle.
