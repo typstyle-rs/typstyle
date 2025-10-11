@@ -16,7 +16,7 @@ import {
   useShareManager,
   useTypstFormatter,
 } from "./hooks";
-import type { OutputType, RangeFormatterOptions } from "./types";
+import type { RangeFormatterOptions } from "./types";
 
 function Playground() {
   const {

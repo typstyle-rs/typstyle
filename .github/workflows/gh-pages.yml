@@ -56,12 +56,12 @@ jobs:
 
   build-docs:
     needs: pre_job
-    if: needs.pre_job.outputs.should_skip != 'true' || !fromJSON(needs.skip_check.outputs.paths_result).docs.should_skip
+    if: needs.pre_job.outputs.should_skip != 'true' || !fromJSON(needs.pre_job.outputs.paths_result).docs.should_skip
     uses: ./.github/workflows/build-docs.yml
 
   build-playground:
     needs: pre_job
-    if: needs.pre_job.outputs.should_skip != 'true' || !fromJSON(needs.skip_check.outputs.paths_result).playground.should_skip
+    if: needs.pre_job.outputs.should_skip != 'true' || !fromJSON(needs.pre_job.outputs.paths_result).playground.should_skip
     uses: ./.github/workflows/build-playground.yml
 
   deploy:
