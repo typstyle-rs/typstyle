@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Fix: Preserve trailing spaces and whitespace-only lines inside multiline strings, raw blocks, and format-disabled source instead of trimming every rendered line.
+- Fix: Avoid generated indentation on blank lines and unnecessary flow spaces at line boundaries, including in partial formatting and aligned math. Line comments and block comments with leading stars still have trailing whitespace trimmed during comment formatting.
+
 ## v0.15.1 - [2026-07-28]
 
 - Update `typst` to v0.15.1.

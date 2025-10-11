@@ -9,21 +9,21 @@ input_file: tests/fixtures/unit/markup/term-indent.typ
   111
 
 / 2:
-   // 2
+  // 2
   222
 
 / 3:
-   // 3
+  // 3
   333
 
 / 4:
-   // 4
+  // 4
   / 44: // 44
     444
 
 / 5:
 
-   // 5
+  // 5
 
 
   / 55: // 55

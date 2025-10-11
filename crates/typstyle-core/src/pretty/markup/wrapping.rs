@@ -399,8 +399,9 @@ mod tests {
     use crate::{Config, Typstyle, WrapMode};
 
     fn format_markup(input: &str, config: Config) -> String {
+        // These wrapping assertions expect a newline-terminated source document.
         Typstyle::new(config)
-            .format_source(Source::detached(input))
+            .format_source(Source::detached(format!("{input}\n")))
             .render()
             .unwrap()
     }
