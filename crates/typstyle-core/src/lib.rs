@@ -72,8 +72,10 @@ impl<'a> Formatter<'a> {
         let mut buf = String::new();
         doc.render_fmt(self.printer.config().max_width, &mut buf)
             .map_err(|_| Error::RenderError)?;
-        let result = utils::strip_trailing_whitespace(&buf);
-        Ok(result)
+        if buf.is_empty() {
+            buf.push('\n'); // Ensure at least one newline for empty documents
+        }
+        Ok(buf)
     }
 
     fn build_doc(&'a self) -> Result<ArenaDoc<'a>, Error> {

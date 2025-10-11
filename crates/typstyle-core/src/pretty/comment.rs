@@ -25,7 +25,7 @@ pub fn comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
 }
 
 pub fn line_comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
-    arena.text(node.text().as_str())
+    arena.text(node.text().as_str().trim_end())
 }
 
 /// It does not add a hardline to the doc.
@@ -89,7 +89,7 @@ fn align_multiline_simple<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'
         if i > 0 {
             doc += arena.hard_line();
         }
-        doc += line.trim_start();
+        doc += line.trim();
     }
     doc.nest(1).align()
 }
