@@ -188,7 +188,7 @@ impl<'a> ChainStylist<'a> {
                     if !leading {
                         leading = true;
                         space_after = false;
-                        follow_docs += arena.hardline();
+                        follow_docs += arena.hard_line();
                     }
                 }
             }

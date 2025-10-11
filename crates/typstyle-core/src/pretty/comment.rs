@@ -73,7 +73,7 @@ fn align_multiline<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'a> {
         if i == 0 {
             doc += line;
         } else {
-            doc += arena.hardline();
+            doc += arena.hard_line();
             if line.len() > leading {
                 doc += &line[leading..]; // Remove line prefix
             } // otherwise this line is blank
@@ -87,7 +87,7 @@ fn align_multiline_simple<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'
     let mut doc = arena.nil();
     for (i, line) in text.lines().enumerate() {
         if i > 0 {
-            doc += arena.hardline();
+            doc += arena.hard_line();
         }
         doc += line.trim_start();
     }

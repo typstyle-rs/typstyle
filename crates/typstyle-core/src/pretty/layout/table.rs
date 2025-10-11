@@ -110,7 +110,7 @@ impl<'a> TableCollector<'a> {
                 Row::Comment(doc) => doc,
                 Row::Linebreak => self.arena.nil(),
             }),
-            self.arena.hardline(),
+            self.arena.hard_line(),
         )
     }
 }

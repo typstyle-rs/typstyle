@@ -351,20 +351,20 @@ impl<'a> ListStylist<'a> {
                 let mut inner = if sty.tight_delim {
                     arena.nil()
                 } else {
-                    arena.hardline()
+                    arena.hard_line()
                 };
                 for (i, item) in self.items.into_iter().enumerate() {
                     let is_last = i + 1 == item_count;
                     match item {
-                        Item::Comment(cmt) => inner += cmt + arena.hardline(),
+                        Item::Comment(cmt) => inner += cmt + arena.hard_line(),
                         Item::Commented { body, after } => {
                             seen_real_items += 1;
                             inner += body + sep.clone() + after;
                             if !sty.tight_delim || !is_last {
-                                inner += arena.hardline();
+                                inner += arena.hard_line();
                             }
                         }
-                        Item::Linebreak(n) => inner += arena.hardline().repeat(n),
+                        Item::Linebreak(n) => inner += arena.hard_line().repeat(n),
                     }
                 }
                 if !sty.no_indent {
@@ -476,7 +476,7 @@ impl<'a> ListStylist<'a> {
                             inner += if is_last && sty.tight_delim {
                                 cmt
                             } else {
-                                cmt + arena.hardline()
+                                cmt + arena.hard_line()
                             }
                         }
                         Item::Commented { body, after } => {

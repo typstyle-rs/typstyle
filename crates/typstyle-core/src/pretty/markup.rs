@@ -124,11 +124,11 @@ impl<'a> PrettyPrinter<'a> {
                 FlowItem::tight_spaced(self.arena.text(child.text().as_str()))
             }
             SyntaxKind::Space if child.text().has_linebreak() => {
-                FlowItem::tight(self.arena.hardline())
+                FlowItem::tight(self.arena.hard_line())
             }
             SyntaxKind::Parbreak => FlowItem::tight(
                 self.arena
-                    .hardline()
+                    .hard_line()
                     .repeat(child.text().count_linebreaks()),
             ),
             SyntaxKind::Markup => {
@@ -158,11 +158,11 @@ impl<'a> PrettyPrinter<'a> {
                 FlowItem::spaced(self.arena.text(child.text().as_str()))
             }
             SyntaxKind::Space if child.text().has_linebreak() => {
-                FlowItem::tight(self.arena.hardline())
+                FlowItem::tight(self.arena.hard_line())
             }
             SyntaxKind::Parbreak => FlowItem::tight(
                 self.arena
-                    .hardline()
+                    .hard_line()
                     .repeat(child.text().count_linebreaks()),
             ),
             SyntaxKind::Markup if child.children().next().is_some() => {
@@ -207,7 +207,7 @@ impl<'a> PrettyPrinter<'a> {
             if scope == MarkupScope::Document || scope.can_trim() {
                 // should not add extra lines to the document
                 return if bound == Boundary::Break {
-                    self.arena.hardline()
+                    self.arena.hard_line()
                 } else {
                     self.arena.nil()
                 };
@@ -240,7 +240,7 @@ impl<'a> PrettyPrinter<'a> {
                         self.arena.spaces(n)
                     }
                 }
-                Boundary::Break | Boundary::WeakBreak => self.arena.hardline(),
+                Boundary::Break | Boundary::WeakBreak => self.arena.hard_line(),
             }
         };
 
@@ -288,7 +288,7 @@ impl<'a> PrettyPrinter<'a> {
                 };
             }
             if breaks > 0 {
-                doc += self.arena.hardline().repeat(breaks);
+                doc += self.arena.hard_line().repeat(breaks);
             }
         }
         doc
@@ -368,7 +368,7 @@ impl<'a> PrettyPrinter<'a> {
                     } else if nodes.get(j + 1).is_some_and(prefer_exclusive)
                         || nodes.get(j - 1).is_some_and(prefer_exclusive)
                     {
-                        self.arena.hardline()
+                        self.arena.hard_line()
                     } else {
                         self.arena.softline()
                     }
@@ -394,7 +394,7 @@ impl<'a> PrettyPrinter<'a> {
             {
                 doc += self.arena.softline();
             } else if breaks > 0 {
-                doc += self.arena.hardline().repeat(breaks);
+                doc += self.arena.hard_line().repeat(breaks);
             }
         }
         doc
