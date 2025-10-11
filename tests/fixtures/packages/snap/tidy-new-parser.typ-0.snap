@@ -907,7 +907,7 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
   ///Description
   let func(
     pos, // some comment
-
+    
     named: 2 // another comment
   )
   ```.text

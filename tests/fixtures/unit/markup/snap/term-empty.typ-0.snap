@@ -16,9 +16,9 @@ input_file: tests/fixtures/unit/markup/term-empty.typ
 / : b
 / c:
 / d:
-/
+/ 
   :
-/
+/ 
 
   :
 / e
@@ -42,15 +42,15 @@ input_file: tests/fixtures/unit/markup/term-empty.typ
   / : d
 ]
 #[
-  /
+  / 
     :
 ]
 #[
-  /
+  / 
 
     :
 ]
 #[
-  /
+  / 
     :
 ]

@@ -1,8 +1,5 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/document/empty-space.typ
-snapshot_kind: text
 ---
-// DUMMY
 
-// DUMMY
