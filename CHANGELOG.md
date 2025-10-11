@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.13.18 - [2025-10-11]
 
 - Bug fix: Previously, `@typstyle off` is not correctly recognized for `{table,grid}.{header,footer}`. Now it is fixed.
 - Revert: The body of strong/emph is no longer indented.
