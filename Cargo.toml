@@ -88,4 +88,4 @@ inherits = "release"
 debug = true
 
 [patch.crates-io]
-# prettyless = { git = "https://github.com/typstyle-rs/prettyless", rev = "9afa5bdece2dbf14c54ade8bef46cd0828cb952b" }
+prettyless = { git = "https://github.com/typstyle-rs/prettyless", rev = "8c4bc63446899609dd3cbb3c9fb5feb2ab86a9e9" }
