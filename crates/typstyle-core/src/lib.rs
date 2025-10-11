@@ -67,13 +67,17 @@ impl<'a> Formatter<'a> {
     }
 
     /// Renders the formatted document to a string.
+    ///
+    /// Preserves literal whitespace in multiline strings, raw blocks, and
+    /// format-disabled source. Generated indentation and flow spacing avoid
+    /// trailing layout padding; comment whitespace follows comment formatting
+    /// rules. The document layout supplies the final newline.
     pub fn render(&'a self) -> Result<String, Error> {
         let doc = self.build_doc()?;
         let mut buf = String::new();
-        doc.render_fmt(self.printer.config().max_width, &mut buf)
+        doc.render_fmt_with(self.printer.render_options(), &mut buf)
             .map_err(|_| Error::RenderError)?;
-        let result = utils::strip_trailing_whitespace(&buf);
-        Ok(result)
+        Ok(buf)
     }
 
     fn build_doc(&'a self) -> Result<ArenaDoc<'a>, Error> {

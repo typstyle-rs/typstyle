@@ -200,7 +200,11 @@ impl<'a> PrettyPrinter<'a> {
             return self.convert_space(ctx, space);
         }
 
-        let repr = collect_markup_repr(markup);
+        let mut repr = collect_markup_repr(markup);
+        if scope == MarkupScope::Document {
+            // In document scope, we should insert a trailing linebreak if not present.
+            repr.end_bound = Boundary::Break;
+        }
         let body = if scope == MarkupScope::InlineItem {
             self.convert_markup_body(ctx, &repr)
         } else {
