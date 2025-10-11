@@ -66,7 +66,7 @@ impl Typstyle {
         let indent = utils::count_spaces_after_last_newline(source.text(), node_range.start);
         let text = doc
             .nest(indent as isize)
-            .print(self.config.max_width)
+            .print_with(printer.render_options())
             .to_string();
 
         Ok(RangeResult {
