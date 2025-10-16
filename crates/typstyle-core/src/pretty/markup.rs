@@ -86,8 +86,12 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_flow_like(ctx, heading.to_untyped(), |ctx, child, _| {
             if child.kind() == SyntaxKind::HeadingMarker {
                 FlowItem::spaced(self.arena.text(child.text().as_str()))
-            } else if let Some(markup) = child.cast() {
-                FlowItem::spaced(self.convert_markup_impl(ctx, markup, MarkupScope::InlineItem))
+            } else if let Some(markup) = child.cast::<Markup>() {
+                if !child.is_empty() {
+                    FlowItem::spaced(self.convert_markup_impl(ctx, markup, MarkupScope::InlineItem))
+                } else {
+                    FlowItem::none()
+                }
             } else {
                 FlowItem::none()
             }
@@ -132,7 +136,7 @@ impl<'a> PrettyPrinter<'a> {
                     .repeat(child.text().count_linebreaks()),
             ),
             SyntaxKind::Markup => {
-                if !seen_term || child.children().next().is_some() {
+                if !seen_term || !child.is_empty() {
                     // empty markup is ignored here
                     FlowItem::spaced(self.convert_markup_impl(
                         ctx,
@@ -165,7 +169,7 @@ impl<'a> PrettyPrinter<'a> {
                     .hardline()
                     .repeat(child.text().count_linebreaks()),
             ),
-            SyntaxKind::Markup if child.children().next().is_some() => {
+            SyntaxKind::Markup if !child.is_empty() => {
                 // empty markup is ignored here
                 FlowItem::spaced(self.convert_markup_impl(
                     ctx,

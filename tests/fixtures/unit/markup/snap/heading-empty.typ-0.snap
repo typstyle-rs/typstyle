@@ -1,0 +1,24 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/markup/heading-empty.typ
+---
+=
+==   //
+===    /*  */
+= <label>
+=  <label>
+= /*
+   */<label>
+= /*  */ <label>
+==/*  */<label>
+==  /*
+     */  <label>
+== a  <label>
+=== b//
+== c  //
+= d /*  */  <label>
+== /*  */ e<label>
+= f /*
+     */  <label>
+== /*
+    */ g <label>
