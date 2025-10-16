@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Bug fix: Previously, empty headings with attachments like `= <label>` or `= //` will be formatted as `=  <label>` or `=  //` (an extra space is inserted), which does not converge. Now it is fixed.
+
 ## v0.13.18 - [2025-10-11]
 
 - Bug fix: Previously, `@typstyle off` is not correctly recognized for `{table,grid}.{header,footer}`. Now it is fixed.
