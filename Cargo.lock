@@ -2288,8 +2288,7 @@ dependencies = [
 [[package]]
 name = "prettyless"
 version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "749d63085aa461d80b3233e48781bf9e9dca8147fbc98f577e0697c6827dc418"
+source = "git+https://github.com/typstyle-rs/prettyless?rev=ba88d74267b1ed2293374a74c307343d9e4d11fc#ba88d74267b1ed2293374a74c307343d9e4d11fc"
 dependencies = [
  "typed-arena",
  "unicode-width 0.2.1",

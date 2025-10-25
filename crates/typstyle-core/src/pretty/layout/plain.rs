@@ -96,7 +96,7 @@ impl<'a> PlainStylist<'a> {
             match item {
                 PlainItem::Item(body) => flow.push_doc(body, true, true),
                 PlainItem::Comma => flow.push_doc(arena.text(","), false, true),
-                PlainItem::Linebreak(n) => flow.push_doc(arena.hardline().repeat(n), false, false),
+                PlainItem::Linebreak(n) => flow.push_doc(arena.hard_line().repeat(n), false, false),
                 PlainItem::LineComment(cmt) => flow.push_doc(cmt, true, false),
                 PlainItem::BlockComment(cmt) => flow.push_doc(cmt, true, true),
             }
@@ -104,7 +104,7 @@ impl<'a> PlainStylist<'a> {
 
         let doc = flow.into_doc();
         if self.is_multiline {
-            doc.enclose(arena.hardline(), arena.hardline())
+            doc.enclose(arena.hard_line(), arena.hard_line())
         } else {
             doc
         }

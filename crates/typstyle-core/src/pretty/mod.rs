@@ -101,7 +101,7 @@ impl<'a> PrettyPrinter<'a> {
         self.arena
             .intersperse(
                 node.clone().into_text().lines().map(str::to_string),
-                self.arena.hardline(),
+                self.arena.hard_line(),
             )
             .dedent_to_root()
     }

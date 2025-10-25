@@ -326,7 +326,7 @@ impl<'a> PrettyPrinter<'a> {
                     && child.kind() == SyntaxKind::Space
                     && child.text().has_linebreak()
                 {
-                    flow.push_doc(self.arena.hardline(), false, false);
+                    flow.push_doc(self.arena.hard_line(), false, false);
                     flow.enter_new_line();
                 } else if let Some(repr) = item.0 {
                     flow.push_doc(repr.doc, repr.space_before, repr.space_after);
