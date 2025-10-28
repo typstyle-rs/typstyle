@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.13.19 - [2025-10-28]
 
 - Bug fix: Previously, empty headings with attachments like `= <label>` or `= //` will be formatted as `=  <label>` or `=  //` (an extra space is inserted), which does not converge. Now it is fixed.
 
