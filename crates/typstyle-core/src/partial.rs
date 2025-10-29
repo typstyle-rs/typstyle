@@ -177,7 +177,7 @@ fn get_node_and_mode_for_range(
 
 /// Get a Markup/Expr/Pattern node from source with minimal span that covering the given range.
 fn get_node_cover_range(source: &Source, range: Range<usize>) -> Option<(LinkedNode<'_>, Mode)> {
-    let range = range.start..range.end.min(source.len_bytes());
+    let range = range.start..range.end.min(source.lines().len_bytes());
     get_node_cover_range_impl(range, LinkedNode::new(source.root()), Mode::Markup)
         .and_then(|(span, mode)| source.find(span).map(|node| (node, mode)))
 }
@@ -223,9 +223,11 @@ mod tests {
     fn test(content: &str, lc_range: Range<(usize, usize)>) -> RangeResult {
         let source = Source::detached(content);
         let range = source
+            .lines()
             .line_column_to_byte(lc_range.start.0, lc_range.start.1)
             .unwrap()
             ..source
+                .lines()
                 .line_column_to_byte(lc_range.end.0, lc_range.end.1)
                 .unwrap();
 

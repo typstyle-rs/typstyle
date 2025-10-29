@@ -82,14 +82,14 @@ fn is_paren_needed(expr: Expr<'_>) -> bool {
     !matches!(
         expr,
         Expr::Parenthesized(_)
-            | Expr::Code(_)
-            | Expr::Content(_)
+            | Expr::CodeBlock(_)
+            | Expr::ContentBlock(_)
             | Expr::FuncCall(_)
             | Expr::Array(_)
             | Expr::Dict(_)
             | Expr::Conditional(_)
-            | Expr::While(_)
-            | Expr::For(_)
+            | Expr::WhileLoop(_)
+            | Expr::ForLoop(_)
             | Expr::Contextual(_)
             | Expr::Closure(_)
             | Expr::Raw(_)
