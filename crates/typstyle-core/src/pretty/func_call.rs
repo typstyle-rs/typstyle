@@ -1,7 +1,8 @@
 use itertools::Itertools;
-use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{
+    Context, Mode, PrettyPrinter,
     context::AlignMode,
     layout::{
         flow::FlowItem,
@@ -10,7 +11,7 @@ use super::{
     },
     prelude::*,
     style::FoldStyle,
-    table, Context, Mode, PrettyPrinter,
+    table,
 };
 use crate::{ext::StrExt, pretty::args};
 

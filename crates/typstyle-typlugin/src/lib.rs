@@ -1,4 +1,4 @@
-use typstyle_core::{format_ast, Config, Typstyle};
+use typstyle_core::{Config, Typstyle, format_ast};
 use wasm_minimal_protocol::*;
 
 initiate_protocol!();

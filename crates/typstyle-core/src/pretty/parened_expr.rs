@@ -1,6 +1,6 @@
 use typst_syntax::ast::*;
 
-use super::{prelude::*, util::has_comment_children, Context, Mode};
+use super::{Context, Mode, prelude::*, util::has_comment_children};
 use crate::PrettyPrinter;
 
 impl<'a> PrettyPrinter<'a> {

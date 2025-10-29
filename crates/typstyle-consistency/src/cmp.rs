@@ -9,7 +9,7 @@ use typst::{
     layout::{Page, PagedDocument},
 };
 
-use crate::{sink_assert_eq, ErrorSink};
+use crate::{ErrorSink, sink_assert_eq};
 
 pub struct Compiled<'a> {
     pub name: String,

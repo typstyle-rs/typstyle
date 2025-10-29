@@ -1,8 +1,8 @@
 use std::path::{Path, PathBuf};
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 
-use super::{read_content, Options};
+use super::{Options, read_content};
 
 /// Parses typstyle directives from consecutive directive lines at the start of a file
 ///

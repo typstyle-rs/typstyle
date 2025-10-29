@@ -1,6 +1,6 @@
 mod common;
 
-use common::{typstyle_cmd_snapshot, Workspace};
+use common::{Workspace, typstyle_cmd_snapshot};
 
 #[test]
 fn test_one() {

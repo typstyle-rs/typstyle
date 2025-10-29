@@ -1,4 +1,4 @@
-use crate::pretty::{prelude::*, PrettyPrinter};
+use crate::pretty::{PrettyPrinter, prelude::*};
 
 /// An item in the flow. A space is added only when the item before and the item after both allow it.
 pub struct FlowItem<'a>(pub Option<FlowItemRepr<'a>>);

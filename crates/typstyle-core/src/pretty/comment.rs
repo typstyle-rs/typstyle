@@ -1,6 +1,6 @@
 use typst_syntax::{SyntaxKind, SyntaxNode};
 
-use super::{prelude::*, Context, PrettyPrinter};
+use super::{Context, PrettyPrinter, prelude::*};
 
 impl<'a> PrettyPrinter<'a> {
     pub(super) fn convert_comment(&'a self, _ctx: Context, node: &'a SyntaxNode) -> ArenaDoc<'a> {

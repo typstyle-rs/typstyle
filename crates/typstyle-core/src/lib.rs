@@ -9,7 +9,7 @@ mod utils;
 
 pub use attr::AttrStore;
 pub use config::Config;
-use pretty::{prelude::*, PrettyPrinter};
+use pretty::{PrettyPrinter, prelude::*};
 use thiserror::Error;
 use typst_syntax::{Source, SyntaxNode};
 

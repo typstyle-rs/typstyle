@@ -9,12 +9,12 @@
 use std::{borrow::Cow, ops::Range};
 
 use itertools::Itertools;
-use typst_syntax::{ast::*, LinkedNode, Source, Span, SyntaxKind, SyntaxNode};
+use typst_syntax::{LinkedNode, Source, Span, SyntaxKind, SyntaxNode, ast::*};
 
 use crate::{
+    AttrStore, Error, PrettyPrinter, Typstyle,
     pretty::Mode,
     utils::{self, indent_4_to_2},
-    AttrStore, Error, PrettyPrinter, Typstyle,
 };
 
 /// Result of a range-based formatting or analysis operation.

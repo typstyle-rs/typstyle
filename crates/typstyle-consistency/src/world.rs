@@ -1,13 +1,13 @@
 use anyhow::Result;
 use rustc_hash::FxHashMap;
-use tinymist_world::{vfs::PathResolution, CompilerFeat, CompilerWorld, SourceWorld};
+use tinymist_world::{CompilerFeat, CompilerWorld, SourceWorld, vfs::PathResolution};
 use typst::{
+    Library, World,
     diag::{FileError, FileResult},
     foundations::{Bytes, Datetime},
     syntax::{FileId, Source},
     text::{Font, FontBook},
     utils::LazyHash,
-    Library, World,
 };
 
 pub type SourceMap = FxHashMap<FileId, Source>;

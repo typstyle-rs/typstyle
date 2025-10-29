@@ -2,7 +2,7 @@ use std::ops::Range;
 
 use js_sys::Error;
 use typst_syntax::Source;
-use typstyle_core::{format_ast, partial::format_range_ast, Config, Typstyle};
+use typstyle_core::{Config, Typstyle, format_ast, partial::format_range_ast};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(typescript_custom_section)]

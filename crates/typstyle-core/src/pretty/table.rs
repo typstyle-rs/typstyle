@@ -1,10 +1,10 @@
-use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
-use super::{prelude::*, util::func_name, Context};
+use super::{Context, prelude::*, util::func_name};
 use crate::{
-    ext::StrExt,
-    pretty::{layout::table::TableCollector, Mode},
     PrettyPrinter,
+    ext::StrExt,
+    pretty::{Mode, layout::table::TableCollector},
 };
 
 impl<'a> PrettyPrinter<'a> {

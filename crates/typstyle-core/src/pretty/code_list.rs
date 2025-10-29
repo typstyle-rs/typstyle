@@ -1,11 +1,11 @@
-use typst_syntax::{ast::*, SyntaxKind};
+use typst_syntax::{SyntaxKind, ast::*};
 
 use super::{
+    Context, Mode, PrettyPrinter,
     layout::list::{ListStyle, ListStylist},
     prelude::*,
     style::FoldStyle,
     util::{has_comment_children, is_only_one_and},
-    Context, Mode, PrettyPrinter,
 };
 
 impl<'a> PrettyPrinter<'a> {

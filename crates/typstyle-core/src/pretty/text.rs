@@ -1,6 +1,6 @@
-use typst_syntax::{ast::*, SyntaxNode};
+use typst_syntax::{SyntaxNode, ast::*};
 
-use super::{prelude::*, Context, PrettyPrinter};
+use super::{Context, PrettyPrinter, prelude::*};
 use crate::ext::StrExt;
 
 impl<'a> PrettyPrinter<'a> {

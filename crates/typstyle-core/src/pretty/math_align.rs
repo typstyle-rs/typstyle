@@ -1,9 +1,9 @@
 use itertools::Itertools;
-use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 use unicode_width::UnicodeWidthStr;
 
-use super::{context::AlignMode, prelude::*, Context, PrettyPrinter};
-use crate::{ext::StrExt, AttrStore};
+use super::{Context, PrettyPrinter, context::AlignMode, prelude::*};
+use crate::{AttrStore, ext::StrExt};
 
 impl<'a> PrettyPrinter<'a> {
     /// Attempt to format a math node as an aligned grid if there are align points.

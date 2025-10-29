@@ -1,10 +1,10 @@
 use prettyless::Doc;
 use smallvec::SmallVec;
-use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{
-    layout::flow::FlowItem, prelude::*, text::is_enum_marker, util::is_comment_node, Context, Mode,
-    PrettyPrinter,
+    Context, Mode, PrettyPrinter, layout::flow::FlowItem, prelude::*, text::is_enum_marker,
+    util::is_comment_node,
 };
 use crate::{ext::StrExt, pretty::util::is_only_one_and};
 

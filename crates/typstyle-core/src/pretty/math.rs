@@ -1,15 +1,15 @@
-use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{
+    Context, Mode, PrettyPrinter,
     context::AlignMode,
     layout::{
         flow::FlowItem,
         list::{ListStyle, ListStylist},
     },
     prelude::*,
-    style::{is_multiline_flavored, FoldStyle},
+    style::{FoldStyle, is_multiline_flavored},
     util::is_comment_node,
-    Context, Mode, PrettyPrinter,
 };
 use crate::ext::StrExt;
 

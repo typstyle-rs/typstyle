@@ -4,9 +4,9 @@ members = ["crates/*", "tests"]
 default-members = ["crates/typstyle"]
 
 [workspace.package]
-version = "0.13.19"
+version = "0.14.0"
 rust-version = "1.88"
-edition = "2021"
+edition = "2024"
 authors = ["Wenzhuo Liu", "QuadnucYard"]
 description = "Beautiful and reliable typst code formatter"
 license = "Apache-2.0"
@@ -15,9 +15,9 @@ repository = "https://github.com/typstyle-rs/typstyle"
 homepage = "https://typstyle-rs.github.io/typstyle/"
 
 [workspace.dependencies]
-typstyle-core = { path = "crates/typstyle-core", version = "0.13.19" }
-typstyle = { path = "crates/typstyle", version = "0.13.19" }
-typstyle-wasm = { path = "crates/typstyle-wasm", version = "0.13.19" }
+typstyle-core = { path = "crates/typstyle-core", version = "0.14.0" }
+typstyle = { path = "crates/typstyle", version = "0.14.0" }
+typstyle-wasm = { path = "crates/typstyle-wasm", version = "0.14.0" }
 typstyle-consistency = { path = "crates/typstyle-consistency" }
 
 # Used in core
@@ -86,5 +86,5 @@ inherits = "release"
 debug = true
 
 [patch.crates-io]
-tinymist-world = { git = "https://github.com/Myriad-Dreamin/tinymist", rev = "0f9f4644567236bbfcd1b21baaa4b8bdf224ecb3" }
+# tinymist-world = { git = "https://github.com/Myriad-Dreamin/tinymist", rev = "0f9f4644567236bbfcd1b21baaa4b8bdf224ecb3" }
 # prettyless = { git = "https://github.com/typstyle-rs/prettyless", rev = "9afa5bdece2dbf14c54ade8bef46cd0828cb952b" }

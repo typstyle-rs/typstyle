@@ -1,11 +1,11 @@
 use itertools::Itertools;
-use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{
-    layout::chain::{iterate_deep_nodes, ChainStyle, ChainStylist},
+    Context,
+    layout::chain::{ChainStyle, ChainStylist, iterate_deep_nodes},
     prelude::*,
     util::has_comment_children,
-    Context,
 };
 use crate::PrettyPrinter;
 

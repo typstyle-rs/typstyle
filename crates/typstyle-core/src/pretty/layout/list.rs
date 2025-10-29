@@ -1,8 +1,8 @@
-use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use crate::{
     ext::StrExt,
-    pretty::{prelude::*, style::FoldStyle, Context, Mode, PrettyPrinter},
+    pretty::{Context, Mode, PrettyPrinter, prelude::*, style::FoldStyle},
 };
 
 pub struct ListStylist<'a> {
@@ -494,6 +494,7 @@ impl<'a> ListStylist<'a> {
                                 };
                                 follow_break.flat_alt(follow_flat)
                             } else {
+                                #[allow(clippy::let_and_return)]
                                 let follow = if is_last_real && sty.tight_delim {
                                     arena.nil()
                                 } else if !is_last_real

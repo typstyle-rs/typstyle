@@ -5,7 +5,7 @@ use typst_syntax::{SyntaxKind, SyntaxNode};
 
 use crate::{
     ext::StrExt,
-    pretty::{prelude::*, util::is_comment_node, Context, PrettyPrinter},
+    pretty::{Context, PrettyPrinter, prelude::*, util::is_comment_node},
 };
 
 /// Intermediate representation in chain formatting.

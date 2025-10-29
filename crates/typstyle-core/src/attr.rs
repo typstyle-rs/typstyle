@@ -1,5 +1,5 @@
 use rustc_hash::FxHashMap;
-use typst_syntax::{ast, Span, SyntaxKind, SyntaxNode};
+use typst_syntax::{Span, SyntaxKind, SyntaxNode, ast};
 
 use crate::ext::StrExt;
 

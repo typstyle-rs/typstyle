@@ -1,10 +1,10 @@
-use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{
+    Context, Mode, PrettyPrinter,
     layout::flow::{FlowItem, FlowStylist},
     prelude::*,
     util::is_comment_node,
-    Context, Mode, PrettyPrinter,
 };
 use crate::ext::{BoolExt, StrExt};
 

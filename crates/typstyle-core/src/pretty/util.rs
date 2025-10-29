@@ -1,4 +1,4 @@
-use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 pub fn is_only_one_and<T>(
     mut iterator: impl Iterator<Item = T>,
