@@ -1,8 +1,8 @@
-use typst_syntax::{ast::AstNode, SyntaxKind, SyntaxNode};
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::AstNode};
 
 use crate::{
     ext::StrExt,
-    pretty::{layout::flow::FlowStylist, prelude::*, Context, PrettyPrinter},
+    pretty::{Context, PrettyPrinter, layout::flow::FlowStylist, prelude::*},
 };
 
 #[derive(Debug)]

@@ -1,6 +1,6 @@
 use std::fs;
 
-use criterion::{criterion_group, criterion_main, Criterion};
+use criterion::{Criterion, criterion_group, criterion_main};
 use typst_syntax::Source;
 use typstyle_core::{Config, Typstyle};
 

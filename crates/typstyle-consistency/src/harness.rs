@@ -8,17 +8,17 @@ use std::{
 use anyhow::Result;
 use rustc_hash::{FxHashMap, FxHashSet};
 use tinymist_world::{
-    config::CompileOpts, EntryOpts, EntryReader, ShadowApi, TaskInputs, TypstSystemUniverse,
-    TypstSystemWorld,
+    EntryOpts, EntryReader, ShadowApi, TaskInputs, TypstSystemUniverse, TypstSystemWorld,
+    config::CompileOpts,
 };
 use typst::{
+    World,
     foundations::Bytes,
     syntax::{FileId, Source},
-    World,
 };
 use walkdir::WalkDir;
 
-use crate::{compare_docs, compile_world, ErrorSink, FormattedWorld, SourceMap};
+use crate::{ErrorSink, FormattedWorld, SourceMap, compare_docs, compile_world};
 
 pub struct FormattedSources {
     /// The name of the formatter configuration, used for debugging.

@@ -21,10 +21,10 @@ mod util;
 
 pub use context::{Context, Mode};
 use prelude::*;
-use style::{is_multiline_flavored, FoldStyle};
-use typst_syntax::{ast::*, SyntaxNode};
+use style::{FoldStyle, is_multiline_flavored};
+use typst_syntax::{SyntaxNode, ast::*};
 
-use crate::{ext::StrExt, AttrStore, Config, Error};
+use crate::{AttrStore, Config, Error, ext::StrExt};
 
 pub struct PrettyPrinter<'a> {
     config: Config,

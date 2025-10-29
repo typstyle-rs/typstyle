@@ -1,15 +1,15 @@
 use std::collections::HashSet;
 
-use typst_syntax::{ast::*, SyntaxKind, SyntaxNode};
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{
+    Context, PrettyPrinter,
     layout::{
         flow::FlowItem,
         list::{ListStyle, ListStylist},
     },
     prelude::*,
     util::is_comment_node,
-    Context, PrettyPrinter,
 };
 
 impl<'a> PrettyPrinter<'a> {

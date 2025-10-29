@@ -8,17 +8,18 @@ use std::{
     time::Instant,
 };
 
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result, bail};
 use itertools::Itertools;
 use log::{debug, error, info, warn};
 use typst_syntax::Source;
-use typstyle_core::{format_ast, Config, Typstyle};
+use typstyle_core::{Config, Typstyle, format_ast};
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{
+    ExitStatus,
     cli::{CliArguments, DebugArgs, StyleArgs},
     diff::SourceDiff,
-    fs, ExitStatus,
+    fs,
 };
 
 #[derive(Debug, Clone, Copy)]
