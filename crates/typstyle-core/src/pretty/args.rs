@@ -39,10 +39,10 @@ pub fn split_paren_args(args: Args<'_>) -> (&[SyntaxNode], &[SyntaxNode]) {
 pub fn is_blocky(expr: Expr) -> bool {
     matches!(
         expr,
-        Expr::Code(_)
+        Expr::CodeBlock(_)
             | Expr::Conditional(_)
-            | Expr::While(_)
-            | Expr::For(_)
+            | Expr::WhileLoop(_)
+            | Expr::ForLoop(_)
             | Expr::Contextual(_)
             | Expr::Closure(_)
     )
@@ -52,7 +52,7 @@ pub fn is_blocky(expr: Expr) -> bool {
 pub fn is_combinable(expr: Expr) -> bool {
     match expr {
         Expr::Raw(raw) => raw.block(),
-        Expr::Content(content) => content.body().exprs().next().is_some(),
+        Expr::ContentBlock(content) => content.body().exprs().next().is_some(),
         Expr::Array(array) => array.items().next().is_some(),
         Expr::Dict(dict) => dict.items().next().is_some(),
         Expr::FuncCall(func_call) => {

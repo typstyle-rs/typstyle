@@ -125,7 +125,7 @@ fn check_png(
     after_name: &str,
     sink: &mut ErrorSink,
 ) -> anyhow::Result<()> {
-    let render_png = |page: &Page, number: usize| {
+    let render_png = |page: &Page, number: u64| {
         typst_render::render(
             &Page {
                 frame: page.frame.clone(),
@@ -146,8 +146,8 @@ fn check_png(
     for (i, (page_bf, page_af)) in before.pages.iter().zip(after.pages.iter()).enumerate() {
         check_page(i, page_bf, page_af, sink);
 
-        let png_bf = render_png(page_bf, i);
-        let png_af = render_png(page_af, i);
+        let png_bf = render_png(page_bf, i as u64);
+        let png_af = render_png(page_af, i as u64);
         if png_bf == png_af {
             continue;
         }

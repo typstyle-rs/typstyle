@@ -264,7 +264,7 @@ fn suggest_fold_style_for_args(pargs: &[Arg], hint: FoldStyle) -> FoldStyle {
     // If there’s only one argument and it’s a code block, always fold.
     // Otherwise, respect its flavor.
     if initials.is_empty() {
-        return if matches!(last_expr, Expr::Code(_)) {
+        return if matches!(last_expr, Expr::CodeBlock(_)) {
             FoldStyle::Always
         } else if hint == FoldStyle::Never {
             FoldStyle::Never

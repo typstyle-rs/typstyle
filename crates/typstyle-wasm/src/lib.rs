@@ -84,9 +84,11 @@ pub fn format_range(
     match t.format_source_range(source.clone(), utf8_range) {
         Ok(result) => Ok(FormatRangeResult {
             start: source
+                .lines()
                 .byte_to_utf16(result.source_range.start)
                 .expect("Invalid start index"),
             end: source
+                .lines()
                 .byte_to_utf16(result.source_range.end)
                 .expect("Invalid end index"),
             text: result.content,
@@ -137,10 +139,10 @@ fn to_utf16_range(source: &Source, start: usize, end: usize) -> Result<Range<usi
 }
 
 fn utf16_to_byte(source: &Source, utf16_idx: usize) -> Result<usize, Error> {
-    source.utf16_to_byte(utf16_idx).ok_or_else(|| {
+    source.lines().utf16_to_byte(utf16_idx).ok_or_else(|| {
         Error::new(&format!(
             "Invalid UTF-16 index: {utf16_idx} in source length: {}",
-            source.len_utf16()
+            source.lines().len_utf16()
         ))
     })
 }
