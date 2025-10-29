@@ -9,7 +9,7 @@
 [[testcase]]
 name = "tutorial"
 git = "https://github.com/typst-doc-cn/tutorial"
-rev = "d52bdcf8ee95933559278c06b4aef34ad7f656aa" # Apr 29, 2025
+rev = "5a0b920527e35831fa25f378beeef97d0df64d70" # Oct 14, 2025
 entrypoint = "src/ebook.typ"
 
 [[testcase]]
@@ -21,17 +21,18 @@ blacklist = ["chicv.typ"]
 
 ## Packages
 
-# [[testcase]]
-# name = "alchemist"
-# git = "https://github.com/Typsium/alchemist" # wait for packages to merge
-# rev = "dedf319ea58e3b42c6eac1a9fc3b83e576f0f0a1" # Apr 22, 2025
-# entrypoint = "doc/manual.typ"
-
 [[testcase]]
-name = "cetz"
-git = "https://github.com/cetz-package/cetz"
-rev = "8ec63845f87941d8d6b90b5d0dd52ed4e74c3694"
-examples = "tests"
+name = "alchemist"
+git = "https://github.com/Typsium/alchemist" # wait for packages to merge
+rev = "a9d121fece834e0032b087a5f241083b4cf3ca2a" # Aug 23, 2025
+entrypoint = "doc/manual.typ"
+
+# Fail to compile in typst 0.14
+# [[testcase]]
+# name = "cetz"
+# git = "https://github.com/cetz-package/cetz"
+# rev = "33cc71b132342660681e9a6d7e72ed73f30cd8da" # Oct 9, 2025
+# examples = "tests"
 
 [[testcase]]
 name = "codly"
@@ -72,14 +73,14 @@ entrypoint = "README.typ"
 
 # [[testcase]]
 # name = "hydra"
-# git = "https://github.com/tingerrr/hydra" # unknown problems
-# rev = "f1090d049c70630b14250ef5115c6144db510814" # Mar 31, 2025
+# git = "https://github.com/tingerrr/hydra"
+# rev = "2f88d4e72a8ff003457b3407df5f275fdcee57cc" # Oct 28, 2025
 # entrypoint = "docs/manual/manual.typ"
 
 # [[testcase]]
 # name = "glossarium"
-# git = "https://github.com/typst-community/glossarium" # failed to compile
-# rev = "486ab2a21bf63d57dd5b475cbbe8728db0354134" # Apr 17, 2025
+# git = "https://github.com/typst-community/glossarium" # API outdated
+# rev = "08fc2f7f2109ff5d3fca23ff37b3e2b4661f3b41" # Sep 25, 2025
 # entrypoint = "advanced-docs/main.typ"
 # examples = "examples"
 
@@ -103,8 +104,8 @@ entrypoint = "physica-manual.typ"
 
 # [[testcase]]
 # name = "pinit"
-# git = "https://github.com/OrangeX4/typst-pinit" # examples containing legacy code
-# rev = "774460259373940a09fad863490975bf1021fda2" # Oct 17, 2024
+# git = "https://github.com/OrangeX4/typst-pinit" # examples containing legacy code (fletcher)
+# rev = "b12b9bebd1d2c0cde9a493049a29a123867aa485" # May 20, 2025
 # examples = "examples"
 
 [[testcase]]
@@ -113,25 +114,19 @@ git = "https://github.com/EpicEricEE/typst-quick-maths"
 rev = "c326693a9286d411ade815c48924c042560f987c" # Mar 1, 2025
 examples = "assets"
 
+# Fail to compile in typst 0.14
 [[testcase]]
 name = "quill"
 git = "https://github.com/Mc-Zen/quill"
-rev = "39781d65927a6d40e0d27f7c093c59bb8f9c1b83" # Apr 6, 2025
+rev = "da96afd72718f52e9806004038fa84c368e27ddb" # Oct 13, 2025
 entrypoint = "docs/guide/quill-guide.typ"
 blacklist = ["examples"]
 
 # [[testcase]]
 # name = "showybox"
-# git = "https://github.com/Pablo-Gonzalez-Calderon/showybox-package" # compilation error
-# rev = "3fb86ffc9ac46180f63a10394bc83e3d01872f4b" # Feb 17, 2025
+# git = "https://github.com/Pablo-Gonzalez-Calderon/showybox-package" # API outdated
+# rev = "fd8d68e72f8489995a13c93154219d8eb496d9b1" # Jul 29, 2025
 # entrypoint = "manual/manual.typ"
-# examples = "examples"
-
-# [[testcase]]
-# name = "suiji"
-# git = "https://github.com/liuguangxi/suiji" # too costly
-# rev = "2c8216555252b76cf2e8e0baad8787de30d67299" # Apr 18, 2025
-# entrypoint = "doc/manual.typ"
 # examples = "examples"
 
 [[testcase]]
@@ -152,12 +147,12 @@ git = "https://github.com/OrangeX4/typst-theorion"
 rev = "b13c56177144720ce83b69193f16544c27b1a648" # Apr 8, 2025
 entrypoint = "examples/example.typ" # should not compile everything together
 
-# [[testcase]]
-# name = "tidy"
-# git = "https://github.com/Mc-Zen/tidy" # defer
-# rev = "f9e96162e112dac133edc5cdefe6fba42fb4d337" # Apr 9, 2025
-# entrypoint = "docs/tidy-guide.typ"
-# examples = "examples"
+[[testcase]]
+name = "tidy"
+git = "https://github.com/Mc-Zen/tidy" # defer
+rev = "5acb5d058ce29000a4ebfd4e4673665402f81324" # Aug 27, 2025
+entrypoint = "docs/tidy-guide.typ"
+examples = "examples"
 
 [[testcase]]
 name = "tiptoe"
@@ -165,11 +160,12 @@ git = "https://github.com/Mc-Zen/tiptoe"
 rev = "c0c42414a4051f53409b7f9523117ca0c35f8bfe" # Mar 10, 2025
 examples = "docs/figures"
 
-[[testcase]]
-name = "touying"
-git = "https://github.com/touying-typ/touying"
-rev = "d1963776f4d401cadd2b58193ef3a377cf4ac546" # Apr 6, 2025
-examples = "examples"
+# Fail to compile in typst 0.14
+# [[testcase]]
+# name = "touying"
+# git = "https://github.com/touying-typ/touying"
+# rev = "262e4c351209d742c5144104f2c7555d4bde78fa" # Oct 9, 2025
+# examples = "examples"
 
 [[testcase]]
 name = "typsium"
@@ -189,11 +185,11 @@ git = "https://github.com/ntjess/wrap-it"
 rev = "fb225204a6dde4f607965c041829c56ec0ec6e39" # Feb 21, 2025
 entrypoint = "docs/readme.typ"
 
-# [[testcase]]
-# name = "zero"
-# git = "https://github.com/Mc-Zen/zero" # compilation error
-# rev = "7ffa0020f9d51c68beae41875643e00606e1fb41" # Apr 2, 2025
-# entrypoint = "docs/zero-docs.typ"
+[[testcase]]
+name = "zero"
+git = "https://github.com/Mc-Zen/zero"
+rev = "afa1e6340fe4b45e8320af7b44cadef142b088f2" # Oct 29, 2025
+entrypoint = "docs/zero-docs.typ"
 
 [[testcase]]
 name = "zebraw"
@@ -215,8 +211,9 @@ git = "https://github.com/gaoachao/uniquecv-typst"
 rev = "17927a9f7f671c4436e024389bb50847d14553b1" # Feb 28, 2025
 entrypoint = "main.typ"
 
-[[testcase]]
-name = "nju-thesis-typst"
-git = "https://github.com/nju-lug/nju-thesis-typst"
-rev = "4a975c8481c946ac644833cf34f1330e9f350429" # Mar 31, 2025
-entrypoint = "template/thesis.typ"
+# Fail to compile in typst 0.14
+# [[testcase]]
+# name = "nju-thesis-typst"
+# git = "https://github.com/nju-lug/nju-thesis-typst"
+# rev = "4a975c8481c946ac644833cf34f1330e9f350429" # Mar 31, 2025
+# entrypoint = "template/thesis.typ"
