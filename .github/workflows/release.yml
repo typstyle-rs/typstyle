@@ -68,6 +68,9 @@ jobs:
     needs: [plan]
     uses: ./.github/workflows/publish-crates.yml
     secrets: inherit
+    permissions:
+      id-token: write
+      contents: read
     with:
       dry-run: ${{ needs.plan.outputs.dry-run == 'true' || needs.plan.outputs.is-prerelease == 'true' }}
 
