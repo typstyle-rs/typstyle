@@ -21,7 +21,6 @@ jobs:
   publish-crates:
     name: Publish Rust crates
     runs-on: ubuntu-latest
-    environment: release
     permissions:
       id-token: write
     steps:
