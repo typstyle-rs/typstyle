@@ -43,9 +43,6 @@ jobs:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Update npm
-        run: npm install -g npm@^11.5.1
-
       - name: Cache Rust dependencies
         uses: Swatinem/rust-cache@v2
 
