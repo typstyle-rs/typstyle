@@ -35,12 +35,13 @@ jobs:
         uses: Swatinem/rust-cache@v2
 
       - name: Authenticate with crates.io via OIDC
-        if: ${{ !inputs.dry-run }}
         uses: rust-lang/crates-io-auth-action@v1
         id: auth
 
       - name: Publish crates (dry-run)
         if: ${{ inputs.dry-run }}
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
           cargo publish -p typstyle-core --dry-run
           cargo publish -p typstyle --dry-run
