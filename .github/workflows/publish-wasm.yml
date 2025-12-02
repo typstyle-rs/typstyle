@@ -16,7 +16,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write # Required for provenance attestation
+  id-token: write # Required for OIDC authentication and provenance attestation
 
 jobs:
   publish-wasm:
@@ -60,14 +60,10 @@ jobs:
 
       - name: Publish to NPM (dry-run)
         if: ${{ inputs.dry-run }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         working-directory: crates/typstyle-wasm/pkg
         run: npm publish --provenance --access public --dry-run
 
       - name: Publish to NPM
         if: ${{ !inputs.dry-run }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         working-directory: crates/typstyle-wasm/pkg
         run: npm publish --provenance --access public
