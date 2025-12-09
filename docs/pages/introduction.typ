@@ -3,12 +3,12 @@
 #show: book-page.with(title: "Introduction")
 
 #context if is-html-target() {
-  html.elem("div", {
-    html.elem("a", attrs: (href: "https://repology.org/project/typstyle/versions"))[
-      #html.elem("img", attrs: (
+  html.div({
+    html.a(href: "https://repology.org/project/typstyle/versions")[
+      #html.img(
         src: "https://repology.org/badge/latest-versions/typstyle.svg",
         alt: "latest packaged version(s)",
-      ))
+      )
     ]
   })
 }

@@ -13,7 +13,7 @@ The easiest way to get started is to download the pre-built binary from the #lin
 == Package Managers
 
 #context if is-html-target() {
-  html.elem("a", attrs: (href: "https://repology.org/project/typstyle/versions"))[
+  html.a(href: "https://repology.org/project/typstyle/versions")[
     #html.elem("img", attrs: (
       src: "https://repology.org/badge/vertical-allrepos/typstyle.svg",
       alt: "Packaging status",
