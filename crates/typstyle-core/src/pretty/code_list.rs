@@ -196,6 +196,7 @@ impl<'a> PrettyPrinter<'a> {
 
         ListStylist::new(self)
             .with_fold_style(self.get_fold_style(ctx, params))
+            .keep_linebreak(self.config.blank_lines_upper_bound)
             .process_list(ctx, params.to_untyped(), |ctx, node| {
                 self.convert_param(ctx, node)
             })
