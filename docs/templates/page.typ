@@ -25,8 +25,12 @@
   let is-main = title == "Typstyle Documentation"
 
   // set web/pdf page properties
-  set page(numbering: none, number-align: center, width: page-width) if not (sys-is-html-target or is-html-target)
-  set page(numbering: "1") if (not sys-is-html-target and is-pdf-target) and not is-main and kind == "page"
+  set page(numbering: none, number-align: center, width: page-width) if not (
+    sys-is-html-target or is-html-target
+  )
+  set page(numbering: "1") if (
+    (not sys-is-html-target and is-pdf-target) and not is-main and kind == "page"
+  )
 
   // remove margins for web target
   set page(
@@ -45,7 +49,8 @@
   ) if is-web-target and not is-html-target
 
   show: if is-html-target {
-    import "@preview/shiroa-starlight:0.2.3": starlight
+    // We cannot import shiroa-starlight in the dep.typ, since it must be imported when html is enabled
+    import "@preview/shiroa-starlight:0.3.1": starlight
 
     let description = if description != none {
       description
@@ -60,9 +65,7 @@
     starlight.with(
       include "/docs/book.typ",
       title: title,
-      site-title: [Typstyle Docs],
       description: description,
-      github-link: "https://github.com/typstyle-rs/typstyle",
     )
   } else {
     it => it
@@ -82,7 +85,7 @@
   show: code-block-rules.with(themes: themes, code-font: code-font)
 
   context if shiroa-sys-target() == "html" {
-    show raw: it => html.elem("style", it.text)
+    show raw: it => html.style(it.text)
     ```css
     .pseudo-image svg {
       width: 100%
@@ -105,10 +108,12 @@
 
   // Put your custom CSS here.
   context if shiroa-sys-target() == "html" {
-    html.elem("style", read("styles/base.css"))
-    html.elem("style", read("styles/callout.css"))
-    html.elem("style", read("styles/example.css"))
-    html.elem("style", read("styles/hypraw.css"))
-    html.elem("script", read("../packages/hypraw/examples/copy-to-clipboard.js"))
+    html.style(read("styles/base.css"))
+    html.style(read("styles/callout.css"))
+    html.style(read("styles/example.css"))
+    html.style(read("styles/hypraw.css"))
+    html.style(read("styles/hypraw-line-numbers.css"))
+    html.style(read("styles/hypraw-copy-button.css"))
+    html.script(read("scripts/copy-to-clipboard.js"))
   }
 }

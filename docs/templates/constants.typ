@@ -3,7 +3,7 @@
 #import "metadata.typ": is-web-target
 
 // Theme (Colors)
-#let themes = theme-box-styles-from(toml("theme-style.toml"), xml: it => xml(it))
+#let themes = theme-box-styles-from(toml("theme-style.toml"), read: it => read(it))
 #let (
   default-theme: (
     style: theme-style,

@@ -1,4 +1,4 @@
-#import "../deps.typ": shiroa, hypraw
+#import "../deps.typ": hypraw, shiroa
 #import shiroa.templates: *
 #import "metadata.typ": *
 #import "constants.typ": *
@@ -16,7 +16,7 @@
   main-size: main-size,
   heading-sizes: heading-sizes,
   list-indent: list-indent,
-  starlight: "@preview/shiroa-starlight:0.2.3",
+  starlight: "@preview/shiroa-starlight:0.3.1",
 ) = {
   assert(dash-color != none, message: "dash-color must be set")
 
@@ -46,7 +46,7 @@
     import starlight: builtin-icon
 
     in-heading.update(true)
-    html.elem("div", attrs: (class: "sl-heading-wrapper level-h" + str(it.level + 1)))[
+    html.div(class: "sl-heading-wrapper level-h" + str(it.level + 1))[
       #it
       #html.elem(
         "h" + str(it.level + 1),
@@ -191,7 +191,7 @@
   let theme-box = theme-box.with(themes: themes)
 
   /// HTML code block supported by hypraw.
-  show: hypraw.hypraw
+  show: hypraw.hypraw.with(line-numbers: true, copy-button: true)
   set raw(tab-size: 114)
 
   let in-mk-raw = state("shiroa:in-mk-raw", false)

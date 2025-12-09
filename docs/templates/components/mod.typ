@@ -1,2 +1,2 @@
 #import "example.typ": render-examples
-#import "callout.typ": callout, note, important, warning, tip, caution
+#import "callout.typ": callout, caution, important, note, tip, warning

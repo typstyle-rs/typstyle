@@ -91,26 +91,32 @@
   let config-info = format-config-changes(config-changes)
 
   if is-html-target() {
-    html.elem("div", attrs: ("class": "example"))[
-      #html.elem("div", attrs: ("class": "example__header"))[
+    html.div(class: "example")[
+      #html.div(class: "example__header")[
         Example
         #if config-info != none [
-          #html.elem("span", attrs: ("class": "example__config"))[#config-info]
+          #html.span(class: "example__config")[#config-info]
         ]
       ]
-      #html.elem("div", attrs: ("class": "example__content"))[
-        #html.elem("div", attrs: ("class": "example__panel"))[
-          #html.elem("div", attrs: ("class": "example__label"))[Before]
+      #html.div(class: "example__content")[
+        #html.div(class: "example__panel")[
+          #html.div(class: "example__label")[Before]
           #left
         ]
-        #html.elem("div", attrs: ("class": "example__panel"))[
-          #html.elem("div", attrs: ("class": "example__label"))[After]
+        #html.div(class: "example__panel")[
+          #html.div(class: "example__label")[After]
           #right
         ]
       ]
     ]
   } else {
-    block(fill: rgb("#f8f9fa"), stroke: 0.5pt + rgb("#dee2e6"), radius: 4pt, inset: 0.8em, width: 100%)[
+    block(
+      fill: rgb("#f8f9fa"),
+      stroke: 0.5pt + rgb("#dee2e6"),
+      radius: 4pt,
+      inset: 0.8em,
+      width: 100%,
+    )[
       #text(weight: "bold", size: 1.1em)[
         Example
         #if config-info != none [

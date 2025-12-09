@@ -13,13 +13,13 @@ generate-cli-help:
       > "docs/assets/generated/cli-help.txt"
 
 dev-docs: pre-docs
-    shiroa serve docs/pages -w . --mode static-html
+    shiroa serve docs/pages --root . --mode static-html
 
 build-docs: pre-docs
-    shiroa build docs/pages -w . --mode static-html
+    shiroa build docs/pages --root . --mode static-html
 
 build-docs-gh: pre-docs
-    shiroa build docs/pages -w . --mode static-html --path-to-root /typstyle/
+    shiroa build docs/pages --root . --mode static-html --path-to-root /typstyle/
 
 [private]
 pre-docs: build-plugin generate-cli-help

@@ -75,7 +75,10 @@
         }
         layout(shape => {
           context {
-            let lnk = link(it.element.location(), [#outline-counter.display(outline-numbering) #it.element.body])
+            let lnk = link(
+              it.element.location(),
+              [#outline-counter.display(outline-numbering) #it.element.body],
+            )
             let r = repeat([.])
             let page-no = str(it.element.location().page())
             let q = measure(lnk + page-no)
