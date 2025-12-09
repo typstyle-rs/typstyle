@@ -3036,7 +3036,6 @@ input_file: tests/fixtures/packages/touying/core.typ
     ))
   }
 
-
   self.subslide = 1
   // for single page slide, get the repetitions
   if repeat == auto {

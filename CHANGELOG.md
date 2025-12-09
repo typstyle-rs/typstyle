@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+- Feature: Preserve blank lines between elements in arrays, dictionaries, function parameters, destructuring patterns, and other code constructs. This maintains intentional spacing in code formatting, particularly useful for parameters with doc-comments.
+
+  In the example below, the blank lines are now preserved:
+  ```typst
+  #let func(
+    /// First parameter
+    x,
+
+    /// Second parameter
+    y,
+  ) = {}
+  ```
+
+- Change: The default limit for consecutive blank lines is now 1 (previously 2).
+
 ## v0.14.0 - [2025-10-29]
 
 - Feature: Bump typst-syntax to v0.14.0.

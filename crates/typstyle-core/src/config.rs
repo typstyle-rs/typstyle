@@ -7,7 +7,7 @@ pub struct Config {
     pub tab_spaces: usize,
     /// Maximum width of each line.
     pub max_width: usize,
-    /// Maximum number of consecutive blank lines allowed between code items.
+    /// Maximum number of consecutive blank lines allowed.
     pub blank_lines_upper_bound: usize,
     /// When `true`, consecutive whitespace in markup is collapsed into a single space.
     pub collapse_markup_spaces: bool,
@@ -23,7 +23,7 @@ impl Default for Config {
         Self {
             tab_spaces: 2,
             max_width: 80,
-            blank_lines_upper_bound: 2,
+            blank_lines_upper_bound: 1,
             reorder_import_items: true,
             collapse_markup_spaces: false,
             wrap_text: false,

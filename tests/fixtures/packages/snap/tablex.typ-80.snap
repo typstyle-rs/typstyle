@@ -953,7 +953,6 @@ input_file: tests/fixtures/packages/tablex.typ
 
     let item = table-item-convert(item)
 
-
     if is-some-tablex-line(item) {
       // detect lines' x, y
       if is-tablex-hline(item) {

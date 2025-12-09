@@ -1,7 +1,6 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/comment/in-array.typ
-snapshot_kind: text
 ---
 #(1, 2, /* 3, */ 4, 5)
 
@@ -45,6 +44,7 @@ snapshot_kind: text
   789,
   1445,
   654,
+
   /* 5 */ 666,
   777, /* 659 */
 )

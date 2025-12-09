@@ -1312,7 +1312,6 @@ input_file: tests/fixtures/packages/codly.typ
     )
   }
 
-
   let in_range(
     line,
   ) = {

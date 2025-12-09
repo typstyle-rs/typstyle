@@ -22,21 +22,25 @@ input_file: tests/fixtures/ai/feat/comments-code.typ
   authors: (), /* List of authors - can be strings or
                dictionaries with name and affiliation */
   date: datetime.today(), // Publication date
+
   // Layout settings
   page-size: "a4", // Paper size: a4, letter, etc.
   margin: 1in, /* Page margins - can be single value
                or dictionary with x/y values */
   columns: 1, // Number of columns (1-3)
+
   // Typography options
   font: "Libertinus Serif", // Main body font
   heading-font: none, /* Heading font, defaults to body font
                       if not specified */
   math-font: "New Computer Modern Math", // Math font
+
   // Advanced options
   line-spacing: 0.65em, // Space between lines
   paragraph-spacing: 0.65em, // Space between paragraphs
   show-outline: true, /* Whether to include table of contents
                       at the beginning */
+
   // Content processing
   content, // The main document content
 ) = {

@@ -2070,7 +2070,6 @@ input_file: tests/fixtures/packages/tablex.typ
       item,
     )
 
-
     if is-some-tablex-line(
       item,
     ) {

@@ -146,7 +146,6 @@ input_file: tests/fixtures/unit/code/chain/call.typ
     .eeeeeeeee[]
     .ffffffffff
 
-
   let points = (
     from,
     to,

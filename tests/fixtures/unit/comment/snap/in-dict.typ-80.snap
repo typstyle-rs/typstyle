@@ -1,7 +1,6 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/comment/in-dict.typ
-snapshot_kind: text
 ---
 #(:
   // empty dict
@@ -42,6 +41,7 @@ snapshot_kind: text
 #(:
   /* 1 */ /* 2 */ ../* 3 */(:),
   // 4
+
   ../* 5 */ /* 6 */ // 7
   (:), /* 8 */
 )

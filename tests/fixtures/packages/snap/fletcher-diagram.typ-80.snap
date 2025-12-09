@@ -510,14 +510,12 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
     })
     let edges = edges.map(edge => resolve-edge-options(edge, options))
 
-
     // try resolving node uv coordinates. this resolves to NaN coords if the coord depends on physical lengths
     let ctx = (
       target-system: "uv",
       em-size: (width: options.em-size, height: options.em-size),
     )
     let (ctx-with-uv-anchors, nodes) = resolve-node-coordinates(nodes, ctx: ctx)
-
 
     // nodes and edges whose uv coordinates can be resolved without knowing the grid
     let rects-affecting-grid = nodes
@@ -540,14 +538,12 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
       not is-nan-vector(vert)
     })
 
-
     // determine diagram's elastic grid layout
     let grid = compute-grid(
       rects-affecting-grid,
       vertices-affecting-grid,
       options,
     )
-
 
     // now with grid determined, compute final (physical) coordinates for nodes and edges
     let (ctx-with-xyz-anchors, nodes) = resolve-node-coordinates(nodes, ctx: (
@@ -559,14 +555,12 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
       grid: grid,
     ))
 
-
     // resolve enclosing nodes
     let (extra-anchors, nodes) = resolve-node-enclosures(
       nodes,
       ctx-with-xyz-anchors,
     )
     ctx-with-xyz-anchors.nodes += extra-anchors
-
 
     // resolve edges
     edges = edges.map(edge => {
@@ -580,7 +574,6 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
       edge = apply-edge-shift(grid, edge)
       edge
     })
-
 
     render(grid, nodes, edges, options)
   })

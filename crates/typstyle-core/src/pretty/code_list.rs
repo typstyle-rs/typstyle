@@ -125,6 +125,7 @@ impl<'a> PrettyPrinter<'a> {
 
         ListStylist::new(self)
             .with_fold_style(self.get_fold_style(ctx, array))
+            .keep_linebreak(self.config.blank_lines_upper_bound)
             .process_list(ctx, array.to_untyped(), |ctx, node| {
                 self.convert_array_item(ctx, node)
             })
@@ -145,6 +146,7 @@ impl<'a> PrettyPrinter<'a> {
 
         ListStylist::new(self)
             .with_fold_style(self.get_fold_style(ctx, dict))
+            .keep_linebreak(self.config.blank_lines_upper_bound)
             .process_list(ctx, dict.to_untyped(), |ctx, node| {
                 self.convert_dict_item(ctx, node)
             })
@@ -167,6 +169,7 @@ impl<'a> PrettyPrinter<'a> {
 
         ListStylist::new(self)
             .with_fold_style(self.get_fold_style(ctx, destructuring))
+            .keep_linebreak(self.config.blank_lines_upper_bound)
             .process_list(ctx, destructuring.to_untyped(), |ctx, node| {
                 self.convert_destructuring_item(ctx, node)
             })
@@ -196,6 +199,7 @@ impl<'a> PrettyPrinter<'a> {
 
         ListStylist::new(self)
             .with_fold_style(self.get_fold_style(ctx, params))
+            .keep_linebreak(self.config.blank_lines_upper_bound)
             .process_list(ctx, params.to_untyped(), |ctx, node| {
                 self.convert_param(ctx, node)
             })

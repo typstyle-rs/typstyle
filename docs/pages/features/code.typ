@@ -65,6 +65,46 @@ This approach respects user intent and preserves code readability.
   Code will never become less expanded due to flavor detection—if the original code is already multiline, Typstyle will not collapse it into a single line.
 ]
 
+== Blank Lines
+
+Typstyle preserves intentional blank lines in code and strip excessive ones, including within code blocks and between elements in list-like structures (arrays, dictionaries, function parameters, destructuring patterns, etc.). By default, consecutive blank lines are capped at 1.
+
+```typst
+#{
+
+
+  let x = 1
+
+
+
+  let y = 2
+
+}
+
+#let func(
+
+  /// First parameter
+  x,
+
+
+  /// Second parameter
+  y,
+
+  /// Third parameter
+  z,
+) = {}
+
+#let arr = (
+  1,
+
+
+  2,
+
+  3,
+
+)
+```
+
 = Code Block Structure
 
 == Single-Statement Blocks
@@ -80,22 +120,6 @@ Single-statement blocks remain inline when they fit within the line width, unles
   1 } else {
      2 }
 #let x = if true { "111111111111" } else { "222222222222222222222222222222" }
-```
-
-== Linebreak Management
-
-Typstyle strips excessive newlines in code blocks:
-
-```typst
-#{
-
-
-  let x = 1
-
-  let y = 2
-
-
-}
 ```
 
 = Content Blocks
