@@ -40,6 +40,7 @@ input_file: tests/fixtures/ai/feat/data-processing.typ
     values.fold(0, (s, v) => s + v)
       / values.len()
   ),
+
   median: values => {
     let sorted = values.sorted()
     let n = sorted.len()
@@ -55,6 +56,7 @@ input_file: tests/fixtures/ai/feat/data-processing.typ
       sorted.at(int(n / 2))
     }
   },
+
   std: values => {
     let mean = (
       values.fold(0, (s, v) => s + v)

@@ -16,6 +16,7 @@ input_file: tests/fixtures/unit/off/complex.typ
     11 * 1,
     12 / 1,
   ),
+
   // Dictionary with inline off directives
   dict: (
     name: "Alice",
@@ -25,6 +26,7 @@ input_file: tests/fixtures/unit/off/complex.typ
     /* @typstyle off */ id:123*1,
     status: "active" + "",
   ),
+
   // Destructuring patterns with off
   patterns: {
     let (
@@ -33,6 +35,7 @@ input_file: tests/fixtures/unit/off/complex.typ
       last,
     ) = (1, 2, 3)
   },
+
   // Code blocks with mid-line off directives
   code: {
     let x = 1
@@ -68,6 +71,7 @@ input_file: tests/fixtures/unit/off/complex.typ
 
     my_func
   },
+
   // Complex content with lists and alignment
   content: [
     // List with multiple ugly sections

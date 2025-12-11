@@ -1,0 +1,75 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/code/blank-lines/loops.typ
+---
+// For loop with blank lines in body
+#{
+  for item in (
+    items
+  ) {
+    process(
+      item,
+    )
+
+    log(
+      item,
+    )
+
+    save(
+      item,
+    )
+  }
+}
+
+// While loop with blank lines
+#{
+  while condition {
+    do-something()
+
+
+    check-state()
+
+    update()
+  }
+}
+
+// Nested loops with blank lines
+#{
+  for outer in (
+    outer-items
+  ) {
+    for inner in (
+      inner-items
+    ) {
+      process(
+        outer,
+        inner,
+      )
+    }
+
+
+    finalize(
+      outer,
+    )
+  }
+}
+
+// Loop with multiple consecutive blank lines (should be capped)
+#{
+  for x in range(
+    10,
+  ) {
+    step1(
+      x,
+    )
+
+
+    step2(
+      x,
+    )
+
+    step3(
+      x,
+    )
+  }
+}

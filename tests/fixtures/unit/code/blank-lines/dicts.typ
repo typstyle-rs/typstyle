@@ -1,0 +1,44 @@
+// Simple dictionary with blank lines
+#let dict1 = (
+
+  sum: 1 + 2,
+
+  product: 3 * 4,
+
+
+  text: "hello" + " world",
+
+)
+
+// Nested dictionaries with blank lines
+#let dict4 = (
+
+  outer1: "value",
+
+  nested: (
+
+    inner1: "a",
+
+    inner2: "b",
+
+  ),
+
+  outer2: "value2",
+
+)
+
+// Dictionary with comments and blank lines
+#let dict6 = (
+
+  // First entry
+  first: 1,
+
+
+
+  // Second entry
+  second: 2,
+
+  // Third entry
+  third: 3,
+
+)

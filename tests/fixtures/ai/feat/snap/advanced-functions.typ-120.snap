@@ -84,10 +84,12 @@ input_file: tests/fixtures/ai/feat/advanced-functions.typ
   // Basic layout options
   columns: 2,
   gutter: 1em, // Space between columns
+
   // Advanced options
   balance: true, /* Balance column heights */
   orphans: 2, // Minimum lines at bottom of page
   widows: 2, /* Minimum lines at top of page */
+
   // Content processing
   preprocess: none, // Optional preprocessing function
   postprocess: none, /* Optional postprocessing function */

@@ -48,7 +48,6 @@ This follows the defaults of the Rust struct. The fields and values are subject 
 (
   tab_spaces: 2,
   max_width: 80,
-  blank_lines_upper_bound: 2,
   collapse_markup_spaces: false,
   reorder_import_items: true,
   wrap_text: false,
