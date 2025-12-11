@@ -41,7 +41,7 @@ impl<'a> PrettyPrinter<'a> {
             } else {
                 FoldStyle::Never
             })
-            .keep_linebreak(self.config.blank_lines_upper_bound)
+            .keep_linebreak(self.config.blank_lines_upper_bound_for_code)
             .process_iterable(ctx, nodes.into_iter(), |ctx, expr| {
                 self.convert_expr(ctx, expr)
             })
@@ -60,7 +60,7 @@ impl<'a> PrettyPrinter<'a> {
         ListStylist::new(self)
             .disallow_front_comment()
             .with_fold_style(FoldStyle::Never)
-            .keep_linebreak(self.config.blank_lines_upper_bound)
+            .keep_linebreak(self.config.blank_lines_upper_bound_for_code)
             .process_iterable(ctx, code.to_untyped().children(), |ctx, expr| {
                 self.convert_expr(ctx, expr)
             })
@@ -125,6 +125,7 @@ impl<'a> PrettyPrinter<'a> {
 
         ListStylist::new(self)
             .with_fold_style(self.get_fold_style(ctx, array))
+            .keep_linebreak(self.config.blank_lines_upper_bound)
             .process_list(ctx, array.to_untyped(), |ctx, node| {
                 self.convert_array_item(ctx, node)
             })
@@ -145,6 +146,7 @@ impl<'a> PrettyPrinter<'a> {
 
         ListStylist::new(self)
             .with_fold_style(self.get_fold_style(ctx, dict))
+            .keep_linebreak(self.config.blank_lines_upper_bound)
             .process_list(ctx, dict.to_untyped(), |ctx, node| {
                 self.convert_dict_item(ctx, node)
             })
@@ -167,6 +169,7 @@ impl<'a> PrettyPrinter<'a> {
 
         ListStylist::new(self)
             .with_fold_style(self.get_fold_style(ctx, destructuring))
+            .keep_linebreak(self.config.blank_lines_upper_bound)
             .process_list(ctx, destructuring.to_untyped(), |ctx, node| {
                 self.convert_destructuring_item(ctx, node)
             })
@@ -196,6 +199,7 @@ impl<'a> PrettyPrinter<'a> {
 
         ListStylist::new(self)
             .with_fold_style(self.get_fold_style(ctx, params))
+            .keep_linebreak(self.config.blank_lines_upper_bound)
             .process_list(ctx, params.to_untyped(), |ctx, node| {
                 self.convert_param(ctx, node)
             })

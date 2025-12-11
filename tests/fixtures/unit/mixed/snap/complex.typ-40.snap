@@ -5,6 +5,7 @@ input_file: tests/fixtures/unit/mixed/complex.typ
 #let complex_function(
   param1,
   param2,
+
   param3: 5,
   param4: "string",
 ) = {}

@@ -1,0 +1,9 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/code/blank-lines/imports.typ
+---
+// Import with multiple items and blank lines
+#import "module.typ": item1, item2, item3
+
+// Import with renaming and blank lines
+#import "utils.typ": another-func, old-name as new-name, third-func as renamed

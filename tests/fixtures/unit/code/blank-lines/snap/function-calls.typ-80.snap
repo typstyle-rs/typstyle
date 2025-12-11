@@ -1,0 +1,58 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/code/blank-lines/function-calls.typ
+---
+// Mixed positional and named arguments
+#complex-func(
+  "positional",
+
+  name: "named",
+
+  "another-positional",
+
+  key: "value",
+)
+
+// Nested function calls with blank lines
+#outer(
+  inner1(a, b),
+
+  inner2(
+    x,
+
+    y,
+  ),
+
+  inner3(c, d),
+)
+
+// Content function with blank lines
+#box(
+  width: 100pt,
+
+  height: 50pt,
+
+  fill: blue,
+)[Content here]
+
+// Function with spread operator and blank lines
+#func(
+  ..args,
+
+  named: "value",
+
+  ..rest,
+)
+
+// Chained method calls with blank lines
+#text(
+  size: 12pt,
+
+  weight: "bold",
+
+  fill: red,
+).scale(
+  x: 1.5,
+
+  y: 1.5,
+)

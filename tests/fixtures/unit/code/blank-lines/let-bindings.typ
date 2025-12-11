@@ -1,0 +1,53 @@
+// Destructuring with blank lines
+#let (
+
+  a,
+
+
+  b,
+
+  c,
+
+) = (1, 2, 3)
+
+// Dictionary destructuring with blank lines
+#let (
+
+  name: n,
+
+  age: a,
+
+
+  city: c,
+
+) = (name: "John", age: 30, city: "NYC")
+
+// Nested destructuring with blank lines
+#let (
+
+  outer1,
+
+
+  (
+
+    inner1,
+
+
+    inner2,
+
+  ),
+
+  outer2,
+
+) = (1, (2, 3), 4)
+
+// Let with pattern matching and blank lines
+#let (
+
+  first: f,
+
+
+  ..rest
+
+
+) = (first: 1, second: 2, third: 3)

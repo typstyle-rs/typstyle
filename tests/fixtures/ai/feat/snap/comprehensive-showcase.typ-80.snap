@@ -20,6 +20,7 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
     (name: "Prof. Michael Rodriguez", affiliation: "University of Science"),
     (name: "Alice Johnson", affiliation: "Research Laboratory"),
   ),
+
   // Layout configuration with nested structures
   layout: (
     columns: 1,
@@ -41,6 +42,7 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
       ),
     ),
   ),
+
   // Processing options with complex logic
   options: (
     show-toc: true,
@@ -49,6 +51,7 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
     citation-style: "ieee",
     code-highlighting: true,
   ),
+
   // Main content parameter
   content,
 ) = {
@@ -164,6 +167,7 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
   // Advanced statistical functions
   descriptive: (
     mean: values => values.fold(0, (s, v) => s + v) / values.len(),
+
     median: values => {
       let sorted = values.sorted()
       let n = sorted.len()
@@ -173,6 +177,7 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
         sorted.at(int(n / 2))
       }
     },
+
     std: values => {
       let mean = values.fold(0, (s, v) => s + v) / values.len()
       let variance = (
@@ -180,6 +185,7 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
       )
       calc.sqrt(variance)
     },
+
     quartiles: values => {
       let sorted = values.sorted()
       let n = sorted.len()
@@ -190,6 +196,7 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
       )
     },
   ),
+
   // Data generation utilities
   generators: (
     normal: (n: 100, mean: 0, std: 1, seed: 42) => {
@@ -200,6 +207,7 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
         mean + std * calc.sqrt(-2 * calc.ln(u1)) * calc.cos(2 * calc.pi * u2)
       })
     },
+
     exponential: (n: 100, lambda: 1, seed: 42) => {
       range(n).map(i => {
         let u = random(seed: seed + i)
@@ -420,6 +428,7 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
           required-fields.all(field => field in item and item.at(field) != none)
         })
       },
+
       // Statistical transformations
       transform: (
         data,
@@ -478,6 +487,7 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
           processed.filter(item => item.transformed-value != none)
         }
       },
+
       // Analysis functions
       analyze: (
         data,
