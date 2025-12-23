@@ -1,7 +1,6 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/comment/in-func-call.typ
-snapshot_kind: text
 ---
 #let f(a, b, c: none) = {
   [#a]
@@ -30,12 +29,9 @@ snapshot_kind: text
   3333,
   /* rrrr */ 4444,
 
-
   777,
 
-
   // 78766
-
 
   [88],
 )[www]

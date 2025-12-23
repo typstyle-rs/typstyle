@@ -269,14 +269,12 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
   let module-description = none
   let definitions = ()
 
-
   // Parser state
   let name = none
   let found-code = false // are we still looking for a potential module description?
   let args = ()
   let desc-lines = ()
   let curry-info = none
-
 
   let param-parser-default = (
     state: "idle",
@@ -330,7 +328,6 @@ input_file: tests/fixtures/packages/tidy-new-parser.typ
       name = none
       finished-definition = false
     }
-
 
     if line.starts-with("///") {
       // is a doc-comment line

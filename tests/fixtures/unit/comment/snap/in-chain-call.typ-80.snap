@@ -1,11 +1,9 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/comment/in-chain-call.typ
-snapshot_kind: text
 ---
 #{
   a.b(1)(2).c.d(3)
-
 
   a // 1
     .b(1)(2) // 2
@@ -13,7 +11,6 @@ snapshot_kind: text
     /* 4 */
     ./* 5 */c /* 6 */ /* 7 */
     .d(3) // 8
-
 
   /* 0 */
   a /* 1 */

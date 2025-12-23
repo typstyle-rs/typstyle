@@ -328,13 +328,11 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     angle-between(vert, vert-next)
   })
 
-
   // round corners
   let calculate-rounded-corner(i) = {
     let pt = verts.at(i)
     let Δθ = wrap-angle-180(θs.at(i) - θs.at(i - 1))
     let dir = if Δθ > 0deg { +1 } else { -1 } // +1 if ccw, -1 if cw
-
 
     let θ-normal = θs.at(i - 1) + Δθ / 2 + 90deg // direction to center of curvature
 
@@ -477,7 +475,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     let label-pos = lerp-scale(edge.label-pos, i)
     let label-options = if label-pos == none { (label: none) } else { (label-pos: label-pos, label: edge.label) }
 
-
     draw-edge-line(
       edge
         + (
@@ -492,7 +489,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
 
     phase += Δphase
   }
-
 
   if debug >= 4 {
     cetz.draw.line(
@@ -588,7 +584,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     to = vector.add(to, defocus-adjustment(nodes.at(1).at(0), θ + 90deg))
   }
 
-
   let dummy-line = cetz.draw.line(
     from,
     to,
@@ -604,7 +599,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     // if node == none { return }
     dummy-line
   })
-
 
   find-anchor-pair(intersection-objects, (from, to), anchors => {
     let obj = draw-edge-line(
@@ -805,7 +799,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
 
       verdict
     })
-
 
     if candidates.len() > 0 {
       // filter out nodes with lower snap priority

@@ -14,7 +14,6 @@ input_file: tests/fixtures/unit/comment/in-chain-call.typ
       3,
     )
 
-
   a // 1
     .b(
       1,
@@ -27,7 +26,6 @@ input_file: tests/fixtures/unit/comment/in-chain-call.typ
     .d(
       3,
     ) // 8
-
 
   /* 0 */
   a /* 1 */

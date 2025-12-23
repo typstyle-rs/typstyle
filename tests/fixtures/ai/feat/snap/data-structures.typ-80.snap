@@ -228,6 +228,7 @@ input_file: tests/fixtures/ai/feat/data-structures.typ
       by-dept: acc.by-dept,
     )
   }),
+
   rankings: dataset
     .map(s => (
       name: s.name,
@@ -235,6 +236,7 @@ input_file: tests/fixtures/ai/feat/data-structures.typ
     ))
     .sorted(key: s => s.avg)
     .rev(),
+
   active-projects: dataset
     .filter(s => s.metadata.active)
     .map(s => s.metadata.projects)

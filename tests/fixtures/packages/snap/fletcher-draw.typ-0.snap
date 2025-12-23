@@ -805,7 +805,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     },
   )
 
-
   // round corners
   let calculate-rounded-corner(
     i,
@@ -830,7 +829,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     } else {
       -1
     } // +1 if ccw, -1 if cw
-
 
     let θ-normal = (
       θs.at(
@@ -1231,7 +1229,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
       )
     }
 
-
     draw-edge-line(
       edge
         + (
@@ -1251,7 +1248,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
 
     phase += Δphase
   }
-
 
   if (
     debug
@@ -1562,7 +1558,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     )
   }
 
-
   let dummy-line = cetz
     .draw
     .line(
@@ -1597,7 +1592,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
       dummy-line
     },
   )
-
 
   find-anchor-pair(
     intersection-objects,
@@ -2333,7 +2327,6 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
         verdict
       },
     )
-
 
     if (
       candidates.len()

@@ -484,6 +484,7 @@ input_file: tests/fixtures/ai/feat/data-structures.typ
       )
     },
   ),
+
   rankings: dataset
     .map(
       s => (
@@ -511,6 +512,7 @@ input_file: tests/fixtures/ai/feat/data-structures.typ
       },
     )
     .rev(),
+
   active-projects: dataset
     .filter(
       s => {
