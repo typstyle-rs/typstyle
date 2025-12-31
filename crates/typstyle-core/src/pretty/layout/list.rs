@@ -358,7 +358,6 @@ impl<'a> ListStylist<'a> {
                     match item {
                         Item::Comment(cmt) => inner += cmt + arena.hardline(),
                         Item::Commented { body, after } => {
-                            seen_real_items += 1;
                             inner += body + sep.clone() + after;
                             if !sty.tight_delim || !is_last {
                                 inner += arena.hardline();
