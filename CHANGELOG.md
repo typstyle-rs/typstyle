@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## v0.14.1 - [2025-12-31]
 
+- Bump `typst-syntax` to v0.14.2.
 - Feature: Preserve blank lines between elements in arrays, dictionaries, function parameters, destructuring patterns, and other code constructs. This maintains intentional spacing in code formatting, particularly useful for parameters with doc-comments.
 
   In the example below, the blank lines are now preserved:

@@ -4032,9 +4032,9 @@ dependencies = [
 
 [[package]]
 name = "typst-syntax"
-version = "0.14.0"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fbfb35d79f3601057518ab5f2e3f6040b51dc098310245eee35d43b2d17fabc"
+checksum = "a95d9192060e23b1e491b0b94dff676acddc92a4d672aeb8ca3890a5a734e879"
 dependencies = [
  "ecow",
  "rustc-hash",
@@ -4051,9 +4051,9 @@ dependencies = [
 
 [[package]]
 name = "typst-timing"
-version = "0.14.0"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f1db8164cb04d48fce0190d4a0f2fd14f3d967a456facb5dd590ba2d4158c08"
+checksum = "7be94f8faf19841b49574ef5c7fd7a12e2deb7c3d8deba5a596f35d2222024cd"
 dependencies = [
  "parking_lot",
  "serde",
@@ -4062,9 +4062,9 @@ dependencies = [
 
 [[package]]
 name = "typst-utils"
-version = "0.14.0"
+version = "0.14.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c268017d7102a752be28ea74792eedc40a35fa13a61e34b97a67de559dc4eb88"
+checksum = "a3966c92e8fa48c7ce898130d07000d985f18206d92b250f0f939287fbccdee3"
 dependencies = [
  "once_cell",
  "portable-atomic",
@@ -4077,7 +4077,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle"
-version = "0.14.0"
+version = "0.14.1"
 dependencies = [
  "anstream",
  "anyhow",
@@ -4100,7 +4100,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-consistency"
-version = "0.14.0"
+version = "0.14.1"
 dependencies = [
  "anyhow",
  "fontdb",
@@ -4115,7 +4115,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-core"
-version = "0.14.0"
+version = "0.14.1"
 dependencies = [
  "criterion",
  "ecow",
@@ -4132,7 +4132,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-tests"
-version = "0.14.0"
+version = "0.14.1"
 dependencies = [
  "anyhow",
  "console",
@@ -4148,7 +4148,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-typlugin"
-version = "0.14.0"
+version = "0.14.1"
 dependencies = [
  "serde_json",
  "typst-syntax",
@@ -4158,7 +4158,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-wasm"
-version = "0.14.0"
+version = "0.14.1"
 dependencies = [
  "console_error_panic_hook",
  "js-sys",
