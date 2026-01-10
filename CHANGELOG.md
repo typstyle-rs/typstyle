@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.14.3 - [2026-01-10]
+
+- Fix npm CI that prevents publishing.
+
 ## v0.14.2 - [2026-01-10]
 
 - Fix CI issue that prevents publishing new versions.
