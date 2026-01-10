@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.14.2 - [2026-01-10]
+
+- Fix CI issue that prevents publishing new versions.
+
 ## v0.14.1 - [2025-12-31]
 
 - Bump `typst-syntax` to v0.14.2.
