@@ -61,9 +61,9 @@ jobs:
       - name: Publish to NPM (dry-run)
         if: ${{ inputs.dry-run }}
         working-directory: crates/typstyle-wasm/pkg
-        run: npm publish --provenance --access public --dry-run
+        run: npm publish --access public --dry-run
 
       - name: Publish to NPM
         if: ${{ !inputs.dry-run }}
         working-directory: crates/typstyle-wasm/pkg
-        run: npm publish --provenance --access public
+        run: npm publish --access public
