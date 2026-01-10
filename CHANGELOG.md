@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.14.4 - [2026-01-10]
+
+- Fix git submodule ghost that prevents publishing.
+
 ## v0.14.3 - [2026-01-10]
 
 - Fix npm CI that prevents publishing.
