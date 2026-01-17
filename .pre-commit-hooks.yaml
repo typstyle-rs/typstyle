@@ -1,8 +1,0 @@
-- id: typstyle
-  name: typstyle
-  description: Format files with typstyle
-  entry: typstyle
-  language: rust
-  types: [file]
-  files: \.typ$
-  args: [-i]
