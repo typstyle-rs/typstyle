@@ -92,18 +92,11 @@ The #link("https://github.com/typstyle-rs/typstyle-action")[typstyle-action] mai
 
 = Pre-commit Hook
 
-You can use your local installation:
+Add this to your `.pre-commit-config.yaml`:
 
 ```yaml
-repos:
-  - repo: local
+  - repo: https://github.com/typstyle-rs/pre-commit-typstyle
+    rev: ''  # The the revision or tag you want to use
     hooks:
       - id: typstyle
-        name: typstyle
-        entry: typstyle -i
-        language: system
-        files: \.typ$
-        args: [] # set your style args here
 ```
-
-This method requires typstyle to be installed and available in your PATH.

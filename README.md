@@ -127,6 +127,17 @@ The playground integrates the latest version of typstyle. If you encounter forma
 
 The [typstyle-action](https://github.com/typstyle-rs/typstyle-action) maintained by [@grayespinoza](https://github.com/grayespinoza) can install and run typstyle in a GitHub Action.
 
+### Use with [pre-commit](https://github.com/pre-commit/pre-commit)
+
+Add this to your `.pre-commit-config.yaml`:
+
+```yaml
+  - repo: https://github.com/typstyle-rs/pre-commit-typstyle
+    rev: ''  # The the revision or tag you want to use
+    hooks:
+      - id: typstyle
+```
+
 ## Features & Design
 
 ### Design Goals
