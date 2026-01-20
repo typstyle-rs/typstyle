@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Bump `typst` to v0.14.2 to address the wasmi CVE; the affected package is a transitive, test-only dependency.
+
 ## v0.14.4 - [2026-01-10]
 
 - Fix git submodule ghost that prevents publishing.
