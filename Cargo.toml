@@ -53,7 +53,7 @@ colored = "3.0"
 
 # Used in tests
 console = { version = "0.15", default-features = false } # use the same version as in similar-asserts
-insta = "1.43"
+insta = "1.46"
 insta-cmd = "0.6"
 libtest-mimic = "0.8.1"
 similar = "2.7"
@@ -61,18 +61,18 @@ similar-asserts = "1.7"
 tempfile = "3"
 toml = "0.8"
 
-tinymist-world = { version = "0.14.0-rc1", default-features = false, features = ["system"] }
+tinymist-world = { version = "0.14.6", default-features = false, features = ["system"] }
 
-typst-assets = "0.14.0"
-typst-render = "0.14.0"
-typst = "0.14.0"
+typst-assets = "0.14.2"
+typst-render = "0.14.2"
+typst = "0.14.2"
 
 # Used in benchmark
-criterion = { version = "0.7" }
+criterion = { version = "0.8" }
 
 # Build
 vergen = { version = "9.0", features = ["build", "cargo", "rustc"] }
-vergen-gitcl = { version = "1.0" }
+vergen-gitcl = { version = "9.1" }
 
 [profile.dev.package]
 insta.opt-level = 3
