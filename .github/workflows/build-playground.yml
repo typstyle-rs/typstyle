@@ -8,6 +8,9 @@ on:
         value: "./playground/dist"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   playground:
     name: Playground Check, Test & Build

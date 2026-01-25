@@ -22,6 +22,9 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+permissions:
+  contents: read
+
 jobs:
   pre_job:
     permissions:
