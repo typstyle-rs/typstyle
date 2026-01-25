@@ -3,14 +3,11 @@
 }
 
 .panel {
-  @apply bg-base-100 border-base-300 text-base-content
-         shadow-lg relative overflow-hidden
-         flex flex-col h-full;
+  @apply bg-base-100 border-base-300 text-base-content shadow-lg relative overflow-hidden flex flex-col h-full;
 }
 
 .panel-header {
-  @apply px-5 flex items-center
-         bg-base-300 backdrop-blur-md;
+  @apply px-5 flex items-center bg-base-300 backdrop-blur-md;
   height: calc(var(--size-field, 0.25rem) * 10);
 }
 
