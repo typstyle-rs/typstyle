@@ -103,10 +103,10 @@ fn get_table_columns(func_call: FuncCall) -> Option<usize> {
     use crate::liteval::{Liteval, Value};
 
     let Some(columns_expr) = func_call.args().items().find_map(|node| {
-        if let Arg::Named(named) = node {
-            if named.name().as_str() == "columns" {
-                return Some(named.expr());
-            }
+        if let Arg::Named(named) = node
+            && named.name().as_str() == "columns"
+        {
+            return Some(named.expr());
         }
         None
     }) else {

@@ -116,10 +116,8 @@ impl<'a> ChainStylist<'a> {
                         let doc = self.printer.convert_comment(ctx, child);
                         self.items.push(ChainItem::Comment(doc));
                         self.has_comment = true;
-                    } else if seen_op {
-                        if let Some(rhs) = rhs_converter(ctx, child) {
-                            self.items.push(ChainItem::Body(rhs));
-                        }
+                    } else if seen_op && let Some(rhs) = rhs_converter(ctx, child) {
+                        self.items.push(ChainItem::Body(rhs));
                     }
                 }
             } else if let Some(fallback) = fallback_converter(ctx, node) {
