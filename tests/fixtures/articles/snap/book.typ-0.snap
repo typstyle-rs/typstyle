@@ -18,8 +18,7 @@ input_file: tests/fixtures/articles/book.typ
     "7mile",
   ),
   language: "en",
-  summary: [
-    // begin of summary
+  summary: [ // begin of summary
     #prefix-chapter(
       "introduction.typ",
     )[Introduction]

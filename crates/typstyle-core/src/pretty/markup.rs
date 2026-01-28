@@ -8,7 +8,7 @@ use super::{
 };
 use crate::{ext::StrExt, pretty::util::is_only_one_and};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum MarkupScope {
     /// The top-level markup.
     Document,
@@ -20,12 +20,6 @@ enum MarkupScope {
     Item,
     /// Heading, term of TermItem. Like `Item`, but linebreaks are not allowed.
     InlineItem,
-}
-
-impl MarkupScope {
-    fn can_trim(&self) -> bool {
-        matches!(self, Self::Item | Self::InlineItem)
-    }
 }
 
 impl<'a> PrettyPrinter<'a> {
@@ -153,7 +147,7 @@ impl<'a> PrettyPrinter<'a> {
             }
             _ => FlowItem::none(),
         });
-        self.indent(body)
+        self.hang(body)
     }
 
     fn convert_list_item_like(&'a self, ctx: Context, item: &'a SyntaxNode) -> ArenaDoc<'a> {
@@ -179,7 +173,7 @@ impl<'a> PrettyPrinter<'a> {
             }
             _ => FlowItem::none(),
         });
-        self.indent(body)
+        self.hang(body)
     }
 
     fn convert_markup_impl(
@@ -198,7 +192,7 @@ impl<'a> PrettyPrinter<'a> {
             return self.convert_space(ctx, space);
         }
 
-        let repr = collect_markup_repr(markup);
+        let repr = collect_markup_repr(markup, scope);
         let body = if self.config.wrap_text && scope != MarkupScope::InlineItem {
             self.convert_markup_body_reflow(ctx, &repr)
         } else {
@@ -206,9 +200,9 @@ impl<'a> PrettyPrinter<'a> {
         };
 
         // Add line or space (if any) to both sides.
-        // Only turn space into, not the other way around.
+        // Preserve boundary spaces in all cases.
         let get_delim = |bound: Boundary| {
-            if scope == MarkupScope::Document || scope.can_trim() {
+            if scope == MarkupScope::Document {
                 // should not add extra lines to the document
                 return if bound == Boundary::Break {
                     self.arena.hardline()
@@ -218,13 +212,6 @@ impl<'a> PrettyPrinter<'a> {
             }
             match bound {
                 Boundary::Nil => self.arena.nil(),
-                Boundary::NilOrBreak => {
-                    if (scope.can_trim() || ctx.break_suppressed) && !self.config.wrap_text {
-                        self.arena.nil()
-                    } else {
-                        self.arena.line_()
-                    }
-                }
                 Boundary::WeakNilOrBreak => {
                     if self.config.wrap_text {
                         self.arena.line_()
@@ -233,10 +220,7 @@ impl<'a> PrettyPrinter<'a> {
                     }
                 }
                 Boundary::Space(n) => {
-                    if scope.can_trim() {
-                        // the space can be safely eaten
-                        self.arena.nil()
-                    } else if self.config.wrap_text {
+                    if self.config.wrap_text {
                         self.arena.line()
                     } else if self.config.collapse_markup_spaces {
                         self.arena.space()
@@ -423,8 +407,6 @@ struct MarkupRepr<'a> {
 enum Boundary {
     /// Should add no blank.
     Nil,
-    /// Beside blocky elements. Can turn to a linebreak when multiline.
-    NilOrBreak,
     /// Can turn to a linebreak if not in document scope and text-wrapping enabled,
     /// as there are already spaces after comments.
     WeakNilOrBreak,
@@ -444,29 +426,12 @@ impl Boundary {
             Self::Space(space.len())
         }
     }
-
-    pub fn strip_space(self) -> Self {
-        match self {
-            Self::Space(_) => Self::NilOrBreak,
-            _ => self,
-        }
-    }
 }
 
 // Break markup into lines, split by stmt, parbreak, newline, multiline raw,
 // equation if a line contains text, it will be skipped by the formatter
 // to keep the original format.
-fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
-    /// A subset of "blocky" elements that we cannot safely handle currently.
-    /// By default show rule, these elements seem to have weak spaces on both sides.
-    /// But this behavior can be changed by wrapping them in a box.
-    fn is_special_block_elem(it: &SyntaxNode) -> bool {
-        matches!(
-            it.kind(),
-            SyntaxKind::ListItem | SyntaxKind::EnumItem | SyntaxKind::TermItem
-        )
-    }
-
+fn collect_markup_repr(markup: Markup<'_>, scope: MarkupScope) -> MarkupRepr<'_> {
     let mut repr = MarkupRepr {
         lines: vec![],
         start_bound: Boundary::Nil,
@@ -496,9 +461,6 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
                 ) {
                     current_line.mixed_text = true;
                 }
-                if current_line.nodes.is_empty() && is_special_block_elem(node) {
-                    repr.start_bound = repr.start_bound.strip_space();
-                }
                 current_line.nodes.push(node);
                 false
             }
@@ -523,9 +485,6 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
                 repr.end_bound = Boundary::from_space(last.text());
                 last_line.nodes.pop();
             } else {
-                if is_special_block_elem(last) {
-                    repr.end_bound = repr.end_bound.strip_space();
-                }
                 break;
             }
         }
@@ -536,9 +495,6 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
         && let Some(first_line) = repr.lines.first()
     {
         match first_line.nodes.iter().find(|it| !is_comment_node(it)) {
-            Some(it) if is_special_block_elem(it) => {
-                repr.start_bound = Boundary::NilOrBreak;
-            }
             Some(it) if it.kind() == SyntaxKind::Space => {
                 repr.start_bound = Boundary::WeakNilOrBreak;
             }
@@ -550,14 +506,44 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
         && let Some(last_line) = repr.lines.last()
     {
         match last_line.nodes.iter().rfind(|it| !is_comment_node(it)) {
-            Some(it) if is_special_block_elem(it) => {
-                repr.end_bound = Boundary::NilOrBreak;
-            }
             Some(it) if it.kind() == SyntaxKind::Space => {
                 repr.end_bound = Boundary::WeakNilOrBreak;
             }
             None if !last_line.nodes.is_empty() => repr.end_bound = Boundary::WeakBreak,
             _ => {}
+        }
+    }
+
+    // SPECIAL CASE: Force line break before first list/enum/term item in content blocks.
+    //
+    // PROBLEM: In Typst, there are no "list" nodes - only individual list/enum/term item nodes.
+    // The compiler groups items using indentation levels. When multiple items exist and the
+    // first item appears on the first line without a preceding break, subsequent items lose
+    // proper alignment because indentation becomes inconsistent.
+    //
+    // SOLUTION: Force a line break before the first item when:
+    // - Markup contains multiple list/enum/term items
+    // - First line contains one such item
+    // - We're in a ContentBlock scope (avoids affecting nested items)
+    //
+    // LIMITATION: This changes evaluation semantics by adding line breaks where none existed.
+    // Without this fix, formatted code would break item hierarchy and cause incorrect rendering.
+    if repr.start_bound == Boundary::Nil && scope == MarkupScope::ContentBlock {
+        let has_list_item = |line: &MarkupLine| {
+            line.nodes.iter().any(|node| {
+                matches!(
+                    node.kind(),
+                    SyntaxKind::ListItem | SyntaxKind::EnumItem | SyntaxKind::TermItem
+                )
+            })
+        };
+
+        if let Some(first_line) = repr.lines.first()
+            && has_list_item(first_line)
+            && repr.lines.iter().skip(1).any(has_list_item)
+        {
+            // Force a break to preserve alignment of subsequent items
+            repr.start_bound = Boundary::Break;
         }
     }
 

@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+- Fix: Preserve all markup boundary (nil, space or break) in formatting to retain the evaluation result (still with some limitations).
+
+  For example, the code below now will not change after formatting.
+  ```typst
+  #[ - first
+       - second ]
+  ```
+
 - Bump `typst` to v0.14.2 to address the wasmi CVE; the affected package is a transitive, test-only dependency.
 
 ## v0.14.4 - [2026-01-10]

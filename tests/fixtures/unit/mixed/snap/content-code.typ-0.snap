@@ -9,9 +9,7 @@ input_file: tests/fixtures/unit/mixed/content-code.typ
   set text(
     red,
   ) if critical
-  [
-    - #body
-  ]
+  [- #body]
 }
 
 由三个递增的数字组成，并用「点号」（`.`）分隔由三个递增的数字组成，并用「点号」（`.`）分隔由三个递增的数字组成，并用「点号」（`.`）分隔。

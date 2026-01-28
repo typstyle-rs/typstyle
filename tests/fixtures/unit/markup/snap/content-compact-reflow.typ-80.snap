@@ -5,19 +5,17 @@ input_file: tests/fixtures/unit/markup/content-compact-reflow.typ
 /// typstyle: wrap_text
 /// typstyle: include=content-compact.typ
 #[- 111]
-#[- 222]
-#[- 333]
+#[- 222 ]
+#[ - 333 ]
 #[/ 444:]
-#[/ 555:]
-#[/ 666:]
+#[/ 555: ]
+#[ / 666: ]
 #[$12345$]
 #[= 123]
 
 #[- aaa bbb]
-#[
-  / ccc:
-    ddd
-]
+#[/ ccc:
+    ddd]
 
 #[*strong
 *]

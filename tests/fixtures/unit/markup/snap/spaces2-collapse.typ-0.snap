@@ -29,9 +29,7 @@ in emph syntax
 _
 
 
-#[
-  - with blocky content inside
-]
+#[- with blocky content inside]
 #[$
   "equation is also blocky"
 $]
