@@ -21,10 +21,10 @@ impl<'a> PrettyPrinter<'a> {
         ctx: Context,
         func_call: FuncCall<'a>,
     ) -> ArenaDoc<'a> {
-        if func_call.callee().to_untyped().kind() == SyntaxKind::FieldAccess {
-            if let Some(res) = self.try_convert_dot_chain(ctx, func_call.to_untyped()) {
-                return res;
-            }
+        if func_call.callee().to_untyped().kind() == SyntaxKind::FieldAccess
+            && let Some(res) = self.try_convert_dot_chain(ctx, func_call.to_untyped())
+        {
+            return res;
         }
         self.convert_expr(ctx, func_call.callee())
             + if ctx.mode.is_math() {

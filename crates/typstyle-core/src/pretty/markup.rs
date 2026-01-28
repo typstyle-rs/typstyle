@@ -192,10 +192,10 @@ impl<'a> PrettyPrinter<'a> {
 
         // If the markup only contains one space, simply convert it.
         let children = markup.to_untyped().children().as_slice();
-        if children.len() == 1 {
-            if let Some(space) = children[0].cast::<Space>() {
-                return self.convert_space(ctx, space);
-            }
+        if children.len() == 1
+            && let Some(space) = children[0].cast::<Space>()
+        {
+            return self.convert_space(ctx, space);
         }
 
         let repr = collect_markup_repr(markup);
@@ -532,32 +532,32 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
     }
 
     // Check boundary through comments
-    if repr.start_bound == Boundary::Nil {
-        if let Some(first_line) = repr.lines.first() {
-            match first_line.nodes.iter().find(|it| !is_comment_node(it)) {
-                Some(it) if is_special_block_elem(it) => {
-                    repr.start_bound = Boundary::NilOrBreak;
-                }
-                Some(it) if it.kind() == SyntaxKind::Space => {
-                    repr.start_bound = Boundary::WeakNilOrBreak;
-                }
-                None if !first_line.nodes.is_empty() => repr.start_bound = Boundary::WeakBreak,
-                _ => {}
+    if repr.start_bound == Boundary::Nil
+        && let Some(first_line) = repr.lines.first()
+    {
+        match first_line.nodes.iter().find(|it| !is_comment_node(it)) {
+            Some(it) if is_special_block_elem(it) => {
+                repr.start_bound = Boundary::NilOrBreak;
             }
+            Some(it) if it.kind() == SyntaxKind::Space => {
+                repr.start_bound = Boundary::WeakNilOrBreak;
+            }
+            None if !first_line.nodes.is_empty() => repr.start_bound = Boundary::WeakBreak,
+            _ => {}
         }
     }
-    if repr.end_bound == Boundary::Nil {
-        if let Some(last_line) = repr.lines.last() {
-            match last_line.nodes.iter().rfind(|it| !is_comment_node(it)) {
-                Some(it) if is_special_block_elem(it) => {
-                    repr.end_bound = Boundary::NilOrBreak;
-                }
-                Some(it) if it.kind() == SyntaxKind::Space => {
-                    repr.end_bound = Boundary::WeakNilOrBreak;
-                }
-                None if !last_line.nodes.is_empty() => repr.end_bound = Boundary::WeakBreak,
-                _ => {}
+    if repr.end_bound == Boundary::Nil
+        && let Some(last_line) = repr.lines.last()
+    {
+        match last_line.nodes.iter().rfind(|it| !is_comment_node(it)) {
+            Some(it) if is_special_block_elem(it) => {
+                repr.end_bound = Boundary::NilOrBreak;
             }
+            Some(it) if it.kind() == SyntaxKind::Space => {
+                repr.end_bound = Boundary::WeakNilOrBreak;
+            }
+            None if !last_line.nodes.is_empty() => repr.end_bound = Boundary::WeakBreak,
+            _ => {}
         }
     }
 

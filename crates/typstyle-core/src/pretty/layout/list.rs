@@ -243,10 +243,11 @@ impl<'a> ListStylist<'a> {
                 if newline_cnt > 0 {
                     self.attach_or_detach_comments();
                     self.can_attach = false;
-                    if let Some(nl) = self.keep_linebreak {
-                        if newline_cnt >= 2 && !self.items.is_empty() {
-                            self.items.push(Item::Linebreak((newline_cnt - 1).min(nl)));
-                        }
+                    if let Some(nl) = self.keep_linebreak
+                        && newline_cnt >= 2
+                        && !self.items.is_empty()
+                    {
+                        self.items.push(Item::Linebreak((newline_cnt - 1).min(nl)));
                     }
                 }
             }

@@ -13,11 +13,11 @@ impl<'a> PrettyPrinter<'a> {
     ) -> ArenaDoc<'a> {
         let ctx = ctx.with_mode(Mode::CodeCont);
 
-        if let Pattern::Parenthesized(paren) = parenthesized.pattern() {
-            if !has_comment_children(parenthesized.to_untyped()) {
-                // Remove a layer of paren if no comment inside.
-                return self.convert_parenthesized(ctx, paren);
-            }
+        if let Pattern::Parenthesized(paren) = parenthesized.pattern()
+            && !has_comment_children(parenthesized.to_untyped())
+        {
+            // Remove a layer of paren if no comment inside.
+            return self.convert_parenthesized(ctx, paren);
         }
 
         // Treat is as a list with a single item.

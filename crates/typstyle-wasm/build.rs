@@ -49,11 +49,11 @@ fn main() {
 /// Finds a struct definition by name (e.g., "Config") within a parsed Rust file AST.
 fn find_config_struct(ast: &syn::File) -> Option<&ItemStruct> {
     for item in &ast.items {
-        if let Item::Struct(item_struct @ ItemStruct { ident, .. }) = item {
-            if ident == "Config" {
-                // Ensure this matches the target struct name
-                return Some(item_struct);
-            }
+        if let Item::Struct(item_struct @ ItemStruct { ident, .. }) = item
+            && ident == "Config"
+        {
+            // Ensure this matches the target struct name
+            return Some(item_struct);
         }
     }
     None
@@ -91,20 +91,20 @@ fn generate_ts_fields_for_config_struct(config_struct: &ItemStruct) -> String {
 
 /// Converts a Rust type identifier to its corresponding TypeScript type string.
 fn rust_type_to_ts_type(ty: &Type) -> Option<String> {
-    if let Type::Path(type_path) = ty {
-        if type_path.qself.is_none() {
-            let last_segment = type_path.path.segments.last()?;
-            let ident_str = last_segment.ident.to_string();
-            // Map common Rust types to TypeScript types.
-            return match ident_str.as_str() {
-                "usize" | "u8" | "u16" | "u32" | "u64" | "isize" | "i8" | "i16" | "i32" | "i64"
-                | "f32" | "f64" => Some("number".to_string()),
-                "bool" => Some("boolean".to_string()),
-                "String" => Some("string".to_string()),
-                // Add more mappings if your Config struct uses other types
-                _ => None,
-            };
-        }
+    if let Type::Path(type_path) = ty
+        && type_path.qself.is_none()
+    {
+        let last_segment = type_path.path.segments.last()?;
+        let ident_str = last_segment.ident.to_string();
+        // Map common Rust types to TypeScript types.
+        return match ident_str.as_str() {
+            "usize" | "u8" | "u16" | "u32" | "u64" | "isize" | "i8" | "i16" | "i32" | "i64"
+            | "f32" | "f64" => Some("number".to_string()),
+            "bool" => Some("boolean".to_string()),
+            "String" => Some("string".to_string()),
+            // Add more mappings if your Config struct uses other types
+            _ => None,
+        };
     }
     None
 }
@@ -113,14 +113,12 @@ fn rust_type_to_ts_type(ty: &Type) -> Option<String> {
 fn extract_doc_comments(attrs: &[Attribute]) -> String {
     let mut doc_lines = Vec::new();
     for attr in attrs {
-        if attr.path().is_ident("doc") {
-            if let Meta::NameValue(nv) = &attr.meta {
-                if let syn::Expr::Lit(expr_lit) = &nv.value {
-                    if let Lit::Str(lit_str) = &expr_lit.lit {
-                        doc_lines.push(lit_str.value().trim().to_string());
-                    }
-                }
-            }
+        if attr.path().is_ident("doc")
+            && let Meta::NameValue(nv) = &attr.meta
+            && let syn::Expr::Lit(expr_lit) = &nv.value
+            && let Lit::Str(lit_str) = &expr_lit.lit
+        {
+            doc_lines.push(lit_str.value().trim().to_string());
         }
     }
 

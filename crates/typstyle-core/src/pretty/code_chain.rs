@@ -55,10 +55,12 @@ impl<'a> PrettyPrinter<'a> {
                 has_comment = true;
             }
         }
-        if dot_num > 1 && call_num == 1 && !has_comment {
-            if let Some(res) = self.try_convert_dot_chain_plain(ctx, chain) {
-                return Some(res);
-            }
+        if dot_num > 1
+            && call_num == 1
+            && !has_comment
+            && let Some(res) = self.try_convert_dot_chain_plain(ctx, chain)
+        {
+            return Some(res);
         }
         if ctx.mode.is_markup() && dot_num > 1 && call_num > 0 {
             return Some(
@@ -178,10 +180,10 @@ pub(super) fn resolve_dot_chain(node: &SyntaxNode) -> impl Iterator<Item = &Synt
 pub(super) fn resolve_binary_chain(binary: Binary<'_>) -> impl Iterator<Item = &'_ SyntaxNode> {
     let prec = binary.op().precedence();
     iterate_deep_nodes(binary.to_untyped(), move |current| {
-        if let Some(binary) = current.cast::<Binary>() {
-            if binary.op().precedence() == prec {
-                return Some(binary.lhs().to_untyped());
-            }
+        if let Some(binary) = current.cast::<Binary>()
+            && binary.op().precedence() == prec
+        {
+            return Some(binary.lhs().to_untyped());
         }
         None
     })
