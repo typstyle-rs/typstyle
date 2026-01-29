@@ -20,8 +20,16 @@ similar-asserts.workspace = true
 rustc-hash.workspace = true
 
 tinymist-world.workspace = true
+typst-shim.workspace = true
 typst-assets.workspace = true
 typst-render.workspace = true
 typst.workspace = true
 
+colored.workspace = true
+similar.workspace = true
+tiny-skia = "*" # use the transitive dependency version
+
 fontdb = { version = "0.23", default-features = false, features = ["fs", "memmap"] } # tinymist-world missing features enabled
+
+[dev-dependencies]
+insta.workspace = true

@@ -30,7 +30,9 @@ pub fn parse_directives(content: &str) -> Result<Options> {
                     .split_once('=')
                     .map(|(key, value)| (key.trim(), Some(value.trim())))
                     .unwrap_or((directive, None));
-                update_options(&mut options, key, value)?;
+                // Normalize key by converting hyphens to underscores for simpler matching
+                let key = key.replace('-', "_");
+                update_options(&mut options, &key, value)?;
             }
         } else if line.trim().is_empty() {
             // Skip empty lines at the start
@@ -56,24 +58,23 @@ pub fn parse_directives(content: &str) -> Result<Options> {
                 }
             }
             // Configuration options
-            "reorder_import_items" | "reorder-import-items" => {
+            "reorder_import_items" => {
                 config.reorder_import_items = value != Some("false");
             }
-            "wrap_text" | "wrap-text" => {
+            "wrap_text" => {
                 config.wrap_text = value != Some("false");
-                config.collapse_markup_spaces |= config.wrap_text;
             }
-            "collapse_markup_spaces" | "collapse-markup-spaces" => {
+            "collapse_markup_spaces" => {
                 config.collapse_markup_spaces = value != Some("false");
             }
-            "max_width" | "max-width" => {
+            "max_width" => {
                 if let Some(v) = value {
                     config.max_width = v
                         .parse()
                         .with_context(|| format!("Invalid max_width value: {v}"))?;
                 }
             }
-            "tab_spaces" | "tab-spaces" => {
+            "tab_spaces" => {
                 if let Some(v) = value {
                     config.tab_spaces = v
                         .parse()
@@ -84,6 +85,9 @@ pub fn parse_directives(content: &str) -> Result<Options> {
         }
         Ok(())
     }
+
+    // Apply implied settings
+    options.config.collapse_markup_spaces |= options.config.wrap_text;
 
     Ok(options)
 }
@@ -128,4 +132,130 @@ pub fn process_includes(base_path: &Path, content: &str, options: &Options) -> R
     }
 
     Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::bool_assert_comparison)]
+    #![allow(unused)]
+
+    use typstyle_core::Config;
+
+    use super::*;
+    use crate::common::fixtures_dir;
+
+    #[test]
+    fn parse_single_directive() {
+        let content = "
+        /// typstyle: wrap-text
+        #import \"module.typ\": a, b";
+        let options = parse_directives(content).unwrap();
+
+        assert_eq!(
+            options,
+            Options {
+                config: Config {
+                    wrap_text: true,
+                    collapse_markup_spaces: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            }
+        );
+    }
+
+    #[test]
+    fn parse_multiple_directive_lines() {
+        let content = r#"
+/// typstyle: reorder-import-items=true
+/// typstyle: max-width=40 relax_convergence=2
+/// typstyle: include=test.typ
+
+#import "module.typ": a, b"#;
+
+        let options = parse_directives(content).unwrap();
+
+        assert_eq!(
+            options,
+            Options {
+                config: Config {
+                    max_width: 40,
+                    ..Default::default()
+                },
+                relax_convergence: 2,
+                include_specs: vec!["test.typ".to_string()],
+                ..Default::default()
+            }
+        );
+    }
+
+    #[test]
+    fn parse_multiple_includes() {
+        let content = r#"
+/// typstyle: include=/shared/helpers.typ
+/// typstyle: include=local.typ
+/// typstyle: reorder-import-items=true
+
+#import "module.typ": a, b"#;
+
+        let options = parse_directives(content).unwrap();
+        assert_eq!(
+            options,
+            Options {
+                config: Config {
+                    reorder_import_items: true,
+                    ..Default::default()
+                },
+                include_specs: vec!["/shared/helpers.typ".to_string(), "local.typ".to_string()],
+                ..Default::default()
+            }
+        );
+    }
+
+    #[test]
+    fn parse_directive_lines_with_empty_lines() {
+        let content = r#"
+/// typstyle: reorder-import-items
+
+/// typstyle: collapse-markup-spaces
+/// typstyle: relax_convergence=3
+
+#import "module.typ": a, b"#;
+
+        let options = parse_directives(content).unwrap();
+        assert_eq!(
+            options,
+            Options {
+                config: Config {
+                    collapse_markup_spaces: true,
+                    wrap_text: false,
+                    ..Default::default()
+                },
+                relax_convergence: 3,
+                ..Default::default()
+            }
+        );
+    }
+
+    #[test]
+    fn stop_at_non_directive_line() {
+        let content = r#"
+/// typstyle: reorder-import-items=true
+// This is a regular comment, not a directive
+/// typstyle: wrap-text
+
+#import "module.typ": a, b"#;
+
+        let options = parse_directives(content).unwrap();
+        assert_eq!(
+            options,
+            Options {
+                config: Config {
+                    reorder_import_items: true,
+                    ..Default::default()
+                },
+                ..Default::default()
+            }
+        );
+    }
 }
