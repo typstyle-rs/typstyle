@@ -2,7 +2,6 @@
 #[path = "repo-e2e.rs"]
 mod repo_e2e;
 
-mod common;
 mod partial;
 mod unit;
 

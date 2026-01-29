@@ -6,8 +6,7 @@ use serde::Deserialize;
 use typst_syntax::Source;
 use typstyle_consistency::{ErrorSink, FormattedSources, FormatterHarness};
 use typstyle_core::{Config, Typstyle};
-
-use crate::common::{fixtures_dir, test_dir};
+use typstyle_tests::common::{fixtures_dir, test_dir};
 
 #[derive(Deserialize)]
 struct TestConfig {

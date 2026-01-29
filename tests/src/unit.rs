@@ -4,8 +4,7 @@ use insta::internals::Content;
 use libtest_mimic::{Failed, Trial};
 use typst_syntax::Source;
 use typstyle_core::Typstyle;
-
-use crate::common::{fixtures_dir, read_source_with_options};
+use typstyle_tests::common::{fixtures_dir, read_source_with_options};
 
 /// Creates one test for each `.typ` file in the current directory or
 /// sub-directories of the current directory.
