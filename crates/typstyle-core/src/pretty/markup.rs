@@ -201,35 +201,25 @@ impl<'a> PrettyPrinter<'a> {
 
         // Add line or space (if any) to both sides.
         // Preserve boundary spaces in all cases.
-        let get_delim = |bound: Boundary| {
-            if scope == MarkupScope::Document {
-                // should not add extra lines to the document
-                return if bound == Boundary::Break {
-                    self.arena.hardline()
+        let get_delim = |bound: Boundary| match bound {
+            Boundary::Nil => self.arena.nil(),
+            Boundary::WeakNilOrBreak => {
+                if self.config.wrap_text {
+                    self.arena.line_()
                 } else {
                     self.arena.nil()
-                };
-            }
-            match bound {
-                Boundary::Nil => self.arena.nil(),
-                Boundary::WeakNilOrBreak => {
-                    if self.config.wrap_text {
-                        self.arena.line_()
-                    } else {
-                        self.arena.nil()
-                    }
                 }
-                Boundary::Space(n) => {
-                    if self.config.wrap_text {
-                        self.arena.line()
-                    } else if self.config.collapse_markup_spaces {
-                        self.arena.space()
-                    } else {
-                        self.arena.spaces(n)
-                    }
-                }
-                Boundary::Break | Boundary::WeakBreak => self.arena.hardline(),
             }
+            Boundary::Space(n) => {
+                if self.config.wrap_text {
+                    self.arena.line()
+                } else if self.config.collapse_markup_spaces {
+                    self.arena.space()
+                } else {
+                    self.arena.spaces(n)
+                }
+            }
+            Boundary::Break => self.arena.hardline(),
         };
 
         let open = get_delim(repr.start_bound);
@@ -414,8 +404,6 @@ enum Boundary {
     Space(usize),
     /// Always breaks.
     Break,
-    /// Always breaks if not in document scope.
-    WeakBreak,
 }
 
 impl Boundary {
@@ -490,30 +478,78 @@ fn collect_markup_repr(markup: Markup<'_>, scope: MarkupScope) -> MarkupRepr<'_>
         }
     }
 
-    // Check boundary through comments
-    if repr.start_bound == Boundary::Nil
+    // Try to trim spaces according to scope
+    try_trim_spaces(&mut repr, scope);
+
+    // Special (but unsafe) case: Ensure break before list items in content blocks
+    if scope == MarkupScope::ContentBlock {
+        ensure_break_before_list(&mut repr);
+    }
+
+    repr
+}
+
+fn try_trim_spaces(repr: &mut MarkupRepr<'_>, scope: MarkupScope) {
+    fn is_not_comment(node: &&&SyntaxNode) -> bool {
+        !is_comment_node(node)
+    }
+
+    // Check boundary through comments (except in Document scope)
+    if scope != MarkupScope::Document
+        && repr.start_bound == Boundary::Nil
         && let Some(first_line) = repr.lines.first()
     {
-        match first_line.nodes.iter().find(|it| !is_comment_node(it)) {
+        match first_line.nodes.iter().find(is_not_comment) {
             Some(it) if it.kind() == SyntaxKind::Space => {
                 repr.start_bound = Boundary::WeakNilOrBreak;
             }
-            None if !first_line.nodes.is_empty() => repr.start_bound = Boundary::WeakBreak,
+            None if !first_line.nodes.is_empty() => repr.start_bound = Boundary::Break,
             _ => {}
         }
     }
     if repr.end_bound == Boundary::Nil
         && let Some(last_line) = repr.lines.last()
     {
-        match last_line.nodes.iter().rfind(|it| !is_comment_node(it)) {
+        match last_line.nodes.iter().rfind(is_not_comment) {
             Some(it) if it.kind() == SyntaxKind::Space => {
                 repr.end_bound = Boundary::WeakNilOrBreak;
             }
-            None if !last_line.nodes.is_empty() => repr.end_bound = Boundary::WeakBreak,
+            None if !last_line.nodes.is_empty() => repr.end_bound = Boundary::Break,
             _ => {}
         }
     }
 
+    // Special case: For leading spaces in Document scope, if we already have a space after,
+    // we can safely remove it.
+    // Since we always add trailing linebreaks after the document, we do not check for it.
+    fn may_produce_content(node: &&&SyntaxNode) -> bool {
+        !matches!(
+            node.kind(),
+            SyntaxKind::LineComment
+                | SyntaxKind::BlockComment
+                | SyntaxKind::Hash
+                | SyntaxKind::LetBinding
+                | SyntaxKind::SetRule
+                | SyntaxKind::ShowRule
+                | SyntaxKind::Import // `import` always returns none
+        )
+    }
+
+    if scope == MarkupScope::Document
+        && matches!(repr.start_bound, Boundary::Space(_))
+        && let Some(first_line) = repr.lines.first()
+    {
+        match first_line.nodes.iter().find(may_produce_content) {
+            Some(it) if it.kind() == SyntaxKind::Space => {
+                repr.start_bound = Boundary::Nil;
+            }
+            None if !first_line.nodes.is_empty() => repr.start_bound = Boundary::Nil,
+            _ => {}
+        }
+    }
+}
+
+fn ensure_break_before_list(repr: &mut MarkupRepr<'_>) {
     // SPECIAL CASE: Force line break before first list/enum/term item in content blocks.
     //
     // PROBLEM: In Typst, there are no "list" nodes - only individual list/enum/term item nodes.
@@ -528,26 +564,25 @@ fn collect_markup_repr(markup: Markup<'_>, scope: MarkupScope) -> MarkupRepr<'_>
     //
     // LIMITATION: This changes evaluation semantics by adding line breaks where none existed.
     // Without this fix, formatted code would break item hierarchy and cause incorrect rendering.
-    if repr.start_bound == Boundary::Nil && scope == MarkupScope::ContentBlock {
-        let has_list_item = |line: &MarkupLine| {
-            line.nodes.iter().any(|node| {
-                matches!(
-                    node.kind(),
-                    SyntaxKind::ListItem | SyntaxKind::EnumItem | SyntaxKind::TermItem
-                )
-            })
-        };
-
-        if let Some(first_line) = repr.lines.first()
-            && has_list_item(first_line)
-            && repr.lines.iter().skip(1).any(has_list_item)
-        {
-            // Force a break to preserve alignment of subsequent items
-            repr.start_bound = Boundary::Break;
-        }
+    if repr.start_bound != Boundary::Nil {
+        return;
     }
+    let has_list_item = |line: &MarkupLine| {
+        line.nodes.iter().any(|node| {
+            matches!(
+                node.kind(),
+                SyntaxKind::ListItem | SyntaxKind::EnumItem | SyntaxKind::TermItem
+            )
+        })
+    };
 
-    repr
+    if let Some(first_line) = repr.lines.first()
+        && has_list_item(first_line)
+        && repr.lines.iter().skip(1).any(has_list_item)
+    {
+        // Force a break to preserve alignment of subsequent items
+        repr.start_bound = Boundary::Break;
+    }
 }
 
 fn is_block_equation(it: &SyntaxNode) -> bool {

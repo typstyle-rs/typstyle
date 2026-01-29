@@ -2,7 +2,7 @@
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/markup/list-indent-nested-ex.typ
 ---
-- first line
+  - first line
 - second line #[ - A
     - B
       - - / C:

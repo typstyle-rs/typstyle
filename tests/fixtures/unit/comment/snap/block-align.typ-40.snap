@@ -2,10 +2,10 @@
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/comment/block-align.typ
 ---
-something0  /*
-             1234567890
+ something0  /*
               1234567890
-            */
+               1234567890
+             */
 
 something1  /*
             1234567890

@@ -6,8 +6,8 @@
 
   For example, the code below now will not change after formatting.
   ```typst
-  #[ - first
-       - second ]
+    #[- first // note: leading spaces
+        - second ]
   ```
 
 - Bump `typst` to v0.14.2 to address the wasmi CVE; the affected package is a transitive, test-only dependency.
