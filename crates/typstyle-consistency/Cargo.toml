@@ -20,6 +20,7 @@ similar-asserts.workspace = true
 rustc-hash.workspace = true
 
 tinymist-world.workspace = true
+typst-shim.workspace = true
 typst-assets.workspace = true
 typst-render.workspace = true
 typst.workspace = true

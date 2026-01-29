@@ -18,7 +18,9 @@ use typst::{
 };
 use walkdir::WalkDir;
 
-use crate::{ErrorSink, FormattedWorld, SourceMap, compare_docs, compile_world};
+use crate::{
+    CheckingOptions, ComparisonInput, ErrorSink, FormattedWorld, SourceMap, compare_worlds,
+};
 
 pub struct FormattedSources {
     /// The name of the formatter configuration, used for debugging.
@@ -176,7 +178,7 @@ impl FormatterHarness {
         &mut self,
         formatted: impl Iterator<Item = &'a FormattedSources>,
         entry_path: &Path,
-        require_compile: bool,
+        options: CheckingOptions,
         err_sink: &mut ErrorSink,
     ) -> Result<()> {
         let mut sub_sink =
@@ -192,17 +194,23 @@ impl FormatterHarness {
         } else {
             format!("{} - {}", self.name, entry_path.display())
         };
-        let base_result = compile_world(format!("{name} - original"), &base_world)?;
+
+        let original = ComparisonInput {
+            name: format!("{name} - original"),
+            world: &base_world,
+        };
 
         for sources in formatted {
             let world = FormattedWorld {
                 base: &base_world,
                 formatted: sources.sources.clone(),
             };
-            let name = format!("{} - {}", name, sources.name);
-            let fmt_result = compile_world(name.clone(), &world)?;
+            let formatted = ComparisonInput {
+                name: format!("{} - {}", name, sources.name),
+                world: &world,
+            };
 
-            compare_docs(&base_result, &fmt_result, require_compile, &mut sub_sink)?;
+            compare_worlds(&original, &formatted, options, &mut sub_sink)?;
         }
 
         sub_sink.sink_to(err_sink);
