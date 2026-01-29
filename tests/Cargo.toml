@@ -6,6 +6,9 @@ authors.workspace = true
 edition.workspace = true
 publish = false
 
+[lib]
+bench = false
+
 [[test]]
 name = "tests"
 path = "src/tests.rs"

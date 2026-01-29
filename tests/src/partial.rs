@@ -3,8 +3,7 @@ use std::{ops::Range, path::Path};
 use insta::internals::Content;
 use libtest_mimic::{Failed, Trial};
 use typstyle_core::Typstyle;
-
-use crate::common::{fixtures_dir, read_source};
+use typstyle_tests::common::{fixtures_dir, read_source};
 
 struct Testcase {
     path: &'static str,
