@@ -9,9 +9,7 @@ input_file: tests/fixtures/unit/code/set-if.typ
   set text(
     red,
   ) if critical
-  [
-    - #body
-  ]
+  [- #body]
 }
 
 #task(

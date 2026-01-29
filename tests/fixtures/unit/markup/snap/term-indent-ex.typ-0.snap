@@ -1,11 +1,10 @@
 ---
 source: tests/src/unit.rs
+assertion_line: 130
 input_file: tests/fixtures/unit/markup/term-indent-ex.typ
 ---
 #{
-  [
-    / single:
-  ]
+  [/ single:]
   [
     / indented:
     / less:
@@ -25,20 +24,17 @@ input_file: tests/fixtures/unit/markup/term-indent-ex.typ
 }
 ---
 #{
-  [
-    / indented:
-      / less:
+  [/ indented:
+     / less:
   ]
-  [
-    / indented:
-      / same:
-      / then less:
-        / then same:
+  [/ indented:
+     / same:
+     / then less:
+       / then same:
   ]
-  [
-    / indented:
-      / more:
-      / then same:
-      / then less:
+  [/ indented:
+     / more:
+     / then same:
+     / then less:
   ]
 }

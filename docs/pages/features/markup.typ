@@ -4,6 +4,8 @@
 
 #show: render-examples
 
+We strive to ensure that the eval results remain unchanged as much as possible. However, there are still some tricky (rare) cases that we cannot handle well, listed below.
+
 = Lists and Enumerations
 
 == List Indentation
@@ -41,6 +43,24 @@ Lists within content blocks are properly formatted with surrounding linebreaks:
   ]
 }
 ```
+
+#callout.caution[
+  For now, we can only safely handle the case that there is at most one list item in the markup body if that item appears on the first line.
+  In other cases, we will prepend a line break to prevent mis-alignment of items, which is unsafe, as it changes the representation (one space prepended).
+
+  ```typst
+    #[- first // note: leading spaces
+        - second ] // this is safe
+  ```
+  ```typst
+  #[- a
+      - b
+    - c
+  ] // this is unsafe
+  ```
+
+  This is a known limitation.
+]
 
 = Text Wrapping
 
