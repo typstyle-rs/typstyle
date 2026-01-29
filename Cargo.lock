@@ -4129,6 +4129,7 @@ dependencies = [
  "typst",
  "typst-assets",
  "typst-render",
+ "typst-shim",
  "walkdir",
 ]
 
