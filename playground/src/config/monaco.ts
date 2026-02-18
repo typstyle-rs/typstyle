@@ -6,6 +6,8 @@ import {
   LIGHT_TOKEN_RULES,
 } from "@/monaco/theme-registry";
 import type { ThemeType } from "@/types";
+import { registerAstLanguage } from "./ast-language";
+import { registerIrLanguage } from "./ir-language";
 import { registerTypstLanguage } from "./typst-language";
 
 const DEFAULT_LIGHT_THEME = "play-light";
@@ -28,8 +30,10 @@ export const initMonaco = async () => {
     },
   ]);
 
-  // Register Typst language (doesn't need sync)
+  // Register languages (Typst is async/TextMate, AST/IR are sync/Monarch)
   registerTypstLanguage(monaco);
+  registerAstLanguage(monaco);
+  registerIrLanguage(monaco);
 };
 
 export const getEditorTheme = (theme: ThemeType): string => {
