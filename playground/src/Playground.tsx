@@ -9,6 +9,8 @@ import { MainLayout } from "./components/MainLayout";
 import { LoadingSpinner, StatusBar } from "./components/ui";
 import { ShareModal } from "./components/ui/ShareModal";
 import { ToastContainer } from "./components/ui/ToastContainer";
+import { AST_LANGUAGE_ID } from "./config/ast-language";
+import { IR_LANGUAGE_ID } from "./config/ir-language";
 import {
   useEditorSelection,
   usePlaygroundState,
@@ -145,7 +147,7 @@ function Playground() {
       ref={astEditorRef}
       key="output-ast"
       content={formatter.astOutput}
-      language="json"
+      language={AST_LANGUAGE_ID}
       indentSize={2}
     />
   );
@@ -154,7 +156,7 @@ function Playground() {
       ref={irEditorRef}
       key="output-ir"
       content={formatter.irOutput}
-      language="python"
+      language={IR_LANGUAGE_ID}
       indentSize={2}
     />
   );
