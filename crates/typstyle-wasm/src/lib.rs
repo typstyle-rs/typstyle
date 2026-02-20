@@ -53,6 +53,29 @@ pub fn format_ir(
     t.format_text(text).render_ir().map_err(into_error)
 }
 
+/// Get the pretty IR for the content, along with source-to-IR span mappings.
+/// Returns a JS object: { text: string, mapping: SpanMapping[] }
+#[wasm_bindgen]
+pub fn format_ir_with_mapping(
+    text: &str,
+    #[wasm_bindgen(unchecked_param_type = "Partial<Config>")] config: JsValue,
+) -> Result<JsValue, Error> {
+    let config = parse_config(config)?;
+    let t = Typstyle::new(config);
+    let source = Source::detached(text);
+    let (ir_text, mut mappings) = t
+        .format_source(source.clone())
+        .render_ir_with_mapping()
+        .map_err(into_error)?;
+
+    convert_mappings_to_utf16(&source, &ir_text, &mut mappings);
+    let result = MappingResult {
+        text: ir_text,
+        mapping: mappings,
+    };
+    serde_wasm_bindgen::to_value(&result).map_err(into_error)
+}
+
 /// The result of formatting a range within content.
 #[wasm_bindgen(getter_with_clone)]
 pub struct FormatRangeResult {

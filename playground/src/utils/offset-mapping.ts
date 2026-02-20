@@ -206,7 +206,7 @@ export function querySpanMapping(
       best =
         srcOffset - prev.srcEnd < next.srcStart - srcOffset ? prev : next;
     } else {
-      best = (prev ?? next)!;
+      best = prev ?? next ?? mapping[0];
     }
   }
 
@@ -265,7 +265,7 @@ export function querySpanMappingReverse(
       best =
         outOffset - prev.outEnd < next.outStart - outOffset ? prev : next;
     } else {
-      best = (prev ?? next)!;
+      best = prev ?? next ?? sorted[0];
     }
   }
 
@@ -311,7 +311,7 @@ export function findContainingSpan(
   if (prev && next) {
     return srcOffset - prev.srcEnd < next.srcStart - srcOffset ? prev : next;
   }
-  return (prev ?? next)!;
+  return prev ?? next ?? mapping[0];
 }
 
 /**
@@ -347,7 +347,7 @@ export function findContainingSpanReverse(
   if (prev && next) {
     return outOffset - prev.outEnd < next.outStart - outOffset ? prev : next;
   }
-  return (prev ?? next)!;
+  return prev ?? next ?? sorted[0];
 }
 
 /** WeakMap cache for output-sorted span indices. */
