@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { CodeEditorRef } from "./components/editor";
 import { OutputEditor, SourceEditor } from "./components/editor";
 import { FloatingErrorCard } from "./components/FloatingErrorCard";
@@ -12,6 +12,7 @@ import { ToastContainer } from "./components/ui/ToastContainer";
 import { AST_LANGUAGE_ID } from "./config/ast-language";
 import { IR_LANGUAGE_ID } from "./config/ir-language";
 import {
+  useCursorSync,
   useEditorSelection,
   usePlaygroundState,
   useScreenSize,
@@ -19,6 +20,7 @@ import {
   useTypstFormatter,
 } from "./hooks";
 import type { RangeFormatterOptions } from "./types";
+import { buildOffsetMapping } from "./utils/offset-mapping";
 
 function Playground() {
   const {
@@ -28,10 +30,12 @@ function Playground() {
       formatOptions,
       isInitializing,
       activeOutput,
+      cursorSyncEnabled,
     },
     setSourceCode,
     setFormatOptions,
     setActiveOutput,
+    setCursorSyncEnabled,
   } = usePlaygroundState();
   const [isRangeMode, setIsRangeMode] = useState(false);
 
@@ -61,6 +65,50 @@ function Playground() {
     isRangeMode,
   );
   const shareManager = useShareManager();
+
+  // Build offset mapping for cursor sync
+  const cursorSyncMapping = useMemo(() => {
+    if (activeOutput === "formatted") {
+      if (!formatter.formattedCode || formatter.error) return null;
+      const anchors = buildOffsetMapping(
+        deferredSourceCode,
+        formatter.formattedCode,
+      );
+      if (anchors.length === 0) return null;
+      return { type: "anchor" as const, data: anchors };
+    }
+    // AST: use WASM span mappings
+    if (
+      activeOutput === "ast" &&
+      formatter.astMapping &&
+      formatter.astMapping.length > 0
+    ) {
+      return { type: "span" as const, data: formatter.astMapping };
+    }
+    return null;
+  }, [
+    deferredSourceCode,
+    formatter.formattedCode,
+    formatter.error,
+    formatter.astMapping,
+    activeOutput,
+  ]);
+
+  // Determine which output editor ref to sync with
+  const activeOutputRef =
+    activeOutput === "formatted"
+      ? formattedEditorRef
+      : activeOutput === "ast"
+        ? astEditorRef
+        : irEditorRef;
+
+  // Cursor sync (wide layout only)
+  useCursorSync({
+    sourceRef: sourceEditorRef,
+    outputRef: activeOutputRef,
+    mapping: cursorSyncMapping,
+    enabled: cursorSyncEnabled && screenSize === "wide",
+  });
 
   // Show loading while playground state is initializing
   if (isInitializing) {
@@ -178,6 +226,8 @@ function Playground() {
         irPanel={irPanel}
         activeOutputTab={activeOutput}
         onActiveTabChange={handleActiveTabChange}
+        cursorSyncEnabled={cursorSyncEnabled}
+        onCursorSyncToggle={setCursorSyncEnabled}
       />
 
       {/* Status Bar */}

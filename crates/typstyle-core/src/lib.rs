@@ -91,3 +91,8 @@ impl<'a> Formatter<'a> {
 pub fn format_ast(root: &SyntaxNode) -> String {
     indent_4_to_2(&format!("{root:#?}"))
 }
+
+#[cfg(feature = "mapping")]
+mod ast_mapping;
+#[cfg(feature = "mapping")]
+pub use ast_mapping::{SpanMapping, format_ast_with_mapping};

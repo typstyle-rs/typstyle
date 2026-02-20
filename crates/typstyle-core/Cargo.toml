@@ -35,3 +35,4 @@ criterion.workspace = true
 
 [features]
 serde = ["dep:serde"]
+mapping = []

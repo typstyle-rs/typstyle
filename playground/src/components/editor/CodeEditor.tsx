@@ -21,6 +21,8 @@ export interface CodeEditorProps {
 
 export interface CodeEditorRef {
   scrollToTop: () => void;
+  revealLine: (lineNumber: number) => void;
+  getEditor: () => editor.IStandaloneCodeEditor | null;
 }
 
 export function CodeEditor({
@@ -44,6 +46,10 @@ export function CodeEditor({
       scrollToTop: () => {
         editorRef.current?.setScrollTop(0);
       },
+      revealLine: (lineNumber: number) => {
+        editorRef.current?.revealLineInCenter(lineNumber);
+      },
+      getEditor: () => editorRef.current,
     }),
     [],
   );

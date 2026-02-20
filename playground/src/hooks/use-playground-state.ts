@@ -20,6 +20,7 @@ export function usePlaygroundState() {
   const [sourceCode, setSourceCode] = useState("");
   const [formatOptions, setFormatOptions] = useState(DEFAULT_FORMAT_OPTIONS);
   const [activeOutput, setActiveOutput] = useState<OutputType>("formatted");
+  const [cursorSyncEnabled, setCursorSyncEnabled] = useState(true);
   const [isInitializing, setIsInitializing] = useState(true);
   const captureAsyncError = useAsyncError();
 
@@ -89,10 +90,12 @@ export function usePlaygroundState() {
       formatOptions,
       isInitializing,
       activeOutput,
+      cursorSyncEnabled,
     },
     setSourceCode,
     setFormatOptions,
     setActiveOutput,
+    setCursorSyncEnabled,
   };
 }
 

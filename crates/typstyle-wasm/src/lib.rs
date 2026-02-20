@@ -1,8 +1,11 @@
 use std::ops::Range;
 
 use js_sys::Error;
+use serde::Serialize;
 use typst_syntax::Source;
-use typstyle_core::{Config, Typstyle, format_ast, partial::format_range_ast};
+use typstyle_core::{
+    Config, SpanMapping, Typstyle, format_ast, format_ast_with_mapping, partial::format_range_ast,
+};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(typescript_custom_section)]
@@ -149,4 +152,41 @@ fn utf16_to_byte(source: &Source, utf16_idx: usize) -> Result<usize, Error> {
 
 fn into_error<E: std::fmt::Display>(err: E) -> Error {
     Error::new(&err.to_string())
+}
+
+/// Result of parsing/formatting with span mappings, serialized to JS via serde.
+#[derive(Serialize)]
+struct MappingResult {
+    text: String,
+    mapping: Vec<SpanMapping>,
+}
+
+/// Convert SpanMappings from byte offsets to UTF-16 offsets in-place.
+fn convert_mappings_to_utf16(source: &Source, output_text: &str, mappings: &mut [SpanMapping]) {
+    let output_source = Source::detached(output_text);
+    for m in mappings.iter_mut() {
+        m.src_start = source.lines().byte_to_utf16(m.src_start).unwrap_or(0);
+        m.src_end = source.lines().byte_to_utf16(m.src_end).unwrap_or(0);
+        m.out_start = output_source
+            .lines()
+            .byte_to_utf16(m.out_start)
+            .unwrap_or(0);
+        m.out_end = output_source.lines().byte_to_utf16(m.out_end).unwrap_or(0);
+    }
+}
+
+/// Parses the content and returns its AST along with span mappings.
+/// Returns a JS object: { text: string, mapping: SpanMapping[] }
+#[wasm_bindgen]
+pub fn parse_with_mapping(text: &str) -> Result<JsValue, Error> {
+    let root = typst_syntax::parse(text);
+    let source = Source::detached(text);
+    let (ast_text, mut mappings) = format_ast_with_mapping(&root);
+
+    convert_mappings_to_utf16(&source, &ast_text, &mut mappings);
+    let result = MappingResult {
+        text: ast_text,
+        mapping: mappings,
+    };
+    serde_wasm_bindgen::to_value(&result).map_err(into_error)
 }
