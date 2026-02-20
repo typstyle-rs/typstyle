@@ -66,6 +66,35 @@ function setDecorations(
   ]);
 }
 
+function setDecorationsMany(
+  editorInst: editor.IStandaloneCodeEditor,
+  oldIds: string[],
+  ranges: Array<{ startOffset: number; endOffset: number }>,
+  className: string,
+): string[] {
+  const model = editorInst.getModel();
+  if (!model) return oldIds;
+
+  const decorations = ranges.map(({ startOffset, endOffset }) => {
+    const startPos = model.getPositionAt(startOffset);
+    const endPos = model.getPositionAt(endOffset);
+    return {
+      range: {
+        startLineNumber: startPos.lineNumber,
+        startColumn: startPos.column,
+        endLineNumber: endPos.lineNumber,
+        endColumn: endPos.column,
+      },
+      options: {
+        className,
+        isWholeLine: false,
+      },
+    };
+  });
+
+  return editorInst.deltaDecorations(oldIds, decorations);
+}
+
 function clearDecorations(
   editorInst: editor.IStandaloneCodeEditor | undefined | null,
   ids: string[],
@@ -159,6 +188,11 @@ export function useCursorSync({
           ? findContainingSpan(mapping.data, srcOffset)
           : findContainingSpanReverse(mapping.data, outOffset);
       if (matchedSpan) {
+        const sameSrcSpans = mapping.data.filter(
+          (span) =>
+            span.srcStart === matchedSpan.srcStart &&
+            span.srcEnd === matchedSpan.srcEnd,
+        );
         srcDecoIds.current = setDecorations(
           srcEditor,
           srcDecoIds.current,
@@ -166,11 +200,13 @@ export function useCursorSync({
           matchedSpan.srcEnd,
           SRC_HIGHLIGHT_CLASS,
         );
-        outDecoIds.current = setDecorations(
+        outDecoIds.current = setDecorationsMany(
           outEditor,
           outDecoIds.current,
-          matchedSpan.outStart,
-          matchedSpan.outEnd,
+          sameSrcSpans.map((span) => ({
+            startOffset: span.outStart,
+            endOffset: span.outEnd,
+          })),
           OUT_HIGHLIGHT_CLASS,
         );
       }

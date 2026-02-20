@@ -22,14 +22,22 @@ mod util;
 pub use context::{Context, Mode};
 use prelude::*;
 use style::{FoldStyle, is_multiline_flavored};
+#[cfg(feature = "mapping")]
+use typst_syntax::Source;
 use typst_syntax::{SyntaxNode, ast::*};
 
+#[cfg(feature = "mapping")]
+use crate::ir_mapping::{IrAtomRecorder, IrAtomSource};
 use crate::{AttrStore, Config, Error, ext::StrExt};
 
 pub struct PrettyPrinter<'a> {
     config: Config,
     attr_store: AttrStore,
     arena: Arena<'a>,
+    #[cfg(feature = "mapping")]
+    source: Option<Source>,
+    #[cfg(feature = "mapping")]
+    ir_atom_recorder: std::cell::RefCell<IrAtomRecorder>,
 }
 
 impl<'a> PrettyPrinter<'a> {
@@ -38,6 +46,21 @@ impl<'a> PrettyPrinter<'a> {
             config,
             attr_store,
             arena: Arena::new(),
+            #[cfg(feature = "mapping")]
+            source: None,
+            #[cfg(feature = "mapping")]
+            ir_atom_recorder: std::cell::RefCell::new(IrAtomRecorder::default()),
+        }
+    }
+
+    #[cfg(feature = "mapping")]
+    pub fn new_with_source(config: Config, attr_store: AttrStore, source: Source) -> Self {
+        Self {
+            config,
+            attr_store,
+            arena: Arena::new(),
+            source: Some(source),
+            ir_atom_recorder: std::cell::RefCell::new(IrAtomRecorder::default()),
         }
     }
 
@@ -78,6 +101,40 @@ impl<'a> PrettyPrinter<'a> {
 }
 
 impl<'a> PrettyPrinter<'a> {
+    #[cfg(feature = "mapping")]
+    pub(crate) fn reset_ir_mapping(&self) {
+        self.ir_atom_recorder.borrow_mut().reset();
+    }
+
+    #[cfg(feature = "mapping")]
+    pub(crate) fn snapshot_ir_atom_sources(&self) -> Vec<IrAtomSource> {
+        self.ir_atom_recorder.borrow().snapshot_sources()
+    }
+
+    pub(crate) fn emit_source_text_untyped(
+        &'a self,
+        _node: &'a SyntaxNode,
+        text: &'a str,
+    ) -> ArenaDoc<'a> {
+        #[cfg(feature = "mapping")]
+        {
+            let range = self
+                .source
+                .as_ref()
+                .and_then(|source| source.range(_node.span()))
+                .or_else(|| _node.span().range());
+            if let Some(range) = range {
+                let atom_id = self
+                    .ir_atom_recorder
+                    .borrow_mut()
+                    .alloc_atom(range.start, range.end);
+                return self.arena.text(text).tag(atom_id);
+            }
+        }
+
+        self.arena.text(text)
+    }
+
     fn check_disabled(&'a self, node: &'a SyntaxNode) -> Option<ArenaDoc<'a>> {
         if self.attr_store.is_format_disabled(node) {
             Some(self.convert_verbatim_untyped(node))
@@ -113,7 +170,7 @@ impl<'a> PrettyPrinter<'a> {
 
     /// For leaf only.
     fn convert_trivia_untyped(&'a self, node: &'a SyntaxNode) -> ArenaDoc<'a> {
-        self.arena.text(node.text().as_str())
+        self.emit_source_text_untyped(node, node.text().as_str())
     }
 
     pub fn try_convert_with_mode(

@@ -57,7 +57,7 @@ impl<'a> PrettyPrinter<'a> {
         let is_op_keyword = unary.op() == UnOp::Not;
         self.convert_flow_like(ctx, unary.to_untyped(), |ctx, child, _| {
             if UnOp::from_kind(child.kind()).is_some() {
-                FlowItem::spaced_tight(self.arena.text(child.text().as_str()))
+                FlowItem::spaced_tight(self.emit_source_text_untyped(child, child.text().as_str()))
             } else if let Some(expr) = child.cast() {
                 if is_op_keyword {
                     FlowItem::spaced(self.convert_expr(ctx, expr))
@@ -78,7 +78,7 @@ impl<'a> PrettyPrinter<'a> {
         }
         self.convert_flow_like(ctx, binary.to_untyped(), |ctx, child, _| {
             if BinOp::from_kind(child.kind()).is_some() {
-                FlowItem::spaced(self.arena.text(child.text().as_str()))
+                FlowItem::spaced(self.emit_source_text_untyped(child, child.text().as_str()))
             } else if let Some(expr) = child.cast() {
                 FlowItem::spaced(self.convert_expr(ctx, expr))
             } else {
@@ -307,7 +307,11 @@ impl<'a> PrettyPrinter<'a> {
             if child.kind().is_keyword()
                 && !matches!(child.kind(), SyntaxKind::None | SyntaxKind::Auto)
             {
-                flow.push_doc(self.arena.text(child.text().as_str()), true, true);
+                flow.push_doc(
+                    self.emit_source_text_untyped(child, child.text().as_str()),
+                    true,
+                    true,
+                );
             } else if is_comment_node(child) {
                 if child.kind() == SyntaxKind::LineComment {
                     peek_line_comment = true; // defers the linebreak

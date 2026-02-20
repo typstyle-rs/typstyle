@@ -85,12 +85,21 @@ function Playground() {
     ) {
       return { type: "span" as const, data: formatter.astMapping };
     }
+    // IR: use WASM span mappings
+    if (
+      activeOutput === "pir" &&
+      formatter.irMapping &&
+      formatter.irMapping.length > 0
+    ) {
+      return { type: "span" as const, data: formatter.irMapping };
+    }
     return null;
   }, [
     deferredSourceCode,
     formatter.formattedCode,
     formatter.error,
     formatter.astMapping,
+    formatter.irMapping,
     activeOutput,
   ]);
 
