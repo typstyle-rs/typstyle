@@ -190,4 +190,3 @@ pub fn parse_with_mapping(text: &str) -> Result<JsValue, Error> {
     };
     serde_wasm_bindgen::to_value(&result).map_err(into_error)
 }
-

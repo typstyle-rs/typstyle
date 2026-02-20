@@ -171,7 +171,7 @@ mod tests {
         fn count_leaves(node: &SyntaxNode) -> usize {
             let children: Vec<_> = node.children().collect();
             if children.is_empty() {
-                if node.len() > 0 { 1 } else { 0 }
+                if !node.is_empty() { 1 } else { 0 }
             } else {
                 children.iter().map(|c| count_leaves(c)).sum()
             }
