@@ -68,12 +68,19 @@ impl<'a> PrettyPrinter<'a> {
 
 /// Utilities
 impl<'a> PrettyPrinter<'a> {
+    #[inline]
     pub(crate) fn indent(&'a self, doc: ArenaDoc<'a>) -> ArenaDoc<'a> {
         doc.nest(self.config.tab_spaces as isize)
     }
 
+    #[inline]
     pub(crate) fn block_indent(&'a self, doc: ArenaDoc<'a>) -> ArenaDoc<'a> {
         self.indent(self.arena.line_() + doc) + self.arena.line_()
+    }
+
+    #[inline]
+    pub(crate) fn hang(&'a self, doc: ArenaDoc<'a>) -> ArenaDoc<'a> {
+        self.indent(doc).align()
     }
 }
 

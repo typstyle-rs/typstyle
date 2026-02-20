@@ -2,7 +2,7 @@
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/markup/spaces2.typ
 ---
-leading spaces are trimmed
+    leading spaces are trimmed
 
 = In Heading
 - In list item
@@ -27,9 +27,7 @@ in emph syntax
 _
 
 
-#[
-  - with blocky content inside
-]
+#[- with blocky content inside]
 #[$
   "equation is also blocky"
 $]
