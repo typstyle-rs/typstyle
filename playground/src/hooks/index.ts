@@ -1,3 +1,4 @@
+export { useCursorSync } from "./use-cursor-sync";
 export { useEditorSelection } from "./use-editor-selection";
 export { usePlaygroundState } from "./use-playground-state";
 export { useScreenSize } from "./use-screen-size";

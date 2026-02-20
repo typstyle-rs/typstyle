@@ -11,6 +11,8 @@ interface MainLayoutProps {
   irPanel: ReactNode;
   activeOutputTab?: OutputType;
   onActiveTabChange?: (activeTab: string) => void;
+  cursorSyncEnabled?: boolean;
+  onCursorSyncToggle?: (enabled: boolean) => void;
 }
 
 export function MainLayout({
@@ -22,6 +24,8 @@ export function MainLayout({
   irPanel,
   activeOutputTab,
   onActiveTabChange,
+  cursorSyncEnabled = true,
+  onCursorSyncToggle,
 }: MainLayoutProps) {
   return (
     <div className="flex overflow-hidden min-h-0 h-full p-2 gap-2">
@@ -33,7 +37,30 @@ export function MainLayout({
             <div className="panel-content">{optionsPanel}</div>
           </div>
           <div className="panel flex-1 min-w-0 card card-border">
-            <div className="panel-header font-semibold">Source</div>
+            <div className="panel-header font-semibold flex items-center justify-between">
+              <span>Source</span>
+              <button
+                type="button"
+                className={`btn btn-xs btn-ghost gap-1 ${cursorSyncEnabled ? "btn-active" : "opacity-50"}`}
+                title={
+                  cursorSyncEnabled
+                    ? "Cursor sync enabled"
+                    : "Cursor sync disabled"
+                }
+                onClick={() => onCursorSyncToggle?.(!cursorSyncEnabled)}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="w-4 h-4"
+                >
+                  <path d="M12.232 4.232a2.5 2.5 0 0 1 3.536 3.536l-1.225 1.224a.75.75 0 0 0 1.061 1.06l1.224-1.224a4 4 0 0 0-5.656-5.656l-3 3a4 4 0 0 0 .225 5.865.75.75 0 0 0 .977-1.138 2.5 2.5 0 0 1-.142-3.667l3-3Z" />
+                  <path d="M11.603 7.963a.75.75 0 0 0-.977 1.138 2.5 2.5 0 0 1 .142 3.667l-3 3a2.5 2.5 0 0 1-3.536-3.536l1.225-1.224a.75.75 0 0 0-1.061-1.06l-1.224 1.224a4 4 0 1 0 5.656 5.656l3-3a4 4 0 0 0-.225-5.865Z" />
+                </svg>
+                Sync
+              </button>
+            </div>
             <div className="panel-content">{sourcePanel}</div>
           </div>
           <div className="panel flex-1 min-w-0 card card-border">

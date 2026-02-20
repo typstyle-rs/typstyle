@@ -32,9 +32,11 @@ export const registerIrLanguage = (monaco: Monaco) => {
       "LineOrNil",
       "SoftLineOrSpace",
       "SoftLineOrNil",
+      "Text",
     ],
 
     compounds: [
+      "Append",
       "Group",
       "Nest",
       "Flatten",

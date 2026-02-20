@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
 import * as typstyle from "typstyle-wasm";
 import type { OutputType, RangeFormatterOptions } from "@/types";
+import type { SpanMapping } from "@/utils/offset-mapping";
 import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
 import { useAsyncError } from "./useErrorHandler";
+
+/** Result from WASM parse_with_mapping API. */
+interface MappingResult {
+  text: string;
+  mapping: SpanMapping[];
+}
 
 export interface Formatter {
   formattedCode: string;
   astOutput: string;
   irOutput: string;
+  astMapping: SpanMapping[] | null;
   error: string | null;
   update: () => void;
 }
@@ -22,6 +30,7 @@ export function useTypstFormatter(
   const [formattedCode, setFormattedCode] = useState("");
   const [astOutput, setAstOutput] = useState("");
   const [irOutput, setIrOutput] = useState("");
+  const [astMapping, setAstMapping] = useState<SpanMapping[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const captureAsyncError = useAsyncError();
 
@@ -66,15 +75,25 @@ export function useTypstFormatter(
           break;
         }
         case "ast": {
-          const ast = useRange
-            ? typstyle.get_range_ast(
-                rangeOptions.fullText,
-                rangeOptions.selection.startOffset,
-                rangeOptions.selection.endOffset,
-              )
-            : typstyle.parse(sourceCode);
-
-          setAstOutput(ast);
+          // Try parse_with_mapping if available (provides scroll sync mapping)
+          if (!useRange && "parse_with_mapping" in typstyle) {
+            const parseWithMapping = (typstyle as unknown as {
+              parse_with_mapping: (text: string) => MappingResult;
+            }).parse_with_mapping;
+            const result = parseWithMapping(sourceCode);
+            setAstOutput(result.text);
+            setAstMapping(result.mapping ?? null);
+          } else {
+            const ast = useRange
+              ? typstyle.get_range_ast(
+                  rangeOptions.fullText,
+                  rangeOptions.selection.startOffset,
+                  rangeOptions.selection.endOffset,
+                )
+              : typstyle.parse(sourceCode);
+            setAstOutput(ast);
+            setAstMapping(null);
+          }
           setError(null);
           break;
         }
@@ -116,6 +135,7 @@ export function useTypstFormatter(
     formattedCode,
     astOutput,
     irOutput,
+    astMapping,
     error,
     update: formatCode,
   };

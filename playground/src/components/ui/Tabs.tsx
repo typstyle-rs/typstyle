@@ -65,9 +65,6 @@ export function Tabs({
     onTabChange?.(tabId);
   };
   const currentActiveTab = activeTabProp ?? internalActiveTab;
-  const activeTabContent = tabs.find(
-    (tab) => tab.key === currentActiveTab,
-  )?.content;
 
   return (
     <div className={`flex flex-col h-full min-h-0 ${className}`}>
@@ -92,10 +89,19 @@ export function Tabs({
           );
         })}
       </div>
-      {/* Tab Content - This must be flex-1 and have min-h-0 for proper shrinking */}
-      <div className={`flex-1 min-h-0 overflow-hidden ${contentClassName}`}>
-        {activeTabContent}
-      </div>
+      {/* All tab contents stay mounted; inactive ones are hidden via CSS */}
+      {tabs.map((tab) => {
+        const isActive = currentActiveTab === tab.key;
+        return (
+          <div
+            key={tab.key}
+            className={`flex-1 min-h-0 overflow-hidden ${contentClassName}`}
+            style={isActive ? undefined : { display: "none" }}
+          >
+            {tab.content}
+          </div>
+        );
+      })}
     </div>
   );
 }
