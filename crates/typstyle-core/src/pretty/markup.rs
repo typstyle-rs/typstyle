@@ -393,6 +393,10 @@ impl<'a> PrettyPrinter<'a> {
                 && !nodes
                     .last()
                     .is_some_and(|last| should_break_after(last) || preserve_break_after(last))
+                && !repr.lines[i + 1]
+                    .nodes
+                    .first()
+                    .is_some_and(|first| should_break_after(first))
                 && !preserve_exclusive(line)
                 && !preserve_exclusive(&repr.lines[i + 1])
             {
