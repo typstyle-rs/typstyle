@@ -4181,6 +4181,7 @@ version = "0.14.4"
 dependencies = [
  "console_error_panic_hook",
  "js-sys",
+ "serde",
  "serde-wasm-bindgen",
  "syn",
  "typst-syntax",
