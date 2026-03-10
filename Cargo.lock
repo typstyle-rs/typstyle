@@ -4122,13 +4122,18 @@ name = "typstyle-consistency"
 version = "0.14.4"
 dependencies = [
  "anyhow",
+ "colored",
  "fontdb",
+ "insta",
  "rustc-hash",
+ "similar",
  "similar-asserts",
+ "tiny-skia",
  "tinymist-world",
  "typst",
  "typst-assets",
  "typst-render",
+ "typst-shim",
  "walkdir",
 ]
 

@@ -4,7 +4,7 @@ use anyhow::{Context, anyhow, bail};
 use libtest_mimic::{Failed, Trial};
 use serde::Deserialize;
 use typst_syntax::Source;
-use typstyle_consistency::{ErrorSink, FormattedSources, FormatterHarness};
+use typstyle_consistency::{CheckingOptions, ErrorSink, FormattedSources, FormatterHarness};
 use typstyle_core::{Config, Typstyle};
 
 use crate::common::{fixtures_dir, test_dir};
@@ -159,17 +159,24 @@ fn check_testcase(
         sub_sink.sink_to(&mut err_sink);
     }
 
+    let check_options = CheckingOptions::default();
+
     if let Some(entrypoint) = testcase.entrypoint.as_ref() {
         harness.compile_and_compare(
             fmt_sources.iter(),
             Path::new(&entrypoint),
-            true,
+            check_options,
             &mut err_sink,
         )?;
     }
     if testcase.examples.is_some() {
         let entry_vpath = Path::new("__examples__.typ");
-        harness.compile_and_compare(fmt_sources.iter(), entry_vpath, true, &mut err_sink)?;
+        harness.compile_and_compare(
+            fmt_sources.iter(),
+            entry_vpath,
+            check_options,
+            &mut err_sink,
+        )?;
     };
 
     if err_sink.is_ok() {

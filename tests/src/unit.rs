@@ -201,7 +201,12 @@ fn check_output_consistency(path: &Path, width: usize) -> Result<(), Failed> {
         )?,
     };
 
-    harness.compile_and_compare([fmt_sources].iter(), main_vpath, false, &mut err_sink)?;
+    harness.compile_and_compare(
+        [fmt_sources].iter(),
+        main_vpath,
+        Default::default(),
+        &mut err_sink,
+    )?;
 
     if err_sink.is_ok() {
         Ok(())

@@ -139,3 +139,40 @@ macro_rules! sink_assert_str_eq {
         }
     };
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_display_empty_sink() {
+        let sink = ErrorSink::new("empty description".to_string());
+        let output = format!("{}", sink);
+        assert!(output.ends_with('\n'));
+        assert!(!output.ends_with("\n\n"));
+        insta::assert_snapshot!(output, @"errors occurred in empty description:");
+    }
+
+    #[test]
+    fn test_nested_sinks() {
+        let mut sub_sink = ErrorSink::new("sub task".to_string());
+        sub_sink.push("sub error 1");
+        sub_sink.push("sub error 2\nwith newline");
+
+        let mut main_sink = ErrorSink::new("main task".to_string());
+        main_sink.push("main error");
+        sub_sink.sink_to(&mut main_sink);
+
+        let output = format!("{}", main_sink);
+        assert!(output.ends_with('\n'));
+        assert!(!output.ends_with("\n\n"));
+        insta::assert_snapshot!(output, @"
+        errors occurred in main task:
+           1: main error
+           2: errors occurred in sub task:
+               1: sub error 1
+               2: sub error 2
+                with newline
+        ");
+    }
+}

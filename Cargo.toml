@@ -62,6 +62,7 @@ tempfile = "3"
 toml = "0.8"
 
 tinymist-world = { version = "0.14.6", default-features = false, features = ["system"] }
+typst-shim = { version = "0.14.6" }
 
 typst-assets = "0.14.2"
 typst-render = "0.14.2"

@@ -19,7 +19,7 @@ pub fn fixtures_dir() -> PathBuf {
     test_dir().join("fixtures")
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, PartialEq, Eq)]
 pub struct Options {
     pub config: Config,
     pub relax_convergence: usize,
