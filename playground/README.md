@@ -21,15 +21,19 @@ Try it at https://typstyle-rs.github.io/typstyle/playground
 
 ## Quick Start
 
+> **Note:** You must build the WASM module first before running the dev server or building the frontend.
+
 ```bash
+# Build WASM (run once, or after updating typstyle-wasm)
+pnpm dev:wasm         # Build Typstyle WASM module in development mode (faster)
+pnpm build:wasm       # Build Typstyle WASM module for production (optimized)
+
 # Development
 pnpm dev              # Start Vite development server with hot reload
 pnpm preview          # Preview production build locally
 
 # Building
 pnpm build            # TypeScript compilation + Vite production build
-pnpm dev:wasm         # Build Typstyle WASM module in development mode
-pnpm build:wasm       # Build Typstyle WASM module for production
 
 # Code Quality
 pnpm lint             # Run Biome linter to check for issues
