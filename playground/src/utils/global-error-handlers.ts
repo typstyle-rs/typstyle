@@ -11,7 +11,7 @@ window.addEventListener("unhandledrejection", (event) => {
   event.preventDefault();
 
   // In development, we might want to be more aggressive
-  if (process.env.NODE_ENV === "development") {
+  if (import.meta.env.DEV) {
     console.error("Unhandled promise rejection details:", {
       promise: event.promise,
       reason: event.reason,
@@ -27,7 +27,7 @@ window.addEventListener("unhandledrejection", (event) => {
 window.addEventListener("error", (event) => {
   console.error("Uncaught error:", event.error);
 
-  if (process.env.NODE_ENV === "development") {
+  if (import.meta.env.DEV) {
     console.error("Uncaught error details:", {
       message: event.message,
       filename: event.filename,

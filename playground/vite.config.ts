@@ -28,6 +28,7 @@ export default defineConfig({
         {
           src: "../tests/fixtures/ai/**/*.typ",
           dest: "samples",
+          rename: { stripBase: true },
         },
       ],
     }),
