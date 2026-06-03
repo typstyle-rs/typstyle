@@ -28,7 +28,7 @@ export function useAsyncError() {
       console.error("Async error captured:", error);
 
       // For development, you might want to throw immediately
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         throwError(error);
       } else {
         // In production, you might want to report to an error service
