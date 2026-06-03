@@ -70,12 +70,17 @@ function Playground() {
   const cursorSyncMapping = useMemo(() => {
     if (activeOutput === "formatted") {
       if (!formatter.formattedCode || formatter.error) return null;
-      const anchors = buildOffsetMapping(
-        deferredSourceCode,
-        formatter.formattedCode,
-      );
-      if (anchors.length === 0) return null;
-      return { type: "anchor" as const, data: anchors };
+      try {
+        const anchors = buildOffsetMapping(
+          deferredSourceCode,
+          formatter.formattedCode,
+        );
+        if (anchors.length === 0) return null;
+        return { type: "anchor" as const, data: anchors };
+      } catch (error) {
+        console.error("Error building offset mapping:", error);
+        return null;
+      }
     }
     // AST: use WASM span mappings
     if (
