@@ -79,7 +79,8 @@ export function buildOffsetMapping(
   for (const [op, text] of changes) {
     switch (op) {
       case diff.EQUAL:
-        for (let i = 0; i < text.length; i++) {
+        for (const _ of text) {
+          if (srcIdx >= srcChars.length || fmtIdx >= fmtChars.length) break;
           anchors.push({
             srcOffset: srcChars[srcIdx].offset,
             outOffset: fmtChars[fmtIdx].offset,
@@ -89,10 +90,10 @@ export function buildOffsetMapping(
         }
         break;
       case diff.DELETE:
-        srcIdx += text.length;
+        srcIdx += [...text].length;
         break;
       case diff.INSERT:
-        fmtIdx += text.length;
+        fmtIdx += [...text].length;
         break;
     }
   }
