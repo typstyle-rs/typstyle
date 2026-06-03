@@ -6,6 +6,39 @@ WebAssembly bindings for [Typstyle](https://github.com/typstyle-rs/typstyle), a 
 
 > ⚠️ **API Stability Warning**: The API is unstable and may change in any future version.
 
+## Building
+
+### Prerequisites
+
+- Rust stable toolchain with the `wasm32-unknown-unknown` target
+- [wasm-pack](https://rustwasm.github.io/wasm-pack/)
+
+```bash
+rustup target add wasm32-unknown-unknown
+cargo binstall wasm-pack
+```
+
+### For the Playground
+
+The playground lives in the `playground/` directory and uses a local wasm build:
+
+```bash
+cd playground
+pnpm build:wasm       # Production build (optimized)
+pnpm dev:wasm         # Development build (with debug info, faster compile)
+```
+
+This runs `wasm-pack build` against this crate and outputs to `playground/typstyle-wasm/`.
+
+### For NPM Publishing
+
+```bash
+cd crates/typstyle-wasm
+wasm-pack build --target bundler --out-dir pkg --scope typstyle
+```
+
+This produces the `@typstyle/typstyle-wasm-bundler` package in `crates/typstyle-wasm/pkg/`.
+
 ## Installation
 
 ```bash
