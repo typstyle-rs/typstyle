@@ -99,7 +99,7 @@ jobs:
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: |
           echo "Running ${{ inputs.branch_type }} branch benchmark..."
-          cargo bench --workspace -- --save-baseline ${{ inputs.branch_type }}
+          cargo bench -p typstyle-core -- --save-baseline ${{ inputs.branch_type }}
 
       - name: Build release binary and collect bloat data
         if: steps.check-cache.outputs.cache-hit != 'true'
