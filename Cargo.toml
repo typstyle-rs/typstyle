@@ -48,16 +48,16 @@ path-absolutize = "3"
 walkdir = { version = "2" }
 
 log = "0.4"
-anstream = "0.6"
+anstream = "1.0"
 colored = "3.0"
 
 # Used in tests
-console = { version = "0.15", default-features = false } # use the same version as in similar-asserts
+console = { version = "0.16", default-features = false } # use the same version as in similar-asserts
 insta = "1.46"
 insta-cmd = "0.6"
 libtest-mimic = "0.8.1"
-similar = "2.7"
-similar-asserts = "1.7"
+similar = "3.1"
+similar-asserts = "2.0"
 tempfile = "3"
 toml = "0.8"
 
