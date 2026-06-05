@@ -8,7 +8,7 @@ This guide covers environment setup, building, testing, and documentation for Ty
 = Prerequisites
 
 - Rust stable toolchain with #link("https://doc.rust-lang.org/cargo/")[cargo]
-- Node.js and #link("https://yarnpkg.com/")[yarn] (for web assets)
+- Node.js and #link("https://pnpm.io/")[pnpm] (for web assets)
 - #link("https://nexte.st/")[cargo-nextest] and #link("https://insta.rs/")[cargo-insta] (for testing)
 - #link("https://github.com/Myriad-Dreamin/shiroa")[shiroa] (for documentation)
 
@@ -27,7 +27,7 @@ Install required tools:
 ```bash
 # For testing
 cargo binstall cargo-nextest cargo-insta
-# For building wasm
+# For building WASM
 cargo binstall wasm-pack
 # For documentation
 cargo binstall shiroa
@@ -38,9 +38,9 @@ cargo binstall shiroa
 - `crates/typstyle/` — formatter CLI
 - `crates/typstyle-core/` — core formatting logic
 - `crates/typstyle-consistency/` — consistency test framework
-- `crates/typstyle-typlugin/` — typst plugin for embedded usage
-- `crates/typstyle-wasm/` — wasm bindings
+- `crates/typstyle-typlugin/` — Typst plugin for embedded usage
+- `crates/typstyle-wasm/` — WASM bindings
 - `tests/` — integration tests and fixtures
-- `docs/` — documentation source (based on shiroa and written in typst)
+- `docs/` — documentation source (based on shiroa and written in Typst)
 - `contrib/typstyle-embedded/` — Typstyle as Typst package
 - `playground/` — web-based interactive playground
