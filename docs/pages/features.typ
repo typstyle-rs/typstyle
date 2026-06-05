@@ -4,10 +4,10 @@
 
 #show: render-examples
 
-Typstyle follows a consistent set of formatting rules to ensure your Typst code is readable, maintainable, and follows established conventions. This page documents the core formatting styles applied by typstyle.
+Typstyle follows a consistent set of formatting rules to ensure your Typst code is readable, maintainable, and follows established conventions. This page documents the core formatting styles applied by Typstyle.
 
 #callout.note[
-  All examples are automatically rendered using the embedded typstyle formatter, ensuring they always reflect the latest features.
+  All examples are automatically rendered using the embedded Typstyle formatter, ensuring they always reflect the latest features.
 
   However, documentation updates may lag behind new features. If there are inconsistencies between descriptions and example output, the actual formatting behavior takes precedence.
 ]
@@ -18,7 +18,7 @@ Typstyle follows a consistent set of formatting rules to ensure your Typst code 
 
 - *Default line width*: 80 characters (configurable with `--line-width`)
 - *Default indentation*: 2 spaces per level (configurable with `--indent-width`)
-- *File endings*: typstyle ensures files end with a newline character
+- *File endings*: Typstyle ensures files end with a newline character
 
 = Comments
 

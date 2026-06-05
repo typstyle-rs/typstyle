@@ -44,7 +44,7 @@ Lists within content blocks are properly formatted with surrounding linebreaks:
 
 = Text Wrapping
 
-When text wrapping is enabled with `--wrap-text`, typstyle intelligently wraps long lines while preserving important formatting and semantic structure:
+When text wrapping is enabled with `--wrap-text`, Typstyle intelligently wraps long lines while preserving important formatting and semantic structure:
 
 ```typst
 /// typstyle: wrap_text, max_width=30
@@ -52,7 +52,7 @@ Let's say you have a long text that needs to be wrapped in the markup. This is a
 ```
 == Wrapping Rules
 
-typstyle applies specific wrapping logic based on node types:
+Typstyle applies specific wrapping logic based on node types:
 
 - *Cannot break before*: Markup markers (`=`, `+`, `-`, `/`) and labels to prevent misinterpretation
 - *Force hard breaks*: Around block equations to keep them on exclusive lines
@@ -103,7 +103,7 @@ End
 
 == Multilingual Text Support
 
-typstyle measures Unicode width and will not break between words if no space exists in the original text.
+Typstyle measures Unicode width and will not break between words if no space exists in the original text.
 
 ```typst
 /// typstyle: wrap_text, max_width=40

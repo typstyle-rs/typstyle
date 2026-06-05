@@ -5,10 +5,10 @@
 
 #show: render-examples
 
-Typstyle aims to format all code consistently, but occasionally you may need to override its formatting decisions. The escape hatch is a workaround for rare cases where typstyle's output isn't suitable or when working around limitations.
+Typstyle aims to format all code consistently, but occasionally you may need to override its formatting decisions. The escape hatch is a workaround for rare cases where Typstyle's output isn't suitable or when working around limitations.
 
 #warning[
-  The escape hatch should be used sparingly. It breaks consistency and may indicate areas where typstyle could be improved. Consider reporting issues instead of relying on escape hatches.
+  The escape hatch should be used sparingly. It breaks consistency and may indicate areas where Typstyle could be improved. Consider reporting issues instead of relying on escape hatches.
 ]
 
 = When You Might Need This
@@ -44,7 +44,7 @@ Typstyle automatically preserves original formatting when it encounters issues:
 - *Syntax errors*: Code with parsing errors is left unchanged
 - *Complex edge cases*: Rare constructs that may downgrade formatting capabilities
 
-In these cases, you don't need an escape hatch—typstyle handles it automatically.
+In these cases, you don't need an escape hatch—Typstyle handles it automatically.
 
 = Scope and Behavior
 
@@ -90,7 +90,7 @@ $
 = Use Cases
 
 #tip[
-  Before using escape hatches, consider if the formatting issue could be solved by restructuring your code to work better with typstyle's conventions.
+  Before using escape hatches, consider if the formatting issue could be solved by restructuring your code to work better with Typstyle's conventions.
 ]
 
 As a last resort, when you need to work around current limitations:

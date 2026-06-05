@@ -3,7 +3,7 @@
 
 #show: book-page.with(title: "Playground Development")
 
-The #link(package.homepage + "playground")[typstyle playground] is an interactive web application for trying typstyle formatting in the browser.
+The #link(package.homepage + "playground")[Typstyle playground] is an interactive web application for trying Typstyle formatting in the browser.
 
 = Tech Stack
 

@@ -35,7 +35,7 @@
   [
     #package.description
 
-    Visit typstyle repository: #link(package.repository)[main branch, ] or #link({
+    Visit Typstyle repository: #link(package.repository)[main branch, ] or #link({
       package.repository
       "/tree/v"
       package.version

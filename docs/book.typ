@@ -5,7 +5,7 @@
 #show: book
 
 #book-meta(
-  title: "typstyle",
+  title: "Typstyle",
   description: "Typstyle Documentation",
   repository: package.repository,
   repository-edit: package.repository + "/edit/master/docs/pages/{path}",

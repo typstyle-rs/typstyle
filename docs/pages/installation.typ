@@ -24,7 +24,7 @@ The easiest way to get started is to download the pre-built binary from the #lin
 
 Typstyle is available in many package managers. Check the #link("https://repology.org/project/typstyle/versions")[packaging status] for your distribution.
 
-Notably, typstyle is available in #link("https://www.archlinuxcn.org/archlinux-cn-repo-and-mirror/")[Archlinux CN] repo.
+Notably, Typstyle is available in #link("https://www.archlinuxcn.org/archlinux-cn-repo-and-mirror/")[Archlinux CN] repo.
 
 == Cargo Installation
 
