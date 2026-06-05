@@ -6,8 +6,9 @@ use typst::{
     diag::{SourceDiagnostic, SourceResult},
     ecow::EcoVec,
     foundations::{Content, Repr, Smart},
-    layout::{Page, PagedDocument},
+    model::Document,
 };
+use typst_layout::{Page, PagedDocument};
 
 use crate::{ErrorSink, image_diff::compute_diff_pixmap, sink_assert_eq, text_diff::CodeDiff};
 
@@ -178,32 +179,32 @@ fn check_error_consistency(
 fn check_doc_meta(original: &PagedDocument, formatted: &PagedDocument, sink: &mut ErrorSink) {
     sink_assert_eq!(
         sink,
-        original.pages.len(),
-        formatted.pages.len(),
+        original.pages().len(),
+        formatted.pages().len(),
         "The page counts are not consistent"
     );
     sink_assert_eq!(
         sink,
-        original.info.title,
-        formatted.info.title,
+        original.info().title,
+        formatted.info().title,
         "The titles are not consistent"
     );
     sink_assert_eq!(
         sink,
-        original.info.author,
-        formatted.info.author,
+        original.info().author,
+        formatted.info().author,
         "The authors are not consistent"
     );
     sink_assert_eq!(
         sink,
-        original.info.description,
-        formatted.info.description,
+        original.info().description,
+        formatted.info().description,
         "The descriptions are not consistent"
     );
     sink_assert_eq!(
         sink,
-        original.info.keywords,
-        formatted.info.keywords,
+        original.info().keywords,
+        formatted.info().keywords,
         "The keywords are not consistent"
     );
 }
@@ -220,28 +221,27 @@ fn check_pages_equal(
 ) -> Result<()> {
     // Check document metadata
     check_doc_meta(original, formatted, sink);
+    let original_pages = original.pages();
+    let formatted_pages = formatted.pages();
 
-    if original.pages.len() != formatted.pages.len() {
+    if original_pages.len() != formatted_pages.len() {
         sink.push(format!(
             "Page count mismatch: original has {} pages, formatted has {} pages",
-            original.pages.len(),
-            formatted.pages.len()
+            original_pages.len(),
+            formatted_pages.len()
         ));
         // No early return here - continue to check pages
     }
 
     // Check page equality using hash comparison (fast)
-    if pages_equal_by_hash(original, formatted) {
+    if pages_equal_by_hash(original_pages, formatted_pages) {
         // All pages match - we're done!
         return Ok(());
     }
 
     // Pages differ by hash - check which pages have metadata differences and collect all with hash diff
     let mut pages_with_hash_diff = Vec::new();
-    for (i, (orig_page, fmt_page)) in (original.pages.iter())
-        .zip(formatted.pages.iter())
-        .enumerate()
-    {
+    for (i, (orig_page, fmt_page)) in (original_pages.iter()).zip(formatted_pages).enumerate() {
         if page_hash(orig_page) == page_hash(fmt_page) {
             continue;
         }
@@ -260,8 +260,8 @@ fn check_pages_equal(
 
     // Pages differ unexpectedly - render all pages with hash differences
     render_diff_pages(
-        original,
-        formatted,
+        original_pages,
+        formatted_pages,
         original_name,
         formatted_name,
         &pages_with_hash_diff,
@@ -273,15 +273,14 @@ fn check_pages_equal(
 
 /// Check if all pages in two documents are equal by comparing their hashes.
 /// This is much faster than rendering and comparing PNGs.
-fn pages_equal_by_hash(original: &PagedDocument, formatted: &PagedDocument) -> bool {
-    if original.pages.len() != formatted.pages.len() {
+fn pages_equal_by_hash(original: &[Page], formatted: &[Page]) -> bool {
+    if original.len() != formatted.len() {
         return false;
     }
 
     original
-        .pages
         .iter()
-        .zip(formatted.pages.iter())
+        .zip(formatted)
         .all(|(p1, p2)| page_hash(p1) == page_hash(p2))
 }
 
@@ -340,14 +339,14 @@ fn check_page_meta(index: usize, original: &Page, formatted: &Page, sink: &mut E
 /// Render and save PNG images for pages with metadata differences.
 /// Only renders pages that are in the provided list of indices with differences.
 fn render_diff_pages(
-    original: &PagedDocument,
-    formatted: &PagedDocument,
+    original: &[Page],
+    formatted: &[Page],
     original_name: &str,
     formatted_name: &str,
     pages_with_diff: &[usize],
     sink: &mut ErrorSink,
 ) -> Result<()> {
-    let total_pages = original.pages.len();
+    let total_pages = original.len();
 
     let save_dir = std::env::var("TYPSTYLE_SAVE_DIFF").ok().map(PathBuf::from);
     if let Some(dir) = save_dir.as_ref() {
@@ -372,8 +371,8 @@ fn render_diff_pages(
     for &i in pages_with_diff {
         let page_num = i + 1;
 
-        let orig_page = &original.pages[i];
-        let fmt_page = &formatted.pages[i];
+        let orig_page = &original[i];
+        let fmt_page = &formatted[i];
 
         let orig_png = render_png(orig_page, i as u64);
         let fmt_png = render_png(fmt_page, i as u64);

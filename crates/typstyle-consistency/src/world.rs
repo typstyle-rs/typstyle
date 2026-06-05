@@ -4,7 +4,7 @@ use tinymist_world::{CompilerFeat, CompilerWorld, SourceWorld, vfs::PathResoluti
 use typst::{
     Library, World,
     diag::{FileError, FileResult},
-    foundations::{Bytes, Datetime},
+    foundations::{Bytes, Datetime, Duration},
     syntax::{FileId, Source},
     text::{Font, FontBook},
     utils::LazyHash,
@@ -53,7 +53,7 @@ impl<F: CompilerFeat> World for FormattedWorld<'_, F> {
         self.base.font(index)
     }
 
-    fn today(&self, offset: Option<i64>) -> Option<Datetime> {
+    fn today(&self, offset: Option<Duration>) -> Option<Datetime> {
         self.base.today(offset)
     }
 }
