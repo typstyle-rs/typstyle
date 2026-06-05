@@ -16,7 +16,7 @@ use crate::{ErrorSink, image_diff::compute_diff_pixmap, sink_assert_eq, text_dif
 pub struct CheckingOptions {
     /// Whether it expects successful compilation.
     pub expect_compile_success: bool,
-    /// Whether the document is expected to fail compilation (unused yet).
+    /// Whether the document is expected to fail compilation.
     pub expect_error: bool,
     /// Whether to enforce strict content equality.
     pub strict_content_equality: bool,
@@ -41,11 +41,13 @@ fn compile_world(world: &dyn SourceWorld) -> Result<PagedDocument, EcoVec<Source
 }
 
 /// Compare two documents for consistency, checking content equality first,
-/// then page equality, and finally rendering PNGs for any inconsistent pages.
+/// then document/page equality, and finally rendering PNGs for any inconsistent pages.
 ///
-/// The checking order is optimized to avoid expensive compilation when possible:
-/// 1. Check content equality (cheap) - if equal, done
-/// 2. Compile documents (expensive, only if content differs)
+/// The checking order is optimized to report cheap content differences before
+/// compiling, while still compiling successful documents so metadata-only
+/// formatter changes cannot pass unnoticed:
+/// 1. Check content equality (cheap)
+/// 2. Compile documents
 /// 3. Check page equality by hash - if equal, done
 /// 4. Render PNGs only for pages that differ
 pub fn compare_worlds(
@@ -76,11 +78,11 @@ fn compare_worlds_impl(
                 sink.push("Both docs evaluated successfully, but were expected to fail.");
             }
             if orig == fmt {
-                // Content matches - done
-                return Ok(());
-            }
-            // Content differs, need to compile and check pages
-            if options.strict_content_equality {
+                if options.expect_error {
+                    return Ok(());
+                }
+                // Still need to check metadata and rendered output even if content is identical, to catch metadata-only formatter changes
+            } else if options.strict_content_equality {
                 // If we didn't expect content differences, report it as hard error
                 let orig_repr = orig.repr();
                 let fmt_repr = fmt.repr();
@@ -114,7 +116,7 @@ fn compare_worlds_impl(
         }
     }
 
-    // Step 2: Compile documents (expensive, only done if content differs)
+    // Step 2: Compile documents to catch metadata and rendered-output changes.
     let original_result = compile_world(original.world);
     let formatted_result = compile_world(formatted.world);
 
