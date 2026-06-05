@@ -160,6 +160,7 @@ fn check_testcase(
 
     let check_options = CheckingOptions {
         expect_compile_success: true,
+        ..Default::default()
     };
 
     if let Some(entrypoint) = testcase.entrypoint.as_ref() {
