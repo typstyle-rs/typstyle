@@ -5,7 +5,7 @@ default-members = ["crates/typstyle"]
 
 [workspace.package]
 version = "0.14.4"
-rust-version = "1.89"
+rust-version = "1.92"
 edition = "2024"
 authors = ["Wenzhuo Liu", "QuadnucYard"]
 description = "Beautiful and reliable typst code formatter"
