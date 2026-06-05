@@ -9,7 +9,7 @@
   This document provides a template for the release process. Replace `<latest-tag>` with the actual latest tag (found using `git describe --tags --abbrev=0`) and `<new-version>` with the target version number throughout this guide.
 ]
 
-This document provides a comprehensive guide for the typstyle project release process, including version updates, changelog maintenance, build testing, and publishing steps.
+This document provides a comprehensive guide for the Typstyle project release process, including version updates, changelog maintenance, build testing, and publishing steps.
 
 == Preparation Phase
 

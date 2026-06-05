@@ -3,7 +3,7 @@
 
 #show: book-page.with(title: "Quick Start")
 
-Get up and running with typstyle in minutes.
+Get up and running with Typstyle in minutes.
 
 = Your First Format
 

@@ -6,7 +6,7 @@
 
 = Formatting Rules
 
-typstyle applies intelligent formatting to tables and grids based on content structure:
+Typstyle applies intelligent formatting to tables and grids based on content structure:
 
 - General Rules
   - `header`, `footer`, and line comments (`//`) always occupy their own lines.
@@ -21,12 +21,12 @@ typstyle applies intelligent formatting to tables and grids based on content str
     - `hline`
     - `vline`
     - Spread args (`..`)
-  - If no special cells exist, typstyle reflows all cells to fit the columns.
+  - If no special cells exist, Typstyle reflows all cells to fit the columns.
   - Otherwise, the original grid structure is preserved.
 
 = Column-Aware Formatting
 
-typstyle formats tables and grids in a "column-aware" way, recognizing basic patterns and column numbers. Single rows are kept on single lines when possible:
+Typstyle formats tables and grids in a "column-aware" way, recognizing basic patterns and column numbers. Single rows are kept on single lines when possible:
 
 ```typst
 #table(
@@ -57,7 +57,7 @@ When a table row cannot fit on a single line, each cell is placed on its own lin
 
 = Advanced Table Features
 
-typstyle provides comprehensive support for complex table structures:
+Typstyle provides comprehensive support for complex table structures:
 
 - Headers and footers are formatted as tables
 - Special elements (`cell`, `hline`, `vline`) are recognized without prefixes

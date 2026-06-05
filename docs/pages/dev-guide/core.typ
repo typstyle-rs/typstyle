@@ -3,7 +3,7 @@
 
 #show: book-page.with(title: "Rust Development")
 
-This section covers building, testing, and benchmarking the Rust crates of typstyle.
+This section covers building, testing, and benchmarking the Rust crates of Typstyle.
 
 = Building Components
 

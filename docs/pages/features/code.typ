@@ -135,7 +135,7 @@ When content blocks have leading or trailing spaces, they break into multiple li
 
 = Parentheses Removal
 
-typstyle removes unnecessary parentheses around:
+Typstyle removes unnecessary parentheses around:
 - Literals
 - Arrays
 - Dictionaries

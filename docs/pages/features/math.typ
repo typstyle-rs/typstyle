@@ -22,7 +22,7 @@ You can easily switch equations between inline and block by altering the direct 
 
 = Formatting Rules
 
-typstyle applies specific formatting rules to math equations:
+Typstyle applies specific formatting rules to math equations:
 
 - Spaces are preserved around fractions when they exist
 - No padding is added to the last cell in math alignments
@@ -32,7 +32,7 @@ typstyle applies specific formatting rules to math equations:
 
 = Alignment
 
-typstyle aligns `&` symbols in math equations, even with multiline cells. Non-block equations are never aligned:
+Typstyle aligns `&` symbols in math equations, even with multiline cells. Non-block equations are never aligned:
 
 ```typst
 $1/2x + y &= 3 \ y &= 3 - 1/2x$
@@ -57,7 +57,7 @@ $
 
 = Comments in Math
 
-typstyle can format math equations containing comments while preserving their meaning and proper placement:
+Typstyle can format math equations containing comments while preserving their meaning and proper placement:
 
 ```typst
 $frac(// numerator

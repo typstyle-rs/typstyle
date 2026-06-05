@@ -3,7 +3,7 @@
 
 #show: book-page.with(title: "Developer Guide")
 
-This guide covers environment setup, building, testing, and documentation for typstyle.
+This guide covers environment setup, building, testing, and documentation for Typstyle.
 
 = Prerequisites
 
@@ -42,5 +42,5 @@ cargo binstall shiroa
 - `crates/typstyle-wasm/` — wasm bindings
 - `tests/` — integration tests and fixtures
 - `docs/` — documentation source (based on shiroa and written in typst)
-- `contrib/typstyle-embedded/` — typstyle as typst package
+- `contrib/typstyle-embedded/` — Typstyle as Typst package
 - `playground/` — web-based interactive playground

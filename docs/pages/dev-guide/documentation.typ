@@ -3,7 +3,7 @@
 
 #show: book-page.with(title: "Documentation Development")
 
-This section covers building and maintaining the typstyle documentation.
+This section covers building and maintaining the Typstyle documentation.
 
 The documentation uses #link("https://github.com/Myriad-Dreamin/shiroa")[shiroa] to build from Typst source files.
 
