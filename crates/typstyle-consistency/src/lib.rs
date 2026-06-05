@@ -1,6 +1,8 @@
 mod cmp;
 mod err;
 mod harness;
+mod image_diff;
+mod text_diff;
 mod world;
 
 pub use cmp::{CheckingOptions, ComparisonInput, compare_worlds};
