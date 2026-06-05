@@ -67,7 +67,7 @@ This approach respects user intent and preserves code readability.
 
 == Blank Lines
 
-Typstyle preserves intentional blank lines in code and strip excessive ones, including within code blocks and between elements in list-like structures (arrays, dictionaries, function parameters, destructuring patterns, etc.). By default, consecutive blank lines are capped at 1.
+Typstyle preserves intentional blank lines in code and strips excessive ones, including within code blocks and between elements in list-like structures (arrays, dictionaries, function parameters, destructuring patterns, etc.). By default, consecutive blank lines are capped at 1.
 
 ```typst
 #{
