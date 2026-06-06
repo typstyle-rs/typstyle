@@ -2,7 +2,7 @@
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/markup/term-indent.typ
 ---
-/ 0:
+  / 0:
 000
 
 / 1: // 1

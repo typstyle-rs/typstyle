@@ -70,12 +70,10 @@ syntax
 _
 
 
-#[
-  - with
+#[- with
     blocky
     content
-    inside
-]
+    inside]
 #[$
   "equation is also blocky"
 $]

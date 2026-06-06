@@ -1,0 +1,21 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/markup/list-indent-nested-ex.typ
+---
+  - first line
+- second line #[ - A
+    - B
+      - - / C:
+        - D #[
+            / a: b
+              / c: d
+            / #[/ e: f]:
+            / g:
+              #[
+                / h:
+                i
+                / j:]]
+    - E
+      + + F
+        + G
+      + H]

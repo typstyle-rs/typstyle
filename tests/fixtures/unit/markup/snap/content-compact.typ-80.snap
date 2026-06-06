@@ -3,22 +3,18 @@ source: tests/src/unit.rs
 input_file: tests/fixtures/unit/markup/content-compact.typ
 ---
 #[- 111]
-#[- 222]
-#[- 333]
+#[- 222 ]
+#[ - 333  ]
 #[/ 444:]
-#[/ 555:]
-#[/ 666:]
+#[/ 555: ]
+#[ / 666:  ]
 #[$12345$]
 #[= 123]
 
-#[
-  - aaa
-    bbb
-]
-#[
-  / ccc:
-    ddd
-]
+#[- aaa
+    bbb]
+#[/ ccc:
+    ddd]
 
 #[*strong
 *]
