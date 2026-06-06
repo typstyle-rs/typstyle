@@ -85,7 +85,7 @@ impl<'a> PrettyPrinter<'a> {
     pub(super) fn convert_heading(&'a self, ctx: Context, heading: Heading<'a>) -> ArenaDoc<'a> {
         self.convert_flow_like(ctx, heading.to_untyped(), |ctx, child, _| {
             if child.kind() == SyntaxKind::HeadingMarker {
-                FlowItem::spaced(self.arena.text(child.text().as_str()))
+                FlowItem::spaced(self.emit_source_text_untyped(child, child.text().as_str()))
             } else if let Some(markup) = child.cast::<Markup>() {
                 if !child.is_empty() {
                     FlowItem::spaced(self.convert_markup_impl(ctx, markup, MarkupScope::InlineItem))
@@ -122,10 +122,12 @@ impl<'a> PrettyPrinter<'a> {
         let node = term_item.to_untyped();
         let mut seen_term = false;
         let body = self.convert_flow_like(ctx, node, |ctx, child, _| match child.kind() {
-            SyntaxKind::TermMarker => FlowItem::spaced(self.arena.text(child.text().as_str())),
+            SyntaxKind::TermMarker => {
+                FlowItem::spaced(self.emit_source_text_untyped(child, child.text().as_str()))
+            }
             SyntaxKind::Colon => {
                 seen_term = true;
-                FlowItem::tight_spaced(self.arena.text(child.text().as_str()))
+                FlowItem::tight_spaced(self.emit_source_text_untyped(child, child.text().as_str()))
             }
             SyntaxKind::Space if child.text().has_linebreak() => {
                 FlowItem::tight(self.arena.hardline())
@@ -159,7 +161,7 @@ impl<'a> PrettyPrinter<'a> {
     fn convert_list_item_like(&'a self, ctx: Context, item: &'a SyntaxNode) -> ArenaDoc<'a> {
         let body = self.convert_flow_like(ctx, item, |ctx, child, _| match child.kind() {
             SyntaxKind::ListMarker | SyntaxKind::EnumMarker | SyntaxKind::TermMarker => {
-                FlowItem::spaced(self.arena.text(child.text().as_str()))
+                FlowItem::spaced(self.emit_source_text_untyped(child, child.text().as_str()))
             }
             SyntaxKind::Space if child.text().has_linebreak() => {
                 FlowItem::tight(self.arena.hardline())

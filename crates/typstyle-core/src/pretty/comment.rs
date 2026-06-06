@@ -4,6 +4,11 @@ use super::{Context, PrettyPrinter, prelude::*};
 
 impl<'a> PrettyPrinter<'a> {
     pub(super) fn convert_comment(&'a self, _ctx: Context, node: &'a SyntaxNode) -> ArenaDoc<'a> {
+        if node.kind() == SyntaxKind::LineComment {
+            return self
+                .emit_source_text_untyped(node, node.text().as_str())
+                .as_line_suffix();
+        }
         comment(&self.arena, node)
     }
 }

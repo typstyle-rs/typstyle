@@ -16,6 +16,7 @@ export interface Formatter {
   astOutput: string;
   irOutput: string;
   astMapping: SpanMapping[] | null;
+  irMapping: SpanMapping[] | null;
   error: string | null;
   update: () => void;
 }
@@ -31,6 +32,7 @@ export function useTypstFormatter(
   const [astOutput, setAstOutput] = useState("");
   const [irOutput, setIrOutput] = useState("");
   const [astMapping, setAstMapping] = useState<SpanMapping[] | null>(null);
+  const [irMapping, setIrMapping] = useState<SpanMapping[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const captureAsyncError = useAsyncError();
 
@@ -98,16 +100,29 @@ export function useTypstFormatter(
           break;
         }
         case "pir": {
-          const formatIr = useRange
-            ? typstyle.format_range_ir(
-                rangeOptions.fullText,
-                rangeOptions.selection.startOffset,
-                rangeOptions.selection.endOffset,
-                config,
-              )
-            : typstyle.format_ir(sourceCode, config);
+          const maybeFormatIrWithMapping = Reflect.get(
+            typstyle as unknown as Record<string, unknown>,
+            "format_ir_with_mapping",
+          );
+          if (!useRange && typeof maybeFormatIrWithMapping === "function") {
+            const result = (
+              maybeFormatIrWithMapping as (text: string, config: unknown) => MappingResult
+            )(sourceCode, config);
+            setIrOutput(result.text);
+            setIrMapping(result.mapping ?? null);
+          } else {
+            const formatIr = useRange
+              ? typstyle.format_range_ir(
+                  rangeOptions.fullText,
+                  rangeOptions.selection.startOffset,
+                  rangeOptions.selection.endOffset,
+                  config,
+                )
+              : typstyle.format_ir(sourceCode, config);
 
-          setIrOutput(formatIr);
+            setIrOutput(formatIr);
+            setIrMapping(null);
+          }
           setError(null);
           break;
         }
@@ -136,6 +151,7 @@ export function useTypstFormatter(
     astOutput,
     irOutput,
     astMapping,
+    irMapping,
     error,
     update: formatCode,
   };

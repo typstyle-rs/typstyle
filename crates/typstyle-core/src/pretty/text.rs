@@ -6,7 +6,7 @@ use crate::ext::StrExt;
 impl<'a> PrettyPrinter<'a> {
     pub(super) fn convert_text(&'a self, text: Text<'a>) -> ArenaDoc<'a> {
         // `Text` only consists of words joined by single spaces
-        self.convert_literal(text.get())
+        self.emit_source_text_untyped(text.to_untyped(), text.get())
     }
 
     pub(super) fn convert_text_wrapped(&'a self, text: Text<'a>) -> ArenaDoc<'a> {
@@ -25,7 +25,7 @@ impl<'a> PrettyPrinter<'a> {
         if node.text().has_linebreak() {
             self.arena.hardline()
         } else if ctx.mode.is_markup() && !self.config.collapse_markup_spaces {
-            self.arena.text(node.text().as_str())
+            self.emit_source_text_untyped(node, node.text().as_str())
         } else {
             self.arena.space()
         }
