@@ -164,33 +164,26 @@ impl<'a> PrettyPrinter<'a> {
         let mut peek_linebreak = false;
         let children = {
             let children = args.children().as_slice();
-            let i = children
-                .iter()
-                .position(|child| {
-                    if child.kind() == SyntaxKind::Space {
-                        peek_linebreak = child.text().has_linebreak();
-                    }
-                    !matches!(child.kind(), SyntaxKind::LeftParen | SyntaxKind::Space)
-                })
-                .expect("invariant: args should have right paren");
-            let j = children
-                .iter()
-                .rposition(|child| {
-                    !matches!(child.kind(), SyntaxKind::RightParen | SyntaxKind::Space)
-                })
-                .expect("invariant: args should have left paren");
-            if i > j {
-                children[0..0].iter()
-            } else {
-                children[i..=j].iter()
+            let i = children.iter().position(|child| {
+                if child.kind() == SyntaxKind::Space {
+                    peek_linebreak = child.text().has_linebreak();
+                }
+                !matches!(child.kind(), SyntaxKind::LeftParen | SyntaxKind::Space)
+            });
+            let j = children.iter().rposition(|child| {
+                !matches!(child.kind(), SyntaxKind::RightParen | SyntaxKind::Space)
+            });
+            match (i, j) {
+                (Some(i), Some(j)) if i <= j => children[i..=j].iter(),
+                _ => children[0..0].iter(),
             }
         };
 
         let mut peek_hash = false;
         let mut peek_arg = false;
         let mut peek_hashed_arg = false;
-        let inner = self.convert_flow_like_iter(ctx, children, |ctx, child, _| {
-            let at_hash = peek_hash;
+        let inner = self.convert_flow_like_iter(ctx, children, |ctx, child, state| {
+            let at_hash = state.at_hash || peek_hash;
             let at_arg = peek_arg;
             let at_hashed_arg = peek_hashed_arg;
             let at_linebreak = peek_linebreak;
