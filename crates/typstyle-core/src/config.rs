@@ -13,9 +13,22 @@ pub struct Config {
     pub collapse_markup_spaces: bool,
     /// When `true`, import items are sorted alphabetically.
     pub reorder_import_items: bool,
-    /// When `true`, text in markup will be wrapped to fit within `max_width`.
-    /// Implies `collapse_markup_spaces`.
-    pub wrap_text: bool,
+    /// Text wrapping mode for markup.
+    pub wrap_mode: WrapMode,
+}
+
+/// Text wrapping mode for markup.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "kebab-case"))]
+pub enum WrapMode {
+    /// Do not wrap text.
+    #[default]
+    None,
+    /// Wrap text to fit within the line width.
+    Fill,
+    /// Place each sentence on its own line.
+    Sentence,
 }
 
 impl Default for Config {
@@ -26,7 +39,7 @@ impl Default for Config {
             blank_lines_upper_bound: 1,
             reorder_import_items: true,
             collapse_markup_spaces: false,
-            wrap_text: false,
+            wrap_mode: WrapMode::None,
         }
     }
 }
@@ -52,7 +65,16 @@ impl Config {
     }
 
     pub fn with_wrap_text(mut self, wrap_text: bool) -> Self {
-        self.wrap_text = wrap_text;
+        self.wrap_mode = if wrap_text {
+            WrapMode::Fill
+        } else {
+            WrapMode::None
+        };
+        self
+    }
+
+    pub fn with_wrap_mode(mut self, wrap_mode: WrapMode) -> Self {
+        self.wrap_mode = wrap_mode;
         self
     }
 }

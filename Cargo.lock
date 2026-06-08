@@ -4355,6 +4355,7 @@ name = "typstyle-core"
 version = "0.15.0"
 dependencies = [
  "criterion",
+ "icu_segmenter",
  "insta",
  "itertools 0.15.0",
  "prettyless",

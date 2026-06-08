@@ -10,6 +10,8 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     pub(super) fn convert_text_wrapped(&'a self, text: Text<'a>) -> ArenaDoc<'a> {
+        // For sentence-per-line mode, we need to handle it at the markup level,
+        // not at individual text nodes. So just use regular wrapping here.
         wrap_text(&self.arena, text.get())
     }
 
