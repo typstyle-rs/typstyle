@@ -6,7 +6,7 @@ use super::{
     Context, Mode, PrettyPrinter, layout::flow::FlowItem, prelude::*, text::is_enum_marker,
     util::is_comment_node,
 };
-use crate::{ext::StrExt, pretty::util::is_only_one_and};
+use crate::{WrapMode, ext::StrExt, pretty::util::is_only_one_and};
 
 #[derive(Debug, PartialEq, Eq)]
 enum MarkupScope {
@@ -199,7 +199,11 @@ impl<'a> PrettyPrinter<'a> {
         }
 
         let repr = collect_markup_repr(markup);
-        let body = if self.config.wrap_text && scope != MarkupScope::InlineItem {
+        let body = if self.config.wrap_mode == WrapMode::SentencePerLine
+            && scope != MarkupScope::InlineItem
+        {
+            self.convert_markup_body_sentence_per_line(ctx, &repr)
+        } else if self.config.wrap_mode != WrapMode::None && scope != MarkupScope::InlineItem {
             self.convert_markup_body_reflow(ctx, &repr)
         } else {
             self.convert_markup_body(ctx, &repr)
@@ -219,14 +223,16 @@ impl<'a> PrettyPrinter<'a> {
             match bound {
                 Boundary::Nil => self.arena.nil(),
                 Boundary::NilOrBreak => {
-                    if (scope.can_trim() || ctx.break_suppressed) && !self.config.wrap_text {
+                    if (scope.can_trim() || ctx.break_suppressed)
+                        && self.config.wrap_mode == WrapMode::None
+                    {
                         self.arena.nil()
                     } else {
                         self.arena.line_()
                     }
                 }
                 Boundary::WeakNilOrBreak => {
-                    if self.config.wrap_text {
+                    if self.config.wrap_mode != WrapMode::None {
                         self.arena.line_()
                     } else {
                         self.arena.nil()
@@ -236,7 +242,7 @@ impl<'a> PrettyPrinter<'a> {
                     if scope.can_trim() {
                         // the space can be safely eaten
                         self.arena.nil()
-                    } else if self.config.wrap_text {
+                    } else if self.config.wrap_mode != WrapMode::None {
                         self.arena.line()
                     } else if self.config.collapse_markup_spaces {
                         self.arena.space()
@@ -401,6 +407,124 @@ impl<'a> PrettyPrinter<'a> {
                 doc += self.arena.hardline().repeat(breaks);
             }
         }
+        doc
+    }
+
+    /// With sentence-per-line mode, split sentence boundaries inside text leaves.
+    fn convert_markup_body_sentence_per_line(
+        &'a self,
+        ctx: Context,
+        repr: &MarkupRepr<'a>,
+    ) -> ArenaDoc<'a> {
+        use icu_segmenter::SentenceSegmenter;
+
+        let segmenter = SentenceSegmenter::new();
+
+        fn convert_text_sentence_per_line<'a>(
+            arena: &'a Arena<'a>,
+            segmenter: &SentenceSegmenter,
+            text: Text<'a>,
+        ) -> (ArenaDoc<'a>, bool) {
+            let text = text.get();
+            let mut boundaries = segmenter.segment_str(text);
+            let Some(mut start) = boundaries.next() else {
+                return (arena.nil(), false);
+            };
+            let mut doc = arena.nil();
+            let mut first = true;
+            let mut ended_sentence = false;
+            let mut previous_was_abbreviation = false;
+
+            for end in boundaries {
+                let sentence = text[start..end].trim();
+                if !sentence.is_empty() {
+                    if !first {
+                        doc += if previous_was_abbreviation {
+                            arena.space()
+                        } else {
+                            arena.hardline()
+                        };
+                    }
+                    doc += arena.text(sentence);
+                    if end == text.len() && text.ends_with(' ') {
+                        doc += arena.space();
+                    }
+                    first = false;
+                    previous_was_abbreviation = is_common_abbreviation(sentence);
+                    ended_sentence =
+                        sentence_ends_with_punctuation(sentence) && !previous_was_abbreviation;
+                }
+                start = end;
+            }
+
+            (doc, ended_sentence)
+        }
+
+        fn sentence_ends_with_punctuation(text: &str) -> bool {
+            text.ends_with(['.', '!', '?', '。', '！', '？'])
+        }
+
+        fn is_common_abbreviation(text: &str) -> bool {
+            matches!(
+                text.to_ascii_lowercase().as_str(),
+                "dr."
+                    | "mr."
+                    | "mrs."
+                    | "ms."
+                    | "prof."
+                    | "sr."
+                    | "jr."
+                    | "st."
+                    | "vs."
+                    | "etc."
+                    | "e.g."
+                    | "i.e."
+            )
+        }
+
+        fn source_ends_with_sentence(text: &str) -> bool {
+            let trimmed = text.trim_end_matches([' ', '\t', '\n', '\r', ')', ']', '}']);
+            sentence_ends_with_punctuation(trimmed)
+        }
+
+        let mut doc = self.arena.nil();
+        let mut pending_sentence_break = false;
+        for line in repr.lines.iter() {
+            for node in line.nodes.iter() {
+                doc += if node.kind() == SyntaxKind::Space {
+                    if pending_sentence_break {
+                        pending_sentence_break = false;
+                        self.arena.hardline()
+                    } else {
+                        self.arena.space()
+                    }
+                } else if let Some(text) = node.cast::<Text>() {
+                    let (text_doc, ended_sentence) =
+                        convert_text_sentence_per_line(&self.arena, &segmenter, text);
+                    let leading_break = if pending_sentence_break {
+                        self.arena.hardline()
+                    } else {
+                        self.arena.nil()
+                    };
+                    pending_sentence_break = ended_sentence;
+                    leading_break + text_doc
+                } else if let Some(expr) = node.cast::<Expr>() {
+                    pending_sentence_break = source_ends_with_sentence(node.text().as_str());
+                    self.convert_expr(ctx, expr)
+                } else if is_comment_node(node) {
+                    pending_sentence_break = false;
+                    self.convert_comment(ctx, node)
+                } else {
+                    pending_sentence_break = source_ends_with_sentence(node.text().as_str());
+                    self.convert_trivia_untyped(node)
+                };
+            }
+            if line.breaks > 0 {
+                doc += self.arena.hardline().repeat(line.breaks);
+                pending_sentence_break = false;
+            }
+        }
+
         doc
     }
 }

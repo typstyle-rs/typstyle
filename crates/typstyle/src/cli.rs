@@ -1,6 +1,6 @@
 use std::{path::PathBuf, sync::LazyLock};
 
-use clap::{Args, CommandFactory, Parser, Subcommand, error::ErrorKind};
+use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum, error::ErrorKind};
 
 #[derive(Parser)]
 #[command(
@@ -91,9 +91,28 @@ pub struct StyleArgs {
     #[arg(long, default_value_t = false, global = true)]
     pub no_reorder_import_items: bool,
 
-    /// Wrap text in markup to fit within the line width, and collapse spaces in markup
-    #[arg(long, default_value_t = false, global = true)]
-    pub wrap_text: bool,
+    /// Text wrapping mode: none (default), fill (wrap to line width), or sentence (one per line).
+    #[arg(
+        long,
+        value_enum,
+        default_value_t = WrapTextMode::None,
+        default_missing_value = "fill",
+        num_args = 0..=1,
+        global = true
+    )]
+    pub wrap_text: WrapTextMode,
+}
+
+/// Text wrapping mode for CLI
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, ValueEnum)]
+pub enum WrapTextMode {
+    /// Do not wrap text (default)
+    #[default]
+    None,
+    /// Wrap text to fit within line width
+    Fill,
+    /// Place each sentence on its own line
+    Sentence,
 }
 
 #[derive(Args)]

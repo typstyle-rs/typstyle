@@ -8,7 +8,7 @@ mod config;
 mod utils;
 
 pub use attr::AttrStore;
-pub use config::Config;
+pub use config::{Config, WrapMode};
 use pretty::{PrettyPrinter, prelude::*};
 use thiserror::Error;
 use typst_syntax::{Source, SyntaxNode};

@@ -1,0 +1,39 @@
+/// typstyle: wrap_text=sentence skip_consistency
+
+这是第一句话。这是第二句话。这是第三句话。
+
+#let value = [value]
+这是 mixed Latin sentence。Next English sentence follows. 这是 #value 后面的句子。
+版本 1.2.3 保持在同一句。Dr. Wang 后面继续一句英文。Another Latin sentence with #value.
+
+这是一句故意很长的中文句子并混合 Latin words plus #value and #(1 + 2) so every snapshot width keeps sentence boundaries separate from ordinary line width formatting。短句继续。
+
+これは最初の文です。これは2番目の文です。This English sentence is mixed in.
+
+中文和 *强调文本* 在一起。这句包含 `code`。这句包含 $x + y$。
+
+#let block(body) = [#body]
+#block[内容块第一句。内容块第二句包含 #value。Final Latin sentence in content.]
+
+#[
+  外层内容块第一句。外层内容块第二句包含 #value。
+
+  #[
+    嵌套内容第一句。Nested Latin sentence with #(1 + 2)。最后一句中文。
+  ]
+]
+
+#text(fill: rgb(20%, 30%, 40%))[
+  样式内容第一句。样式内容第二句包含 *强调* 和 `code`。Final styled Latin sentence.
+  样式块里还有一句很长的混合文本 with #value, *strong text*, `raw code`, and $x + y$ to cover nested content at every line width。最后短句。
+]
+
+- 列表项第一句。列表项第二句包含 #value。
+- Mixed list sentence。Next Latin sentence in same item.
+
+/ 术语: 定义第一句。定义第二句包含 #value。
+/ Mixed Term:
+  多行定义第一句。Second Latin sentence with $x + y$. 最后一句。
+
++ 枚举第一句。枚举第二句包含 #value。
++ Another enum item mixes Latin. 另一句中文结束。

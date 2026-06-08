@@ -4142,6 +4142,7 @@ version = "0.14.4"
 dependencies = [
  "criterion",
  "ecow",
+ "icu_segmenter",
  "insta",
  "itertools 0.14.0",
  "prettyless",
