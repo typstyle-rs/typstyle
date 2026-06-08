@@ -49,6 +49,9 @@ pub fn parse_directives(content: &str) -> Result<Options> {
             "relax_convergence" => {
                 options.relax_convergence = value.and_then(|v| v.parse().ok()).unwrap_or(1);
             }
+            "skip_consistency" => {
+                options.skip_consistency = value != Some("false");
+            }
             "include" => {
                 if let Some(include_spec) = value {
                     // Store the original include specification as string
@@ -167,6 +170,7 @@ mod tests {
         let content = r#"
 /// typstyle: reorder-import-items=true
 /// typstyle: max-width=40 relax_convergence=2
+/// typstyle: skip-consistency
 /// typstyle: include=test.typ
 
 #import "module.typ": a, b"#;
@@ -181,6 +185,7 @@ mod tests {
                     ..Default::default()
                 },
                 relax_convergence: 2,
+                skip_consistency: true,
                 include_specs: vec!["test.typ".to_string()],
             }
         );

@@ -135,7 +135,7 @@ fn check_snapshot(path: &Path, width: usize) -> Result<(), Failed> {
 fn check_convergence(path: &Path, width: usize) -> Result<(), Failed> {
     let (source, opt) = read_source_with_options(path)?;
     let mut cfg = opt.config;
-    if source.root().diagnosis().errors {
+    if source.root().diagnosis().errors || opt.skip_consistency {
         return Ok(());
     }
 
@@ -179,7 +179,7 @@ fn check_output_consistency(path: &Path, width: usize) -> Result<(), Failed> {
 
     let (source, opt) = read_source_with_options(path)?;
     let mut cfg = opt.config;
-    if source.root().diagnosis().errors {
+    if source.root().diagnosis().errors || opt.skip_consistency {
         return Ok(());
     }
 
