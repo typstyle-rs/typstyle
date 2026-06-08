@@ -23,6 +23,7 @@ pub fn fixtures_dir() -> PathBuf {
 pub struct Options {
     pub config: Config,
     pub relax_convergence: usize,
+    pub skip_consistency: bool,
     pub include_specs: Vec<String>,
 }
 
