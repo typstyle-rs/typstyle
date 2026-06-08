@@ -20,6 +20,7 @@ typstyle-consistency = { path = "crates/typstyle-consistency" }
 # Used in core
 typst-syntax = "0.15.0"
 
+icu_segmenter = "2.2"
 itertools = "0.15"
 prettyless = "0.3"
 rustc-hash = "2.0"

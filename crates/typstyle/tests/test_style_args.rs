@@ -68,3 +68,62 @@ fn test_wrap_text() {
     ----- stderr -----
     ");
 }
+
+#[test]
+fn test_wrap_text_modes() {
+    let space = Workspace::new();
+
+    let stdin =
+        "First sentence has   extra spaces and enough words to wrap. Second sentence follows.";
+
+    typstyle_cmd_snapshot!(space.cli().args(["-c=34"]).pass_stdin(stdin), @r"
+    success: true
+    exit_code: 0
+    ----- stdout -----
+    First sentence has   extra spaces and enough words to wrap. Second sentence follows.
+
+    ----- stderr -----
+    ");
+    typstyle_cmd_snapshot!(space.cli().args(["-c=34", "--wrap-text=none"]).pass_stdin(stdin), @r"
+    success: true
+    exit_code: 0
+    ----- stdout -----
+    First sentence has   extra spaces and enough words to wrap. Second sentence follows.
+
+    ----- stderr -----
+    ");
+    typstyle_cmd_snapshot!(space.cli().args(["-c=34", "--wrap-text=fill"]).pass_stdin(stdin), @r"
+    success: true
+    exit_code: 0
+    ----- stdout -----
+    First sentence has extra spaces
+    and enough words to wrap. Second
+    sentence follows.
+
+    ----- stderr -----
+    ");
+    typstyle_cmd_snapshot!(space.cli().args(["-c=34", "--wrap-text=sentence"]).pass_stdin(stdin), @r"
+    success: true
+    exit_code: 0
+    ----- stdout -----
+    First sentence has extra spaces and enough words to wrap.
+    Second sentence follows.
+
+    ----- stderr -----
+    ");
+}
+
+#[test]
+fn test_wrap_text_does_not_consume_input_path() {
+    let space = Workspace::new();
+    space.write("input.typ", "First sentence. Second sentence.");
+
+    typstyle_cmd_snapshot!(space.cli().args(["--wrap-text", "input.typ"]), @r"
+    success: true
+    exit_code: 0
+    ----- stdout -----
+    First sentence. Second sentence.
+
+    ----- stderr -----
+    ");
+}

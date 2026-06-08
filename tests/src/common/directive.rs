@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result, bail};
+use typstyle_core::WrapMode;
 
 use super::{Options, read_content};
 
@@ -65,7 +66,12 @@ pub fn parse_directives(content: &str) -> Result<Options> {
                 config.reorder_import_items = value != Some("false");
             }
             "wrap_text" => {
-                config.wrap_text = value != Some("false");
+                config.wrap_mode = match value {
+                    Some("false") | Some("none") => WrapMode::None,
+                    Some("sentence") => WrapMode::Sentence,
+                    _ => WrapMode::Fill,
+                };
+                config.collapse_markup_spaces |= config.wrap_mode != WrapMode::None;
             }
             "collapse_markup_spaces" => {
                 config.collapse_markup_spaces = value != Some("false");
@@ -90,7 +96,7 @@ pub fn parse_directives(content: &str) -> Result<Options> {
     }
 
     // Apply implied settings
-    options.config.collapse_markup_spaces |= options.config.wrap_text;
+    options.config.collapse_markup_spaces |= options.config.wrap_mode != WrapMode::None;
 
     Ok(options)
 }
@@ -156,7 +162,7 @@ mod tests {
             options,
             Options {
                 config: Config {
-                    wrap_text: true,
+                    wrap_mode: WrapMode::Fill,
                     collapse_markup_spaces: true,
                     ..Default::default()
                 },
@@ -230,7 +236,6 @@ mod tests {
             Options {
                 config: Config {
                     collapse_markup_spaces: true,
-                    wrap_text: false,
                     ..Default::default()
                 },
                 relax_convergence: 3,

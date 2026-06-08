@@ -1,12 +1,14 @@
+mod wrapping;
+
+use Option::None;
 use prettyless::Doc;
 use smallvec::SmallVec;
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{
-    Context, Mode, PrettyPrinter, layout::flow::FlowItem, prelude::*, text::is_enum_marker,
-    util::is_comment_node,
+    Context, Mode, PrettyPrinter, layout::flow::FlowItem, prelude::*, util::is_comment_node,
 };
-use crate::{ext::StrExt, pretty::util::is_only_one_and};
+use crate::{WrapMode, ext::StrExt, pretty::util::is_only_one_and};
 
 #[derive(Debug, PartialEq, Eq)]
 enum MarkupScope {
@@ -199,11 +201,14 @@ impl<'a> PrettyPrinter<'a> {
         }
 
         let repr = collect_markup_repr(markup);
-        let body = if self.config.wrap_text && scope != MarkupScope::InlineItem {
-            self.convert_markup_body_reflow(ctx, &repr)
-        } else {
-            self.convert_markup_body(ctx, &repr)
-        };
+        let body =
+            if self.config.wrap_mode == WrapMode::Sentence && scope != MarkupScope::InlineItem {
+                self.convert_markup_body_sentence_per_line(ctx, &repr)
+            } else if self.config.wrap_mode != WrapMode::None && scope != MarkupScope::InlineItem {
+                self.convert_markup_body_reflow(ctx, &repr)
+            } else {
+                self.convert_markup_body(ctx, &repr)
+            };
 
         // Add line or space (if any) to both sides.
         // Only turn space into, not the other way around.
@@ -219,14 +224,16 @@ impl<'a> PrettyPrinter<'a> {
             match bound {
                 Boundary::Nil => self.arena.nil(),
                 Boundary::NilOrBreak => {
-                    if (scope.can_trim() || ctx.break_suppressed) && !self.config.wrap_text {
+                    if (scope.can_trim() || ctx.break_suppressed)
+                        && self.config.wrap_mode == WrapMode::None
+                    {
                         self.arena.nil()
                     } else {
                         self.arena.line_()
                     }
                 }
                 Boundary::WeakNilOrBreak => {
-                    if self.config.wrap_text {
+                    if self.config.wrap_mode != WrapMode::None {
                         self.arena.line_()
                     } else {
                         self.arena.nil()
@@ -236,7 +243,7 @@ impl<'a> PrettyPrinter<'a> {
                     if scope.can_trim() {
                         // the space can be safely eaten
                         self.arena.nil()
-                    } else if self.config.wrap_text {
+                    } else if self.config.wrap_mode != WrapMode::None {
                         self.arena.line()
                     } else if self.config.collapse_markup_spaces {
                         self.arena.space()
@@ -292,112 +299,6 @@ impl<'a> PrettyPrinter<'a> {
                 };
             }
             if breaks > 0 {
-                doc += self.arena.hardline().repeat(breaks);
-            }
-        }
-        doc
-    }
-
-    /// With text-wrapping enabled, spaces may turn to linebreaks, and linebreaks may turn to spaces, if safe.
-    fn convert_markup_body_reflow(&'a self, ctx: Context, repr: &MarkupRepr<'a>) -> ArenaDoc<'a> {
-        /// For NOT space -> soft-line: \
-        /// Ensure they are not misinterpreted as markup markers after reflow.
-        ///
-        /// Besides, reflowing labels to the next line is not desired.
-        fn cannot_break_before(node: &&SyntaxNode) -> bool {
-            let text = node.leaf_text();
-            matches!(text.as_str(), "=" | "+" | "-" | "/")
-                || matches!(node.kind(), SyntaxKind::Label)
-                || is_enum_marker(text)
-        }
-
-        /// For space -> hard-line: \
-        /// Prefers block equations exclusive to a single line.
-        fn prefer_exclusive(node: &&SyntaxNode) -> bool {
-            is_block_equation(node) || is_block_raw(node)
-        }
-
-        /// For NOT hard-line -> soft-line: \
-        /// Should always break after block elements or line comments.
-        fn should_break_after(node: &SyntaxNode) -> bool {
-            matches!(
-                node.kind(),
-                SyntaxKind::Heading
-                    | SyntaxKind::ListItem
-                    | SyntaxKind::EnumItem
-                    | SyntaxKind::TermItem
-                    | SyntaxKind::LineComment
-            )
-        }
-
-        /// For NOT hard-line -> soft-line: \
-        /// Breaking after them is visually better.
-        fn preserve_break_after(node: &SyntaxNode) -> bool {
-            matches!(
-                node.kind(),
-                SyntaxKind::BlockComment
-                    | SyntaxKind::Linebreak
-                    | SyntaxKind::Label
-                    | SyntaxKind::CodeBlock
-                    | SyntaxKind::ContentBlock
-                    | SyntaxKind::Conditional
-                    | SyntaxKind::WhileLoop
-                    | SyntaxKind::ForLoop
-                    | SyntaxKind::Contextual
-            ) || is_block_equation(node)
-                || is_block_raw(node)
-        }
-
-        /// For NOT hard-line -> soft-line: \
-        /// Keeps the line exclusive (prevents soft breaks) when:
-        /// - It contains only one non-text node, or
-        /// - It contains exactly two nodes where the first is a Hash, such as `#figure()`.
-        fn preserve_exclusive(line: &MarkupLine) -> bool {
-            let nodes = &line.nodes;
-            let len = nodes.len();
-            len == 1 && nodes[0].kind() != SyntaxKind::Text
-                || len == 2 && nodes[0].kind() == SyntaxKind::Hash
-                || len > 0 && prefer_exclusive(&nodes[0])
-        }
-
-        let mut doc = self.arena.nil();
-        for (i, line) in repr.lines.iter().enumerate() {
-            let &MarkupLine {
-                ref nodes, breaks, ..
-            } = line;
-            for (j, node) in nodes.iter().enumerate() {
-                doc += if node.kind() == SyntaxKind::Space {
-                    if nodes.get(j + 1).is_some_and(cannot_break_before) {
-                        self.arena.space()
-                    } else if nodes.get(j + 1).is_some_and(prefer_exclusive)
-                        || nodes.get(j - 1).is_some_and(prefer_exclusive)
-                    {
-                        self.arena.hardline()
-                    } else {
-                        self.arena.softline()
-                    }
-                } else if let Some(text) = node.cast::<Text>() {
-                    self.convert_text_wrapped(text)
-                } else if let Some(expr) = node.cast::<Expr>() {
-                    self.convert_expr(ctx, expr)
-                } else if is_comment_node(node) {
-                    self.convert_comment(ctx, node)
-                } else {
-                    // can be Hash, Semicolon, Shebang
-                    self.convert_trivia_untyped(node)
-                };
-            }
-            // Should not eat trailing parbreaks.
-            if breaks == 1
-                && i + 1 != repr.lines.len()
-                && !nodes
-                    .last()
-                    .is_some_and(|last| should_break_after(last) || preserve_break_after(last))
-                && !preserve_exclusive(line)
-                && !preserve_exclusive(&repr.lines[i + 1])
-            {
-                doc += self.arena.softline();
-            } else if breaks > 0 {
                 doc += self.arena.hardline().repeat(breaks);
             }
         }
@@ -562,15 +463,6 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
     }
 
     repr
-}
-
-fn is_block_equation(it: &SyntaxNode) -> bool {
-    it.cast::<Equation>()
-        .is_some_and(|equation| equation.block())
-}
-
-fn is_block_raw(it: &SyntaxNode) -> bool {
-    it.cast::<Raw>().is_some_and(|raw| raw.block())
 }
 
 /// Returns true if the given markup contains exactly one primary (non-text, non-block) expression,
