@@ -28,6 +28,7 @@ serde = { workspace = true, optional = true }
 smallvec.workspace = true
 thiserror.workspace = true
 unicode-width.workspace = true
+icu_segmenter.workspace = true
 
 [dev-dependencies]
 insta.workspace = true

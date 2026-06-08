@@ -1,0 +1,96 @@
+---
+source: tests/src/unit.rs
+input_file: tests/fixtures/unit/markup/reflow/sentence-latin.typ
+---
+/// typstyle: wrap_text=sentence skip_consistency
+
+This is the first sentence.
+This is the second sentence.
+And this is the third sentence.
+
+Dr. Smith wrote version 1.2.3.
+It should not split common abbreviations or decimal-like text.
+Version 0.
+Text with chapter 1. and section 2. should keep marker-like fragments sane.
+
+This is *bold text*.
+This is `code`.
+This is $x + y$.
+
+#let value = [value]
+The value is #value.
+The next sentence follows a hashed expression.
+
+The computed #(1 + 2) result is stable.
+Another sentence follows the expression.
+
+This deliberately long sentence keeps many plain Latin words together with #value and #(
+  1 + 2
+) so the zero, forty, eighty, and one hundred twenty character snapshots all exercise sentence-per-line behavior without mistaking width wrapping for sentence boundaries.
+Short sentence after it.
+
+#let note(body) = [#body]
+#note[This content block has one sentence.
+  It has another sentence with #value inside it.
+  Final content sentence.]
+
+#[
+  Outer content starts here.
+  It has a second sentence with #value inside.
+
+  #[
+    Nested content has one sentence.
+    It keeps #(1 + 2) in prose.
+    Final nested sentence.
+  ]
+]
+
+#text(fill: rgb(10%, 20%, 30%))[
+  Styled content has a first sentence.
+  It includes *strong text* and `raw code`.
+  It ends cleanly.
+  Styled content also has one deliberately long sentence with #value, *strong text*, `raw code`, and $x + y$ so every snapshot width still sees nested content in sentence mode.
+  Final styled short sentence.
+]
+
+#figure(
+  [
+    Figure body sentence one.
+    Figure body sentence two with #value.
+  ],
+  caption: [Caption first sentence.
+    Caption second sentence with $x + y$.],
+)
+
+- A list item has one sentence.
+  It has another sentence with #value.
+- Another item keeps its own line.
+  Still sentence-split inside the item.
+- Item with #text(weight: "bold")[styled content sentence.
+    Another styled sentence.] and trailing text.
+  Final item sentence.
+
+/ Term: Definition has one sentence.
+  Definition has another sentence with #value.
+/ Complex Term:
+  Multi-line definition starts here.
+  It contains `code` and $alpha$.
+  Another sentence follows.
+
++ First enumerated item has one sentence.
+  It has another sentence with #value.
++ Second item has *bold* and #emph[emphasized content sentence.
+    Another content sentence.] in prose.
+
+= Heading With Sentence. Heading Second Sentence
+Text between headings has one sentence.
+It has another sentence with #value.
+
+// A comment between paragraphs should remain attached.
+Text after a comment.
+Another sentence after the comment.
+
+Line one ends here.
+\
+Forced linebreak starts a new visual line.
+Final sentence.

@@ -31,6 +31,7 @@ serde = "1.0"
 smallvec = "1"
 thiserror = "2"
 unicode-width = "0.2.2" # use the same version as in pretty
+icu_segmenter = "1.5"
 
 # Used in WASM
 console_error_panic_hook = "0.1.7"

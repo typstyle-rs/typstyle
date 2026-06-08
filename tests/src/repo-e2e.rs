@@ -84,7 +84,7 @@ fn run_testcase(testcase: Testcase) -> anyhow::Result<()> {
             name: "reflow",
             config: Config {
                 reorder_import_items: true,
-                wrap_text: true,
+                wrap_mode: typstyle_core::WrapMode::Fill,
                 ..Default::default()
             },
         },

@@ -46,11 +46,19 @@ impl FormatMode {
 
 impl StyleArgs {
     pub fn to_config(&self) -> Config {
+        use typstyle_core::WrapMode;
+
+        use crate::cli::WrapTextMode;
+
         Config {
             max_width: self.line_width,
             tab_spaces: self.indent_width,
             reorder_import_items: !self.no_reorder_import_items,
-            wrap_text: self.wrap_text,
+            wrap_mode: match self.wrap_text {
+                WrapTextMode::None => WrapMode::None,
+                WrapTextMode::Fill => WrapMode::Fill,
+                WrapTextMode::Sentence => WrapMode::SentencePerLine,
+            },
             ..Default::default()
         }
     }
