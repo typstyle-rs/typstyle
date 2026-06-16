@@ -5,7 +5,7 @@ pub mod partial;
 pub mod pretty;
 
 mod config;
-mod utils;
+pub mod utils;
 
 pub use attr::AttrStore;
 pub use config::Config;

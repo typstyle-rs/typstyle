@@ -61,8 +61,8 @@ similar-asserts = "2.0"
 tempfile = "3"
 toml = "0.8"
 
-tinymist-world = { version = "0.14.6", default-features = false, features = ["system"] }
-typst-shim = { version = "0.14.6" }
+tinymist-world = { git = "https://github.com/Myriad-Dreamin/tinymist.git", branch = "work/typst-0.15-rc1-world", default-features = false, features = ["system"] }
+typst-shim = { git = "https://github.com/Myriad-Dreamin/tinymist.git", branch = "work/typst-0.15-rc1-world" }
 
 typst-assets = "0.14.2"
 typst-render = "0.15.0"
@@ -95,7 +95,4 @@ typst-eval = { git = "https://github.com/ParaN3xus/typst.git", rev = "d95f4b695c
 typst-html = { git = "https://github.com/ParaN3xus/typst.git", rev = "d95f4b695cb803885d997134dbf56f9d01b84971" }
 typst-layout = { git = "https://github.com/ParaN3xus/typst.git", rev = "d95f4b695cb803885d997134dbf56f9d01b84971" }
 typst-bundle = { git = "https://github.com/ParaN3xus/typst.git", rev = "d95f4b695cb803885d997134dbf56f9d01b84971" }
-tinymist-world = { git = "https://github.com/ParaN3xus/tinymist.git", rev = "93636c0f4f9ef561a49355778fff5bad7ad39d84" }
-typst-shim = { git = "https://github.com/ParaN3xus/tinymist.git", rev = "93636c0f4f9ef561a49355778fff5bad7ad39d84" }
-# tinymist-world = { git = "https://github.com/Myriad-Dreamin/tinymist", rev = "0f9f4644567236bbfcd1b21baaa4b8bdf224ecb3" }
 # prettyless = { git = "https://github.com/typstyle-rs/prettyless", rev = "9afa5bdece2dbf14c54ade8bef46cd0828cb952b" }

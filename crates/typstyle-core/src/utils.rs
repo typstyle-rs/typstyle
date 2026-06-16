@@ -43,7 +43,7 @@ pub fn count_spaces_after_last_newline(s: &str, i: usize) -> usize {
 ///
 /// # Examples
 /// ```
-/// use typstyle_core::utils::change_indent;
+/// # use typstyle_core::utils::change_indent;
 ///
 /// let input = "    line1\n        line2\n    line3";
 /// let output = change_indent(input, 4, 2);

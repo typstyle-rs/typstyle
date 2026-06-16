@@ -1033,7 +1033,6 @@ checksum = "843fba2746e448b37e26a819579957415c8cef339bf08564fe8b7ddbd959573c"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
- "zlib-rs",
 ]
 
 [[package]]
@@ -1041,15 +1040,6 @@ name = "float-cmp"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
-
-[[package]]
-name = "float-cmp"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b09cf3155332e944990140d967ff5eceb70df778b34f77d8075db46e4704e6d8"
-dependencies = [
- "num-traits",
-]
 
 [[package]]
 name = "fnv"
@@ -1073,30 +1063,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "font-types"
-version = "0.11.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5b38ad915f6dadd993ced50848a8291a543bd41ca62bc10740d5e64e2ab4cfd7"
-dependencies = [
- "bytemuck",
-]
-
-[[package]]
-name = "fontconfig-parser"
-version = "0.5.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbc773e24e02d4ddd8395fd30dc147524273a83e54e0f312d986ea30de5f5646"
-dependencies = [
- "roxmltree",
-]
-
-[[package]]
 name = "fontdb"
 version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "457e789b3d1202543297a350643cf459f836cade38934e7a4cf6a39e7cde2905"
 dependencies = [
- "fontconfig-parser",
  "log",
  "memmap2",
  "slotmap",
@@ -1349,7 +1320,7 @@ dependencies = [
  "phf",
  "rustc-hash",
  "siphasher",
- "skrifa 0.37.0",
+ "skrifa",
  "smallvec",
  "yoke 0.8.3",
 ]
@@ -1380,18 +1351,6 @@ dependencies = [
  "rustc-hash",
  "smallvec",
  "zune-jpeg 0.4.21",
-]
-
-[[package]]
-name = "hayro-write"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc05d8b4bc878b9aee48d980ecb25ed08f1dd9fad6da5ab4d9b7c56ec03a0cf6"
-dependencies = [
- "flate2",
- "hayro-syntax",
- "log",
- "pdf-writer",
 ]
 
 [[package]]
@@ -1832,12 +1791,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "edcd27d72f2f071c64249075f42e205ff93c9a4c5f6c6da53e79ed9f9832c285"
 
 [[package]]
-name = "imagesize"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09e54e57b4c48b40f7aec75635392b12b3421fa26fe8b4332e63138ed278459c"
-
-[[package]]
 name = "indexmap"
 version = "1.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1860,12 +1813,6 @@ dependencies = [
  "serde",
  "serde_core",
 ]
-
-[[package]]
-name = "infer"
-version = "0.19.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a588916bfdfd92e71cacef98a63d9b1f0d74d6599980d11894290e7ddefffcf7"
 
 [[package]]
 name = "insta"
@@ -1950,50 +1897,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "krilla"
-version = "0.6.0"
-source = "git+https://github.com/LaurenzV/krilla?rev=88483e2#88483e26b6c56d55463910ee4e300ab149df9c36"
-dependencies = [
- "base64",
- "bumpalo",
- "comemo",
- "flate2",
- "float-cmp 0.10.0",
- "gif 0.13.3",
- "hayro-write",
- "image-webp",
- "imagesize 0.14.0",
- "indexmap 2.14.0",
- "once_cell",
- "pdf-writer",
- "png 0.17.16",
- "rayon",
- "rustc-hash",
- "rustybuzz",
- "siphasher",
- "skrifa 0.37.0",
- "smallvec",
- "subsetter",
- "tiny-skia-path",
- "xmp-writer",
- "yoke 0.8.3",
- "zune-jpeg 0.5.15",
-]
-
-[[package]]
-name = "krilla-svg"
-version = "0.3.0"
-source = "git+https://github.com/LaurenzV/krilla?rev=88483e2#88483e26b6c56d55463910ee4e300ab149df9c36"
-dependencies = [
- "flate2",
- "fontdb",
- "krilla",
- "resvg",
- "tiny-skia",
- "usvg",
-]
-
-[[package]]
 name = "kurbo"
 version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2012,18 +1915,6 @@ checksum = "ce9729cc38c18d86123ab736fd2e7151763ba226ac2490ec092d1dd148825e32"
 dependencies = [
  "arrayvec",
  "euclid",
- "smallvec",
-]
-
-[[package]]
-name = "kurbo"
-version = "0.13.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b60dfc32f652b926df6192e55525b16d186c69d47876c3ead4da5cc9f8450e2"
-dependencies = [
- "arrayvec",
- "euclid",
- "polycool",
  "smallvec",
 ]
 
@@ -2391,18 +2282,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 
 [[package]]
-name = "pdf-writer"
-version = "0.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "92a79477295a713c2ed425aa82a8b5d20cec3fdee203706cbe6f3854880c1c81"
-dependencies = [
- "bitflags 2.12.1",
- "itoa",
- "memchr",
- "ryu",
-]
-
-[[package]]
 name = "percent-encoding"
 version = "2.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2537,15 +2416,6 @@ dependencies = [
  "fdeflate",
  "flate2",
  "miniz_oxide",
-]
-
-[[package]]
-name = "polycool"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "50596ddc09eb5ad5f75cacd40209568e66df71baf86e1499a0e99c4cff12a5a6"
-dependencies = [
- "arrayvec",
 ]
 
 [[package]]
@@ -2829,17 +2699,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6717cf23b488adf64b9d711329542ba34de147df262370221940dfabc2c91358"
 dependencies = [
  "bytemuck",
- "font-types 0.10.1",
-]
-
-[[package]]
-name = "read-fonts"
-version = "0.39.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c4ed38b89c2c77ff968c524145ad65fb010f38af5c7a224b53b81d47ac2daa81"
-dependencies = [
- "bytemuck",
- "font-types 0.11.3",
+ "font-types",
 ]
 
 [[package]]
@@ -3368,17 +3228,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8c31071dedf532758ecf3fed987cdb4bd9509f900e026ab684b4ecb81ea49841"
 dependencies = [
  "bytemuck",
- "read-fonts 0.35.0",
-]
-
-[[package]]
-name = "skrifa"
-version = "0.42.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c34617370ae968efb7161bb2beb517d9084659aae19e24b89e3db25b46e4564"
-dependencies = [
- "bytemuck",
- "read-fonts 0.39.2",
+ "read-fonts",
 ]
 
 [[package]]
@@ -3443,7 +3293,7 @@ version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6637bab7722d379c8b41ba849228d680cc12d0a45ba1fa2b48f2a30577a06731"
 dependencies = [
- "float-cmp 0.9.0",
+ "float-cmp",
 ]
 
 [[package]]
@@ -3471,18 +3321,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "subsetter"
-version = "0.2.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38803281d1c23166c5ebcb455439a5d2afe711cc909cf88af72448c297756ad6"
-dependencies = [
- "kurbo 0.13.1",
- "rustc-hash",
- "skrifa 0.42.1",
- "write-fonts",
 ]
 
 [[package]]
@@ -3680,7 +3518,7 @@ dependencies = [
 [[package]]
 name = "tinymist-package"
 version = "0.14.6"
-source = "git+https://github.com/ParaN3xus/tinymist.git?rev=93636c0f4f9ef561a49355778fff5bad7ad39d84#93636c0f4f9ef561a49355778fff5bad7ad39d84"
+source = "git+https://github.com/Myriad-Dreamin/tinymist.git?branch=work%2Ftypst-0.15-rc1-world#839815c29feb8017c592470d78366594317865ee"
 dependencies = [
  "base64",
  "comemo",
@@ -3703,7 +3541,7 @@ dependencies = [
 [[package]]
 name = "tinymist-std"
 version = "0.14.6"
-source = "git+https://github.com/ParaN3xus/tinymist.git?rev=93636c0f4f9ef561a49355778fff5bad7ad39d84#93636c0f4f9ef561a49355778fff5bad7ad39d84"
+source = "git+https://github.com/Myriad-Dreamin/tinymist.git?branch=work%2Ftypst-0.15-rc1-world#839815c29feb8017c592470d78366594317865ee"
 dependencies = [
  "anyhow",
  "base64",
@@ -3738,7 +3576,7 @@ dependencies = [
 [[package]]
 name = "tinymist-vfs"
 version = "0.14.6"
-source = "git+https://github.com/ParaN3xus/tinymist.git?rev=93636c0f4f9ef561a49355778fff5bad7ad39d84#93636c0f4f9ef561a49355778fff5bad7ad39d84"
+source = "git+https://github.com/Myriad-Dreamin/tinymist.git?branch=work%2Ftypst-0.15-rc1-world#839815c29feb8017c592470d78366594317865ee"
 dependencies = [
  "comemo",
  "ecow",
@@ -3754,7 +3592,7 @@ dependencies = [
 [[package]]
 name = "tinymist-world"
 version = "0.14.6"
-source = "git+https://github.com/ParaN3xus/tinymist.git?rev=93636c0f4f9ef561a49355778fff5bad7ad39d84#93636c0f4f9ef561a49355778fff5bad7ad39d84"
+source = "git+https://github.com/Myriad-Dreamin/tinymist.git?branch=work%2Ftypst-0.15-rc1-world#839815c29feb8017c592470d78366594317865ee"
 dependencies = [
  "anyhow",
  "chrono",
@@ -3784,7 +3622,6 @@ dependencies = [
  "ttf-parser",
  "typst",
  "typst-assets 0.14.2 (git+https://github.com/typst/typst-assets?rev=3284e80)",
- "typst-bundle",
  "typst-shim",
 ]
 
@@ -4043,29 +3880,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "typst-bundle"
-version = "0.15.0"
-source = "git+https://github.com/ParaN3xus/typst.git?rev=d95f4b695cb803885d997134dbf56f9d01b84971#d95f4b695cb803885d997134dbf56f9d01b84971"
-dependencies = [
- "comemo",
- "ecow",
- "either",
- "indexmap 2.14.0",
- "rayon",
- "rustc-hash",
- "typst-html",
- "typst-layout",
- "typst-library",
- "typst-macros",
- "typst-pdf",
- "typst-render",
- "typst-svg",
- "typst-syntax",
- "typst-timing",
- "typst-utils",
-]
-
-[[package]]
 name = "typst-eval"
 version = "0.15.0"
 source = "git+https://github.com/ParaN3xus/typst.git?rev=d95f4b695cb803885d997134dbf56f9d01b84971#d95f4b695cb803885d997134dbf56f9d01b84971"
@@ -4221,33 +4035,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "typst-pdf"
-version = "0.15.0"
-source = "git+https://github.com/ParaN3xus/typst.git?rev=d95f4b695cb803885d997134dbf56f9d01b84971#d95f4b695cb803885d997134dbf56f9d01b84971"
-dependencies = [
- "az",
- "bytemuck",
- "codex",
- "comemo",
- "ecow",
- "image",
- "indexmap 2.14.0",
- "infer",
- "krilla",
- "krilla-svg",
- "rustc-hash",
- "serde",
- "smallvec",
- "typst-assets 0.14.2 (git+https://github.com/typst/typst-assets?rev=3284e80)",
- "typst-layout",
- "typst-library",
- "typst-macros",
- "typst-syntax",
- "typst-timing",
- "typst-utils",
-]
-
-[[package]]
 name = "typst-realize"
 version = "0.15.0"
 source = "git+https://github.com/ParaN3xus/typst.git?rev=d95f4b695cb803885d997134dbf56f9d01b84971#d95f4b695cb803885d997134dbf56f9d01b84971"
@@ -4289,7 +4076,7 @@ dependencies = [
 [[package]]
 name = "typst-shim"
 version = "0.14.6"
-source = "git+https://github.com/ParaN3xus/tinymist.git?rev=93636c0f4f9ef561a49355778fff5bad7ad39d84#93636c0f4f9ef561a49355778fff5bad7ad39d84"
+source = "git+https://github.com/Myriad-Dreamin/tinymist.git?branch=work%2Ftypst-0.15-rc1-world#839815c29feb8017c592470d78366594317865ee"
 dependencies = [
  "cfg-if",
  "comemo",
@@ -4640,7 +4427,7 @@ dependencies = [
  "data-url",
  "flate2",
  "fontdb",
- "imagesize 0.13.0",
+ "imagesize",
  "kurbo 0.11.3",
  "log",
  "pico-args",
@@ -5299,19 +5086,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "write-fonts"
-version = "0.48.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cb731d4c4d93eacc69a1ad2f270f905788a98e4a3438267bcafbe08d3431c8d8"
-dependencies = [
- "font-types 0.11.3",
- "indexmap 2.14.0",
- "kurbo 0.13.1",
- "log",
- "read-fonts 0.39.2",
-]
-
-[[package]]
 name = "writeable"
 version = "0.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5347,12 +5121,6 @@ name = "xmlwriter"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec7a2a501ed189703dba8b08142f057e887dfc4b2cc4db2d343ac6376ba3e0b9"
-
-[[package]]
-name = "xmp-writer"
-version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9440ea3e5aeabb0ac63af70daf835274065238cdd0cec83418f417eae38bacee"
 
 [[package]]
 name = "yaml-rust"
@@ -5527,12 +5295,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "zlib-rs"
-version = "0.6.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3be3d40e40a133f9c916ee3f9f4fa2d9d63435b5fbe1bfc6d9dae0aa0ada1513"
-
-[[package]]
 name = "zmij"
 version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5567,3 +5329,8 @@ checksum = "27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296"
 dependencies = [
  "zune-core 0.5.1",
 ]
+
+[[patch.unused]]
+name = "typst-bundle"
+version = "0.15.0"
+source = "git+https://github.com/ParaN3xus/typst.git?rev=d95f4b695cb803885d997134dbf56f9d01b84971#d95f4b695cb803885d997134dbf56f9d01b84971"
