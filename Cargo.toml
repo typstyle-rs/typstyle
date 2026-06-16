@@ -94,5 +94,4 @@ typst-syntax = { git = "https://github.com/ParaN3xus/typst.git", rev = "d95f4b69
 typst-eval = { git = "https://github.com/ParaN3xus/typst.git", rev = "d95f4b695cb803885d997134dbf56f9d01b84971" }
 typst-html = { git = "https://github.com/ParaN3xus/typst.git", rev = "d95f4b695cb803885d997134dbf56f9d01b84971" }
 typst-layout = { git = "https://github.com/ParaN3xus/typst.git", rev = "d95f4b695cb803885d997134dbf56f9d01b84971" }
-typst-bundle = { git = "https://github.com/ParaN3xus/typst.git", rev = "d95f4b695cb803885d997134dbf56f9d01b84971" }
 # prettyless = { git = "https://github.com/typstyle-rs/prettyless", rev = "9afa5bdece2dbf14c54ade8bef46cd0828cb952b" }
