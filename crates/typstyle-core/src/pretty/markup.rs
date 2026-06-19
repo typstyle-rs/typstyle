@@ -85,7 +85,7 @@ impl<'a> PrettyPrinter<'a> {
     pub(super) fn convert_heading(&'a self, ctx: Context, heading: Heading<'a>) -> ArenaDoc<'a> {
         self.convert_flow_like(ctx, heading.to_untyped(), |ctx, child, _| {
             if child.kind() == SyntaxKind::HeadingMarker {
-                FlowItem::spaced(self.arena.text(child.text().as_str()))
+                FlowItem::spaced(self.arena.text(child.leaf_text().as_str()))
             } else if let Some(markup) = child.cast::<Markup>() {
                 if !child.is_empty() {
                     FlowItem::spaced(self.convert_markup_impl(ctx, markup, MarkupScope::InlineItem))
@@ -122,18 +122,18 @@ impl<'a> PrettyPrinter<'a> {
         let node = term_item.to_untyped();
         let mut seen_term = false;
         let body = self.convert_flow_like(ctx, node, |ctx, child, _| match child.kind() {
-            SyntaxKind::TermMarker => FlowItem::spaced(self.arena.text(child.text().as_str())),
+            SyntaxKind::TermMarker => FlowItem::spaced(self.arena.text(child.leaf_text().as_str())),
             SyntaxKind::Colon => {
                 seen_term = true;
-                FlowItem::tight_spaced(self.arena.text(child.text().as_str()))
+                FlowItem::tight_spaced(self.arena.text(child.leaf_text().as_str()))
             }
-            SyntaxKind::Space if child.text().has_linebreak() => {
+            SyntaxKind::Space if child.leaf_text().has_linebreak() => {
                 FlowItem::tight(self.arena.hardline())
             }
             SyntaxKind::Parbreak => FlowItem::tight(
                 self.arena
                     .hardline()
-                    .repeat(child.text().count_linebreaks()),
+                    .repeat(child.leaf_text().count_linebreaks()),
             ),
             SyntaxKind::Markup => {
                 if !seen_term || !child.is_empty() {
@@ -159,15 +159,15 @@ impl<'a> PrettyPrinter<'a> {
     fn convert_list_item_like(&'a self, ctx: Context, item: &'a SyntaxNode) -> ArenaDoc<'a> {
         let body = self.convert_flow_like(ctx, item, |ctx, child, _| match child.kind() {
             SyntaxKind::ListMarker | SyntaxKind::EnumMarker | SyntaxKind::TermMarker => {
-                FlowItem::spaced(self.arena.text(child.text().as_str()))
+                FlowItem::spaced(self.arena.text(child.leaf_text().as_str()))
             }
-            SyntaxKind::Space if child.text().has_linebreak() => {
+            SyntaxKind::Space if child.leaf_text().has_linebreak() => {
                 FlowItem::tight(self.arena.hardline())
             }
             SyntaxKind::Parbreak => FlowItem::tight(
                 self.arena
                     .hardline()
-                    .repeat(child.text().count_linebreaks()),
+                    .repeat(child.leaf_text().count_linebreaks()),
             ),
             SyntaxKind::Markup if !child.is_empty() => {
                 // empty markup is ignored here
@@ -305,7 +305,7 @@ impl<'a> PrettyPrinter<'a> {
         ///
         /// Besides, reflowing labels to the next line is not desired.
         fn cannot_break_before(node: &&SyntaxNode) -> bool {
-            let text = node.text();
+            let text = node.leaf_text();
             matches!(text.as_str(), "=" | "+" | "-" | "/")
                 || matches!(node.kind(), SyntaxKind::Label)
                 || is_enum_marker(text)
@@ -476,16 +476,16 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
     for node in markup.to_untyped().children() {
         let break_line = match node.kind() {
             SyntaxKind::Parbreak => {
-                current_line.breaks = node.text().count_linebreaks(); // This is >= 2
+                current_line.breaks = node.leaf_text().count_linebreaks(); // This is >= 2
                 true
             }
             SyntaxKind::Space if current_line.nodes.is_empty() => {
                 // Due to the logic of line-slitting, it must also be the first node in the markup.
                 debug_assert!(repr.lines.is_empty());
-                repr.start_bound = Boundary::from_space(node.text());
+                repr.start_bound = Boundary::from_space(node.leaf_text());
                 continue;
             }
-            SyntaxKind::Space if node.text().has_linebreak() => {
+            SyntaxKind::Space if node.leaf_text().has_linebreak() => {
                 current_line.breaks = 1; // Must only one
                 true
             }
@@ -520,7 +520,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
         }
         while let Some(last) = last_line.nodes.last() {
             if last.kind() == SyntaxKind::Space {
-                repr.end_bound = Boundary::from_space(last.text());
+                repr.end_bound = Boundary::from_space(last.leaf_text());
                 last_line.nodes.pop();
             } else {
                 if is_special_block_elem(last) {
@@ -578,7 +578,7 @@ fn is_block_raw(it: &SyntaxNode) -> bool {
 fn contains_exactly_one_primary_expr(markup: Markup) -> bool {
     // Fast fail: if any linebreak or parbreak is present, not a single primary expr.
     if markup.exprs().any(|expr| {
-        matches!(expr, Expr::Space(_)) && expr.to_untyped().text().has_linebreak()
+        matches!(expr, Expr::Space(_)) && expr.to_untyped().leaf_text().has_linebreak()
             || matches!(expr, Expr::Parbreak(_))
     }) {
         return false;

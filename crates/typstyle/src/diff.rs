@@ -29,7 +29,7 @@ impl std::fmt::Display for SourceDiff<'_> {
 }
 
 struct CodeDiff<'a> {
-    diff: TextDiff<'a, 'a, 'a, str>,
+    diff: TextDiff<'a, 'a, str>,
     header: Option<(&'a str, &'a str)>,
     missing_newline_hint: bool,
 }

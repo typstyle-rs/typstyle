@@ -93,14 +93,14 @@ impl<'a> PrettyPrinter<'a> {
 
     /// For inner or lead nodes.
     fn convert_verbatim_untyped(&'a self, node: &'a SyntaxNode) -> ArenaDoc<'a> {
-        let text = node.clone().into_text();
+        let text = node.full_text();
         if !text.has_linebreak() {
             return self.arena.text(text.to_string());
         }
         // When the text spans multiple lines, we should split it to ensure proper fitting.
         self.arena
             .intersperse(
-                node.clone().into_text().lines().map(str::to_string),
+                node.full_text().lines().map(str::to_string),
                 self.arena.hardline(),
             )
             .dedent_to_root()
@@ -113,7 +113,7 @@ impl<'a> PrettyPrinter<'a> {
 
     /// For leaf only.
     fn convert_trivia_untyped(&'a self, node: &'a SyntaxNode) -> ArenaDoc<'a> {
-        self.arena.text(node.text().as_str())
+        self.arena.text(node.leaf_text().as_str())
     }
 
     pub fn try_convert_with_mode(
@@ -168,7 +168,9 @@ impl<'a> PrettyPrinter<'a> {
             Expr::Math(m) => self.convert_math(ctx, m),
             Expr::MathText(math_text) => self.convert_trivia(math_text),
             Expr::MathIdent(mi) => self.convert_trivia(mi),
+            Expr::MathFieldAccess(mfa) => self.convert_verbatim(mfa),
             Expr::MathAlignPoint(map) => self.convert_trivia(map),
+            Expr::MathCall(mc) => self.convert_math_call(ctx, mc),
             Expr::MathDelimited(md) => self.convert_math_delimited(ctx, md),
             Expr::MathAttach(ma) => self.convert_math_attach(ctx, ma),
             Expr::MathPrimes(mp) => self.convert_math_primes(ctx, mp),

@@ -109,12 +109,12 @@ fn check_snapshot(path: &Path, width: usize) -> Result<(), Failed> {
     settings.set_omit_expression(true);
     settings.set_snapshot_path(path.parent().unwrap().join("snap"));
     settings.set_input_file(path);
-    if source.root().erroneous() {
+    if source.root().diagnosis().errors {
         settings.set_raw_info(&Content::Map(vec![("erroneous".into(), true.into())]));
     }
     settings.bind(|| {
         let snap_name = format!("{}-{width}", path.file_name().unwrap().to_str().unwrap());
-        if source.root().erroneous() {
+        if source.root().diagnosis().errors {
             insta::assert_snapshot!(snap_name, "");
         } else {
             cfg.max_width = width;
@@ -135,7 +135,7 @@ fn check_snapshot(path: &Path, width: usize) -> Result<(), Failed> {
 fn check_convergence(path: &Path, width: usize) -> Result<(), Failed> {
     let (source, opt) = read_source_with_options(path)?;
     let mut cfg = opt.config;
-    if source.root().erroneous() {
+    if source.root().diagnosis().errors {
         return Ok(());
     }
 
@@ -144,11 +144,13 @@ fn check_convergence(path: &Path, width: usize) -> Result<(), Failed> {
     let mut first_pass = t.format_source(source).render()?;
     for i in 0..=opt.relax_convergence {
         let new_source = Source::detached(&first_pass);
-        if new_source.root().erroneous() {
+        let root = new_source.root();
+        if root.diagnosis().errors {
+            let (errors, _) = root.errors_and_warnings();
             panic!(
                 "the source becomes erroneous after {} iterations:\n{:#?}",
                 i + 1,
-                new_source.root().errors()
+                errors
             )
         }
         let second_pass = t.format_source(new_source).render()?;
@@ -177,7 +179,7 @@ fn check_output_consistency(path: &Path, width: usize) -> Result<(), Failed> {
 
     let (source, opt) = read_source_with_options(path)?;
     let mut cfg = opt.config;
-    if source.root().erroneous() {
+    if source.root().diagnosis().errors {
         return Ok(());
     }
 

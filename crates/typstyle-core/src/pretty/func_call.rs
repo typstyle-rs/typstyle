@@ -34,6 +34,15 @@ impl<'a> PrettyPrinter<'a> {
             }
     }
 
+    pub(super) fn convert_math_call(
+        &'a self,
+        ctx: Context,
+        math_call: MathCall<'a>,
+    ) -> ArenaDoc<'a> {
+        self.convert_verbatim_untyped(math_call.callee().to_untyped())
+            + self.convert_math_args(ctx, math_call.args().to_untyped())
+    }
+
     pub(super) fn convert_args_of_func(
         &'a self,
         ctx: Context,
@@ -147,56 +156,62 @@ impl<'a> PrettyPrinter<'a> {
 
     /// Args in math do not have trailing content args.
     fn convert_args_in_math(&'a self, ctx: Context, args: Args<'a>) -> ArenaDoc<'a> {
+        self.convert_math_args(ctx, args.to_untyped())
+    }
+
+    fn convert_math_args(&'a self, ctx: Context, args: &'a SyntaxNode) -> ArenaDoc<'a> {
         // strip spaces
         let mut peek_linebreak = false;
         let children = {
-            let children = args.to_untyped().children().as_slice();
-            let i = children
-                .iter()
-                .position(|child| {
-                    if child.kind() == SyntaxKind::Space {
-                        peek_linebreak = child.text().has_linebreak();
-                    }
-                    !matches!(child.kind(), SyntaxKind::LeftParen | SyntaxKind::Space)
-                })
-                .expect("invariant: args should have right paren");
-            let j = children
-                .iter()
-                .rposition(|child| {
-                    !matches!(child.kind(), SyntaxKind::RightParen | SyntaxKind::Space)
-                })
-                .expect("invariant: args should have left paren");
-            if i > j {
-                children[0..0].iter()
-            } else {
-                children[i..=j].iter()
+            let children = args.children().as_slice();
+            let i = children.iter().position(|child| {
+                if child.kind() == SyntaxKind::Space {
+                    peek_linebreak = child.leaf_text().has_linebreak();
+                }
+                !matches!(child.kind(), SyntaxKind::LeftParen | SyntaxKind::Space)
+            });
+            let j = children.iter().rposition(|child| {
+                !matches!(child.kind(), SyntaxKind::RightParen | SyntaxKind::Space)
+            });
+            match (i, j) {
+                (Some(i), Some(j)) if i <= j => children[i..=j].iter(),
+                _ => children[0..0].iter(),
             }
         };
 
+        let mut peek_hash = false;
+        let mut peek_arg = false;
         let mut peek_hashed_arg = false;
-        let inner = self.convert_flow_like_iter(ctx, children, |ctx, child, _| {
+        let inner = self.convert_flow_like_iter(ctx, children, |ctx, child, state| {
+            let at_hash = state.at_hash || peek_hash;
+            let at_arg = peek_arg;
             let at_hashed_arg = peek_hashed_arg;
             let at_linebreak = peek_linebreak;
+            peek_hash = false;
+            peek_arg = false;
             peek_hashed_arg = false;
             peek_linebreak = false;
             match child.kind() {
                 SyntaxKind::Comma => FlowItem::tight_spaced(self.arena.text(",")),
-                SyntaxKind::Semicolon => {
-                    // We should avoid the semicolon counted the terminator of the previous hashed arg.
-                    FlowItem::new(self.arena.text(";"), at_hashed_arg, true)
-                }
+                SyntaxKind::Semicolon => FlowItem::new(self.arena.text(";"), at_hashed_arg, true),
                 SyntaxKind::Space => {
-                    peek_hashed_arg = at_hashed_arg;
-                    if child.text().has_linebreak() {
+                    peek_hash = at_hash;
+                    peek_hashed_arg = at_hashed_arg || at_arg;
+                    if child.leaf_text().has_linebreak() {
                         peek_linebreak = true;
                         FlowItem::tight(self.arena.hardline())
                     } else {
                         FlowItem::none()
                     }
                 }
+                SyntaxKind::Hash => {
+                    peek_hash = true;
+                    FlowItem::none()
+                }
                 _ => {
                     if let Some(arg) = child.cast::<Arg>() {
-                        if is_ends_with_hashed_expr(arg.to_untyped().children()) {
+                        peek_arg = !arg.to_untyped().leaf_text().is_empty();
+                        if at_hash || is_ends_with_hashed_expr(arg.to_untyped().children()) {
                             peek_hashed_arg = true;
                         }
                         let ctx = ctx.aligned(
@@ -214,7 +229,7 @@ impl<'a> PrettyPrinter<'a> {
                 }
             }
         });
-        if self.attr_store.is_multiline(args.to_untyped()) {
+        if self.attr_store.is_multiline(args) {
             self.block_indent(inner).group().parens()
         } else {
             inner.parens()

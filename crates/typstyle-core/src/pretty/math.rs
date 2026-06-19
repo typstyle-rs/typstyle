@@ -121,7 +121,7 @@ impl<'a> PrettyPrinter<'a> {
         let open_space = if let Some((first, rest)) = inner_nodes.split_first() {
             if first.kind() == SyntaxKind::Space {
                 inner_nodes = rest;
-                if first.text().has_linebreak() {
+                if first.leaf_text().has_linebreak() {
                     has_open_linebreak = true;
                     self.arena.hardline()
                 } else {

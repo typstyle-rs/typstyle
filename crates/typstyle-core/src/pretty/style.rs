@@ -19,7 +19,7 @@ pub enum FoldStyle {
 pub fn is_multiline_flavored(node: &SyntaxNode) -> bool {
     for child in node.children() {
         if child.kind() == SyntaxKind::Space {
-            return child.text().has_linebreak();
+            return child.leaf_text().has_linebreak();
         }
         // To cover most cases, we use `len` to skip trivias (e.g., commas)
         if child.is::<Expr>() || child.children().len() > 0 {

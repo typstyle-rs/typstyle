@@ -26,6 +26,10 @@ struct Testcase {
     #[serde(default)]
     rev: Option<String>,
 
+    /// Whether to skip this test case. Useful for temporarily skipping a failing test.
+    #[serde(default)]
+    skip: bool,
+
     /// An optional entrypoint file for compilation, such as a manual.
     #[serde(default)]
     entrypoint: Option<String>,
@@ -55,6 +59,7 @@ pub(super) fn collect_tests() -> Vec<Trial> {
     config
         .testcase
         .into_iter()
+        .filter(|case| !case.skip)
         .map(|case| {
             Trial::test(case.name.clone().to_string(), move || {
                 run_testcase(case).map_err(|e| Failed::from(e.to_string()))
@@ -190,8 +195,10 @@ fn check_testcase(
 
 fn make_formatter(config: Config) -> impl Fn(Source) -> anyhow::Result<String> {
     move |source| {
-        if source.root().erroneous() {
-            bail!("the file has syntax errors: {:?}", source.root().errors());
+        let root = source.root();
+        if root.diagnosis().errors {
+            let (errors, _) = root.errors_and_warnings();
+            bail!("the file has syntax errors: {errors:?}");
         }
         let t = Typstyle::new(config.clone());
         let first_pass = t.format_source(source).render().context("first pass")?;

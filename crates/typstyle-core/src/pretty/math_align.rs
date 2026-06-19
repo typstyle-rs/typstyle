@@ -50,7 +50,7 @@ impl<'a> PrettyPrinter<'a> {
         // Render each raw row into a Row and set column widths
         let rows = (aligned_elems.into_iter()).try_fold(vec![], |mut rows, row| {
             let rendered_row = match row {
-                RawRow::Comment(comment) => Row::Comment(comment.text()),
+                RawRow::Comment(comment) => Row::Comment(comment.leaf_text()),
                 RawRow::Cells(cells) => {
                     let mut rendered_cells = Vec::with_capacity(cells.len());
                     for (j, cell_nodes) in cells.into_iter().enumerate() {

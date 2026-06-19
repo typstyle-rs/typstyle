@@ -19,7 +19,7 @@ $sin(2, named: #3,)$
     == $mat(#(1, 2), #(3, 4))$
 )
 $mat(1, #2, gap: #1em, ..#(), .. #(),)$
-$mat(1, #2; 3, 4; gap: #1em, ..#(), .. #(),)$
+$mat(1, #2; 3, 4 ; gap: #1em, ..#(), .. #(),)$
 $vec(1, 2, gap: #1em, ..#(), ..#(:))$
 $#text(red, size: 2em)[baka]$
 $#text(red, size: 2em)[baka]$
