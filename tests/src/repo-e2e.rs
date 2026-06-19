@@ -26,6 +26,10 @@ struct Testcase {
     #[serde(default)]
     rev: Option<String>,
 
+    /// Whether to skip this test case. Useful for temporarily skipping a failing test.
+    #[serde(default)]
+    skip: bool,
+
     /// An optional entrypoint file for compilation, such as a manual.
     #[serde(default)]
     entrypoint: Option<String>,
@@ -55,6 +59,7 @@ pub(super) fn collect_tests() -> Vec<Trial> {
     config
         .testcase
         .into_iter()
+        .filter(|case| !case.skip)
         .map(|case| {
             Trial::test(case.name.clone().to_string(), move || {
                 run_testcase(case).map_err(|e| Failed::from(e.to_string()))

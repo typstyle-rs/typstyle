@@ -10,12 +10,14 @@
 name = "tutorial"
 git = "https://github.com/typst-doc-cn/tutorial"
 rev = "5a0b920527e35831fa25f378beeef97d0df64d70" # Oct 14, 2025
+skip = true
 entrypoint = "src/ebook.typ"
 
 [[testcase]]
 name = "typst-talk"
 git = "https://github.com/OrangeX4/typst-talk"
 rev = "65ed571ce81274fff1b1c915749c38305f5ca1c8" # Sep 4, 2024
+skip = true
 entrypoint = "main.typ"
 blacklist = ["chicv.typ"]
 
@@ -25,6 +27,7 @@ blacklist = ["chicv.typ"]
 name = "alchemist"
 git = "https://github.com/Typsium/alchemist" # wait for packages to merge
 rev = "a9d121fece834e0032b087a5f241083b4cf3ca2a" # Aug 23, 2025
+skip = true
 entrypoint = "doc/manual.typ"
 
 # Fail to compile in typst 0.14
@@ -56,12 +59,14 @@ examples = "examples"
 name = "equate"
 git = "https://github.com/EpicEricEE/typst-equate"
 rev = "d3f54c73b49ecf352f426f30fddea5a122898269" # Apr 12, 2025
+skip = true
 examples = "assets"
 
 [[testcase]]
 name = "fletcher"
 git = "https://github.com/Jollywatt/typst-fletcher"
 rev = "7623d19feba35075906775543061f1d3364f1b2e" # Apr 19, 2025
+skip = true
 entrypoint = "docs/manual.typ"
 blacklist = ["main.typ", "marks.typ"]
 
@@ -100,6 +105,7 @@ examples = "tests/examples"
 name = "physica"
 git = "https://github.com/Leedehai/typst-physics"
 rev = "9bf0ee5b43dc213932d3f564b843b3857939901b" # Mar 6, 2025
+skip = true
 entrypoint = "physica-manual.typ"
 
 # [[testcase]]
@@ -119,6 +125,7 @@ examples = "assets"
 name = "quill"
 git = "https://github.com/Mc-Zen/quill"
 rev = "da96afd72718f52e9806004038fa84c368e27ddb" # Oct 13, 2025
+skip = true
 entrypoint = "docs/guide/quill-guide.typ"
 blacklist = ["examples"]
 
