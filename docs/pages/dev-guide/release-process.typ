@@ -88,9 +88,7 @@ Also update the workspace dependencies:
 
 ```toml
 [workspace.dependencies]
-typstyle-core = { path = "crates/typstyle-core", version = "<new-version>" }
-typstyle = { path = "crates/typstyle", version = "<new-version>" }
-typstyle-wasm = { path = "crates/typstyle-wasm", version = "<new-version>" }
+typstyle-core = { path = "crates/typstyle-core", version = "=<new-version>" }
 ```
 
 == Update Changelog
