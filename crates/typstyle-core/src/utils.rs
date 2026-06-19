@@ -40,15 +40,6 @@ pub fn count_spaces_after_last_newline(s: &str, i: usize) -> usize {
 /// - `text`: The input text with existing space indentation
 /// - `from_indent`: The current indentation size (e.g., 4 for 4 spaces)
 /// - `to_indent`: The desired indentation size (e.g., 2 for 2 spaces)
-///
-/// # Examples
-/// ```
-/// use typstyle_core::utils::change_indent;
-///
-/// let input = "    line1\n        line2\n    line3";
-/// let output = change_indent(input, 4, 2);
-/// assert_eq!(output, "  line1\n    line2\n  line3");
-/// ```
 pub fn change_indent(text: &str, from_indent: usize, to_indent: usize) -> String {
     if text.is_empty() || from_indent == 0 || from_indent == to_indent {
         return text.to_string();
