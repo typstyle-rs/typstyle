@@ -3,7 +3,6 @@ name = "typstyle-consistency"
 description = "A framework for testing typst formatters that ensures consistent output."
 version.workspace = true
 rust-version.workspace = true
-authors.workspace = true
 edition.workspace = true
 publish = false
 

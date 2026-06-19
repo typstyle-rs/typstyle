@@ -4,7 +4,6 @@ publish = false
 version.workspace = true
 rust-version.workspace = true
 edition.workspace = true
-authors.workspace = true
 description = "WebAssembly bindings for Typstyle"
 license.workspace = true
 repository.workspace = true

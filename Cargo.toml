@@ -7,7 +7,6 @@ default-members = ["crates/typstyle"]
 version = "0.14.4"
 rust-version = "1.92"
 edition = "2024"
-authors = ["Wenzhuo Liu", "QuadnucYard"]
 description = "Beautiful and reliable typst code formatter"
 license = "Apache-2.0"
 readme = "README.md"
