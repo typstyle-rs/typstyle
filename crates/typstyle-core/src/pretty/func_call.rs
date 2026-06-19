@@ -166,7 +166,7 @@ impl<'a> PrettyPrinter<'a> {
             let children = args.children().as_slice();
             let i = children.iter().position(|child| {
                 if child.kind() == SyntaxKind::Space {
-                    peek_linebreak = child.text().has_linebreak();
+                    peek_linebreak = child.leaf_text().has_linebreak();
                 }
                 !matches!(child.kind(), SyntaxKind::LeftParen | SyntaxKind::Space)
             });
@@ -197,7 +197,7 @@ impl<'a> PrettyPrinter<'a> {
                 SyntaxKind::Space => {
                     peek_hash = at_hash;
                     peek_hashed_arg = at_hashed_arg || at_arg;
-                    if child.text().has_linebreak() {
+                    if child.leaf_text().has_linebreak() {
                         peek_linebreak = true;
                         FlowItem::tight(self.arena.hardline())
                     } else {
@@ -210,7 +210,7 @@ impl<'a> PrettyPrinter<'a> {
                 }
                 _ => {
                     if let Some(arg) = child.cast::<Arg>() {
-                        peek_arg = !arg.to_untyped().text().is_empty();
+                        peek_arg = !arg.to_untyped().leaf_text().is_empty();
                         if at_hash || is_ends_with_hashed_expr(arg.to_untyped().children()) {
                             peek_hashed_arg = true;
                         }

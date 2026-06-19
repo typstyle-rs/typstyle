@@ -9,6 +9,7 @@ use typst::{
     model::Document,
 };
 use typst_layout::{Page, PagedDocument};
+use typst_render::RenderOptions;
 
 use crate::{ErrorSink, image_diff::compute_diff_pixmap, sink_assert_eq, text_diff::CodeDiff};
 
@@ -353,17 +354,18 @@ fn render_diff_pages(
         std::fs::create_dir_all(dir)?;
     }
 
-    // Helper to render a page to PNG at 2x resolution
+    // Helper to render a page to PNG
     let render_png = |page: &Page, number: u64| {
         typst_render::render(
             &Page {
                 frame: page.frame.clone(),
+                bleed: Default::default(),
                 fill: Smart::Auto,
                 numbering: None,
                 supplement: Default::default(),
                 number,
             },
-            2.0,
+            &RenderOptions::default(),
         )
     };
 

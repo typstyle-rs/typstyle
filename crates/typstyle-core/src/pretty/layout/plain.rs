@@ -51,7 +51,7 @@ impl<'a> PlainStylist<'a> {
             self.items.push(match child.kind() {
                 SyntaxKind::Comma => PlainItem::Comma,
                 SyntaxKind::Space => {
-                    let newline_count = child.text().count_linebreaks();
+                    let newline_count = child.leaf_text().count_linebreaks();
                     if newline_count > 0 {
                         self.is_multiline = true;
                         if !self.items.is_empty() {

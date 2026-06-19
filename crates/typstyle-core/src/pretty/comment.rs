@@ -25,18 +25,18 @@ pub fn comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
 }
 
 pub fn line_comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
-    arena.text(node.text().as_str())
+    arena.text(node.leaf_text().as_str())
 }
 
 /// It does not add a hardline to the doc.
 pub fn block_comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
     // Calculate the number of leading spaces except the first line.
-    let line_num = node.text().lines().count();
+    let line_num = node.leaf_text().lines().count();
     if line_num == 0 {
-        return arena.text(node.text().as_str());
+        return arena.text(node.leaf_text().as_str());
     }
     // Then the comment is multiline.
-    let text = node.text().as_str();
+    let text = node.leaf_text().as_str();
     let style = get_comment_style(text);
     match style {
         CommentStyle::Plain => align_multiline(arena, text),

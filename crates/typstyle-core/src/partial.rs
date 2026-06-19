@@ -171,7 +171,7 @@ fn get_node_and_mode_for_range(
     utf8_range: Range<usize>,
 ) -> Result<(LinkedNode<'_>, Mode), Error> {
     get_node_cover_range(source, utf8_range)
-        .filter(|(node, _)| !node.erroneous())
+        .filter(|(node, _)| !node.diagnosis().errors)
         .ok_or(Error::SyntaxError)
 }
 

@@ -190,8 +190,10 @@ fn check_testcase(
 
 fn make_formatter(config: Config) -> impl Fn(Source) -> anyhow::Result<String> {
     move |source| {
-        if source.root().erroneous() {
-            bail!("the file has syntax errors: {:?}", source.root().errors());
+        let root = source.root();
+        if root.diagnosis().errors {
+            let (errors, _) = root.errors_and_warnings();
+            bail!("the file has syntax errors: {errors:?}");
         }
         let t = Typstyle::new(config.clone());
         let first_pass = t.format_source(source).render().context("first pass")?;

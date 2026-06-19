@@ -69,7 +69,7 @@ impl<'a> PrettyPrinter<'a> {
                     }
                 }
             } else if node.kind() == SyntaxKind::Space {
-                collector.push_newline(node.text().count_linebreaks());
+                collector.push_newline(node.leaf_text().count_linebreaks());
             } else if node.kind() == SyntaxKind::LineComment {
                 collector.push_comment(self.convert_comment(ctx, node));
             };

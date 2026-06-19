@@ -78,7 +78,7 @@ impl<'a> Formatter<'a> {
 
     fn build_doc(&'a self) -> Result<ArenaDoc<'a>, Error> {
         let root = self.source.root();
-        if root.erroneous() {
+        if root.diagnosis().errors {
             return Err(Error::SyntaxError);
         }
         let markup = root.cast().unwrap();

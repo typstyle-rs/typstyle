@@ -22,17 +22,17 @@ impl<'a> PrettyPrinter<'a> {
         ctx: Context,
         node: &'a SyntaxNode,
     ) -> ArenaDoc<'a> {
-        if node.text().has_linebreak() {
+        if node.leaf_text().has_linebreak() {
             self.arena.hardline()
         } else if ctx.mode.is_markup() && !self.config.collapse_markup_spaces {
-            self.arena.text(node.text().as_str())
+            self.arena.text(node.leaf_text().as_str())
         } else {
             self.arena.space()
         }
     }
 
     pub(super) fn convert_parbreak(&'a self, parbreak: Parbreak) -> ArenaDoc<'a> {
-        let newline_count = parbreak.to_untyped().text().count_linebreaks();
+        let newline_count = parbreak.to_untyped().leaf_text().count_linebreaks();
         self.arena.hardline().repeat(newline_count)
     }
 }

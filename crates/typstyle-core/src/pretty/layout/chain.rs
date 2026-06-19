@@ -106,7 +106,7 @@ impl<'a> ChainStylist<'a> {
                         self.items.push(ChainItem::Op(op));
                     } else if child.kind() == SyntaxKind::Space {
                         // Then linebreak is kept only if around comments.
-                        if child.text().has_linebreak()
+                        if child.leaf_text().has_linebreak()
                             && (matches!(self.items.last(), Some(ChainItem::Comment(_)))
                                 || children.get(i + 1).is_some_and(is_comment_node))
                         {

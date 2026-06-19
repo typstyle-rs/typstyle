@@ -239,7 +239,7 @@ impl<'a> ListStylist<'a> {
                 self.try_attach_comments();
             }
             SyntaxKind::Space => {
-                let newline_cnt = node.text().count_linebreaks();
+                let newline_cnt = node.leaf_text().count_linebreaks();
                 if newline_cnt > 0 {
                     self.attach_or_detach_comments();
                     self.can_attach = false;
