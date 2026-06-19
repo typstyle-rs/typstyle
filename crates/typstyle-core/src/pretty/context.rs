@@ -48,7 +48,7 @@ pub enum Mode {
     Markup,
     Code,
     /// A continued code mode, where the code can freely span multiple lines.
-    /// Corresponds to [`typst_syntax::parser::NewlineMode::Continue`].
+    /// Corresponds to `typst_syntax::parser::AtNewline::Continue`.
     CodeCont,
     Math,
 }
