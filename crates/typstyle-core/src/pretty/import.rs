@@ -88,7 +88,7 @@ impl<'a> PrettyPrinter<'a> {
             && check_import_name_duplication(&import_items_nodes)
         {
             // Sort import items by their text representation.
-            import_items_nodes.sort_by_key(|&node| node.clone().full_text());
+            import_items_nodes.sort_by_key(|&node| node.full_text());
         }
         // Note that `ImportItem` does not implement `AstNode`.
         ListStylist::new(self)

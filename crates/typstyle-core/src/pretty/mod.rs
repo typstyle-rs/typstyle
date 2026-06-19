@@ -93,14 +93,14 @@ impl<'a> PrettyPrinter<'a> {
 
     /// For inner or lead nodes.
     fn convert_verbatim_untyped(&'a self, node: &'a SyntaxNode) -> ArenaDoc<'a> {
-        let text = node.clone().full_text();
+        let text = node.full_text();
         if !text.has_linebreak() {
             return self.arena.text(text.to_string());
         }
         // When the text spans multiple lines, we should split it to ensure proper fitting.
         self.arena
             .intersperse(
-                node.clone().full_text().lines().map(str::to_string),
+                node.full_text().lines().map(str::to_string),
                 self.arena.hardline(),
             )
             .dedent_to_root()
