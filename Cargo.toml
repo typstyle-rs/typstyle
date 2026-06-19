@@ -89,13 +89,4 @@ inherits = "release"
 debug = true
 
 [patch.crates-io]
-typst = { git = "https://github.com/ParaN3xus/typst.git", rev = "6743cf2415fb3c11c292d371d16746cbee44c114" }
-typst-render = { git = "https://github.com/ParaN3xus/typst.git", rev = "6743cf2415fb3c11c292d371d16746cbee44c114" }
-typst-syntax = { git = "https://github.com/ParaN3xus/typst.git", rev = "6743cf2415fb3c11c292d371d16746cbee44c114" }
-typst-eval = { git = "https://github.com/ParaN3xus/typst.git", rev = "6743cf2415fb3c11c292d371d16746cbee44c114" }
-typst-html = { git = "https://github.com/ParaN3xus/typst.git", rev = "6743cf2415fb3c11c292d371d16746cbee44c114" }
-typst-layout = { git = "https://github.com/ParaN3xus/typst.git", rev = "6743cf2415fb3c11c292d371d16746cbee44c114" }
-typst-bundle = { git = "https://github.com/ParaN3xus/typst.git", rev = "6743cf2415fb3c11c292d371d16746cbee44c114" }
-tinymist-world = { git = "https://github.com/ParaN3xus/tinymist.git", rev = "532f5e7cff6e1e53accfb741bb9a282a5fd74d85" }
-typst-shim = { git = "https://github.com/ParaN3xus/tinymist.git", rev = "532f5e7cff6e1e53accfb741bb9a282a5fd74d85" }
 # prettyless = { git = "https://github.com/typstyle-rs/prettyless", rev = "9afa5bdece2dbf14c54ade8bef46cd0828cb952b" }
