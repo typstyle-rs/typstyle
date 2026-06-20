@@ -4,10 +4,9 @@ members = ["crates/*", "tests"]
 default-members = ["crates/typstyle"]
 
 [workspace.package]
-version = "0.14.4"
+version = "0.15.0"
 rust-version = "1.92"
 edition = "2024"
-authors = ["Wenzhuo Liu", "QuadnucYard"]
 description = "Beautiful and reliable typst code formatter"
 license = "Apache-2.0"
 readme = "README.md"
@@ -15,9 +14,7 @@ repository = "https://github.com/typstyle-rs/typstyle"
 homepage = "https://typstyle-rs.github.io/typstyle/"
 
 [workspace.dependencies]
-typstyle-core = { path = "crates/typstyle-core", version = "0.14.4" }
-typstyle = { path = "crates/typstyle", version = "0.14.4" }
-typstyle-wasm = { path = "crates/typstyle-wasm", version = "0.14.4" }
+typstyle-core = { path = "crates/typstyle-core", version = "=0.15.0" }
 typstyle-consistency = { path = "crates/typstyle-consistency" }
 
 # Used in core

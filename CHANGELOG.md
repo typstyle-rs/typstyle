@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## v0.15.0 - [2026-06-20]
 
-- Bump `typst` to v0.14.2 to address the wasmi CVE; the affected package is a transitive, test-only dependency.
+- Bump `typst` to v0.15.0. With the new typst math parser, the formatting of math arguments has also improved slightly as a side effect.
 
 ## v0.14.4 - [2026-01-10]
 
