@@ -19,7 +19,6 @@ harness = false
 [dependencies]
 typst-syntax.workspace = true
 
-ecow.workspace = true
 itertools.workspace = true
 prettyless.workspace = true
 rustc-hash.workspace = true
