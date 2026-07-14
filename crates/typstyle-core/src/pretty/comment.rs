@@ -8,45 +8,58 @@ impl<'a> PrettyPrinter<'a> {
     }
 }
 
-enum CommentStyle {
+/// Style of block comment lines.
+/// ```text
+/// /*
+///  A plain block comment line
+/// */
+///
+/// /*
+/// * A bullet block comment line
+/// */
+/// ```
+enum BlockCommentLineStyle {
+    /// Block comment lines with optional leading whitespace.
     Plain,
+    /// Block comment lines contain leading asterisks.
     Bullet,
 }
 
 /// Convert either line comment or block comment. Line comments are converted as line suffixes.
 pub fn comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
-    if node.kind() == SyntaxKind::LineComment {
-        line_comment(arena, node).as_line_suffix()
-    } else if node.kind() == SyntaxKind::BlockComment {
-        block_comment(arena, node)
-    } else {
-        unreachable!("the node should not be a comment node!")
+    match node.kind() {
+        SyntaxKind::LineComment => line_comment(arena, node).as_line_suffix(),
+        SyntaxKind::BlockComment => block_comment(arena, node),
+        _ => unreachable!("This node should not be a comment node!")
     }
 }
 
+/// Format line comment as regular text.
 pub fn line_comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
     arena.text(node.leaf_text().as_str())
 }
 
-/// It does not add a hardline to the doc.
+/// Format block comments. They do not add a hardline to the doc.
 pub fn block_comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
     let text = node.leaf_text().as_str();
-    let style = get_comment_style(text);
+    let style = get_block_comment_line_style(text);
     match style {
-        CommentStyle::Plain => align_multiline(arena, text),
-        CommentStyle::Bullet => align_multiline_simple(arena, text),
+        BlockCommentLineStyle::Plain => align_multiline_together(arena, text),
+        BlockCommentLineStyle::Bullet => align_multiline_independent(arena, text),
     }
 }
 
-fn get_comment_style(text: &str) -> CommentStyle {
+/// Gets the line style of block comment lines from the given text.
+/// Single-line block comments are treated as [`BlockCommentLineStyle::Bullet`].
+fn get_block_comment_line_style(text: &str) -> BlockCommentLineStyle {
     if text
         .lines()
         .skip(1)
         .all(|line| line.trim_start().starts_with('*'))
     {
-        CommentStyle::Bullet // /*
+        BlockCommentLineStyle::Bullet
     } else {
-        CommentStyle::Plain // otherwise
+        BlockCommentLineStyle::Plain
     }
 }
 
@@ -59,8 +72,8 @@ fn get_follow_leading(text: &str) -> Option<usize> {
         .min()
 }
 
-/// For general cases. All lines need to be indented together.
-fn align_multiline<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'a> {
+/// Indents all lines of the block comment to the same level. Used for [`BlockCommentLineStyle::Bullet`].
+fn align_multiline_together<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'a> {
     let leading = get_follow_leading(text).unwrap();
     let mut doc = arena.nil();
     for (i, line) in text.lines().enumerate() {
@@ -76,8 +89,8 @@ fn align_multiline<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'a> {
     doc.align()
 }
 
-/// For special cases. All lines can be indented independently.
-fn align_multiline_simple<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'a> {
+/// Indents all lines of the block comment independently. Used for [`BlockCommentLineStyle::Plain`].
+fn align_multiline_independent<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'a> {
     let mut doc = arena.nil();
     for (i, line) in text.lines().enumerate() {
         if i > 0 {
@@ -93,7 +106,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_align() {
+    fn test_align_plain_block_comment() {
         let cmt = "/* 0
       --- 1
         -- 2
@@ -102,7 +115,8 @@ mod tests {
         let arena = Arena::new();
         let leading = get_follow_leading(cmt).unwrap();
         assert_eq!(leading, 4);
-        let doc = arena.text("lorem ipsum") + arena.space() + align_multiline(&arena, cmt);
+        
+        let doc = arena.text("lorem ipsum") + arena.space() + align_multiline_together(&arena, cmt);
         let result = doc.print(80).to_string();
         // println!("{result}");
         assert_eq!(
@@ -116,14 +130,14 @@ mod tests {
     }
 
     #[test]
-    fn test_align2() {
+    fn test_align_bullet_block_comment() {
         let cmt = "/* 0
       * 1
         * 2
     * 3
       */";
         let arena = Arena::new();
-        let doc = arena.text("lorem ipsum") + arena.space() + align_multiline_simple(&arena, cmt);
+        let doc = arena.text("lorem ipsum") + arena.space() + align_multiline_independent(&arena, cmt);
         let result = doc.print(80).to_string();
         // println!("{result}");
         assert_eq!(
