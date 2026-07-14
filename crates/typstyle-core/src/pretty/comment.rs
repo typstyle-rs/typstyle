@@ -72,7 +72,7 @@ fn get_follow_leading(text: &str) -> Option<usize> {
         .min()
 }
 
-/// Indents all lines of the block comment to the same level. Used for [`BlockCommentLineStyle::Bullet`].
+/// Indents all lines of the block comment to the same level. Used for [`BlockCommentLineStyle::Plain`].
 fn align_multiline_together<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'a> {
     let leading = get_follow_leading(text).unwrap();
     let mut doc = arena.nil();
@@ -89,7 +89,7 @@ fn align_multiline_together<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc
     doc.align()
 }
 
-/// Indents all lines of the block comment independently. Used for [`BlockCommentLineStyle::Plain`].
+/// Indents all lines of the block comment independently. Used for [`BlockCommentLineStyle::Bullet`].
 fn align_multiline_independent<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'a> {
     let mut doc = arena.nil();
     for (i, line) in text.lines().enumerate() {
