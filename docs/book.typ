@@ -30,6 +30,7 @@
     - #chapter("architecture.typ")[How It Works]
     - #chapter("dev-guide.typ")[Developer Guide]
       - #chapter("dev-guide/core.typ")[Core]
+      - #chapter("dev-guide/formatter-options.typ")[Formatter Options]
       - #chapter("dev-guide/documentation.typ")[Documentation]
       - #chapter("dev-guide/playground.typ")[Playground]
       - #chapter("dev-guide/release-process.typ")[Release Process]
