@@ -21,7 +21,7 @@
     for item in items {
       if item.len() == 0 { continue }
 
-      // Handle simple boolean flags like "wrap_text"
+      // Handle simple boolean flags
       if not item.contains("=") {
         let key = item
         config-changes.insert(key, true)

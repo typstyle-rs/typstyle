@@ -16,7 +16,7 @@ export function SettingsPanel({
   const indentWidthInputId = useId();
   const collapseMarkupSpacesId = useId();
   const reorderImportItemsId = useId();
-  const wrapTextId = useId();
+  const wrapModeId = useId();
 
   const lineWidthValues = [0, 20, 40, 60, 80, 100, 120];
 
@@ -151,19 +151,22 @@ export function SettingsPanel({
       </div>
 
       <div className="flex items-center justify-between w-full">
-        <label htmlFor={wrapTextId}>Wrap Text:</label>
-        <input
-          id={wrapTextId}
-          type="checkbox"
-          className="checkbox"
-          checked={formatOptions.wrapText}
+        <label htmlFor={wrapModeId}>Wrap Text:</label>
+        <select
+          id={wrapModeId}
+          className="select"
+          value={formatOptions.wrapMode}
           onChange={(e) =>
             setFormatOptions((prev) => ({
               ...prev,
-              wrapText: e.target.checked,
+              wrapMode: e.target.value as FormatOptions["wrapMode"],
             }))
           }
-        />
+        >
+          <option value="none">None</option>
+          <option value="fill">Fill</option>
+          <option value="sentence">Sentence</option>
+        </select>
       </div>
 
       <button type="button" className="btn w-full" onClick={handleReset}>

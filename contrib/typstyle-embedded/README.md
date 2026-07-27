@@ -50,9 +50,11 @@ This follows the defaults of the Rust struct. The fields and values are subject 
   max_width: 80,
   collapse_markup_spaces: false,
   reorder_import_items: true,
-  wrap_text: false,
+  wrap_mode: "none",
 )
 ```
+
+`wrap_mode` accepts `"none"`, `"fill"`, or `"sentence"`.
 
 ## Error Handling
 

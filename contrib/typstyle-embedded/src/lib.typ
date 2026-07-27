@@ -5,7 +5,7 @@
   max_width: 80,
   collapse_markup_spaces: false,
   reorder_import_items: true,
-  wrap_text: false,
+  wrap_mode: "none",
 )
 
 #let parse(text) = {
