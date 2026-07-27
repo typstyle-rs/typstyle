@@ -14,6 +14,15 @@ describe("WASM Binding Tests", () => {
       lineWidth,
     });
 
+  it("maps wrapping modes to the WASM config", () => {
+    expect(
+      formatOptionsToConfig({
+        ...DEFAULT_FORMAT_OPTIONS,
+        wrapMode: "sentence",
+      }).wrap_mode,
+    ).toBe("sentence");
+  });
+
   // Test data
   const simpleTypstCode = `
 #set page(width: 10cm, height: auto)

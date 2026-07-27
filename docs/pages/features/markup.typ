@@ -47,7 +47,7 @@ Lists within content blocks are properly formatted with surrounding linebreaks:
 When text wrapping is enabled with `--wrap-text`, Typstyle intelligently wraps long lines while preserving important formatting and semantic structure:
 
 ```typst
-/// typstyle: wrap_text, max_width=30
+/// typstyle: wrap_mode=fill, max_width=30
 Let's say you have a long text that needs to be wrapped in the markup. This is a very long sentence.
 ```
 == Wrapping Rules
@@ -61,7 +61,7 @@ Typstyle applies specific wrapping logic based on node types:
 - *Soft breaks*: Regular spaces become flexible break points unless restricted by above rules
 
 ````typst
-/// typstyle: wrap_text, max_width=30
+/// typstyle: wrap_mode=fill, max_width=30
 Some pieces should be exclusion except $"inline equation"$ and `raw`:
 - This is a list
 $ "block equation" $
@@ -106,7 +106,7 @@ End
 Typstyle measures Unicode width and will not break between words if no space exists in the original text.
 
 ```typst
-/// typstyle: wrap_text, max_width=40
+/// typstyle: wrap_mode=fill, max_width=40
 这是一个中文段落，包含链接 https://typst.app/ 和*强调文本*。
 続いて`コード要素`と https://docs.typst.app/ を含む日本語の段落です。
 

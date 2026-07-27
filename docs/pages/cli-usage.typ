@@ -77,8 +77,12 @@ typstyle --indent-width 4 file.typ
 === Text Wrapping
 
 ```bash
-# Wrap text in markup to fit line width
+# Wrap text in markup to fit line width (`--wrap-text` is shorthand)
 typstyle --wrap-text file.typ
+typstyle --wrap-text=fill file.typ
+
+# Place each sentence on its own line
+typstyle --wrap-text=sentence file.typ
 ```
 
 = Debug Options

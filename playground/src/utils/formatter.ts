@@ -5,7 +5,7 @@ export interface FormatOptions {
   indentWidth: number;
   collapseMarkupSpaces: boolean;
   reorderImportItems: boolean;
-  wrapText: boolean;
+  wrapMode: typstyle.Config["wrap_mode"];
 }
 
 // Default format style options
@@ -14,7 +14,7 @@ export const DEFAULT_FORMAT_OPTIONS: FormatOptions = {
   indentWidth: 2,
   collapseMarkupSpaces: false,
   reorderImportItems: true,
-  wrapText: false,
+  wrapMode: "none",
 };
 
 /**
@@ -43,6 +43,6 @@ export function formatOptionsToConfig(
     tab_spaces: options.indentWidth,
     collapse_markup_spaces: options.collapseMarkupSpaces,
     reorder_import_items: options.reorderImportItems,
-    wrap_text: options.wrapText,
+    wrap_mode: options.wrapMode,
   };
 }

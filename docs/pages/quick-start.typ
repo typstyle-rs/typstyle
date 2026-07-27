@@ -126,8 +126,11 @@ typstyle --no-reorder-import-items file.typ
 == Text Wrapping
 
 ```bash
-# Enable text wrapping in markup
+# Wrap text to the configured line width
 typstyle --wrap-text file.typ
+
+# Place each sentence on its own line
+typstyle --wrap-text=sentence file.typ
 ```
 
 = Integration Examples

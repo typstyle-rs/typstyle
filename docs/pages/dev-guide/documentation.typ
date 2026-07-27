@@ -77,7 +77,7 @@ To show before/after formatting examples automatically, use the `render-examples
 
   ````typ
   ```typst
-  /// typstyle: wrap_text, max_width=40
+  /// typstyle: wrap_mode=fill, max_width=40
   这是一个中文段落，包含链接 https://typst.app/ 和*强调文本*。
   続いて`コード要素`と https://docs.typst.app/ を含む日本語の段落です。
   ```
@@ -85,7 +85,8 @@ To show before/after formatting examples automatically, use the `render-examples
 
 *Configuration options* supported in the comment are those available in the embedded typstyle package:
 - `max_width=N` - Set line width for this example
-- `wrap_text` - Enable text wrapping
+- `wrap_mode=fill` - Wrap text to the configured width
+- `wrap_mode=sentence` - Place each sentence on its own line
 - See the embedded typstyle documentation for all available options
 
 The system automatically:
