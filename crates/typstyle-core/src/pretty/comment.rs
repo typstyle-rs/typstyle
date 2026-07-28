@@ -30,7 +30,7 @@ pub fn comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
     match node.kind() {
         SyntaxKind::LineComment => line_comment(arena, node).as_line_suffix(),
         SyntaxKind::BlockComment => block_comment(arena, node),
-        _ => unreachable!("This node should not be a comment node!")
+        _ => unreachable!("This node should not be a comment node!"),
     }
 }
 
@@ -115,7 +115,7 @@ mod tests {
         let arena = Arena::new();
         let leading = get_follow_leading(cmt).unwrap();
         assert_eq!(leading, 4);
-        
+
         let doc = arena.text("lorem ipsum") + arena.space() + align_multiline_together(&arena, cmt);
         let result = doc.print(80).to_string();
         // println!("{result}");
@@ -137,7 +137,8 @@ mod tests {
     * 3
       */";
         let arena = Arena::new();
-        let doc = arena.text("lorem ipsum") + arena.space() + align_multiline_independent(&arena, cmt);
+        let doc =
+            arena.text("lorem ipsum") + arena.space() + align_multiline_independent(&arena, cmt);
         let result = doc.print(80).to_string();
         // println!("{result}");
         assert_eq!(
