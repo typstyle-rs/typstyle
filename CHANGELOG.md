@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.15.1 - [2026-07-28]
 
 - Update `typst` to v0.15.1.
 - Add experimental sentence-level text wrapping with `wrap_mode = "sentence"` or `--wrap-text=sentence`. **Breaking:** the boolean `wrap_text` configuration option is replaced by `wrap_mode`; migrate `true` to `"fill"` and `false` to `"none"`. The existing bare `--wrap-text` CLI flag remains supported as shorthand for `--wrap-text=fill`.
