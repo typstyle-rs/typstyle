@@ -73,9 +73,19 @@ Classify the changes into appropriate categories:
 
 == Update Version Numbers
 
+Run the release preparation script without an argument to increment the patch version automatically:
+
+```bash
+just prepare-release
+```
+
+For a minor or major release, provide the stable semantic version explicitly without the `v` prefix: `just prepare-release <new-version>`.
+
+The script checks that the working tree is clean, updates the workspace and internal dependency versions, refreshes `Cargo.lock`, and runs `cargo check --workspace`. If `CHANGELOG.md` has an `Unreleased` section, the script turns it into the dated release section and preserves its notes. Otherwise, it creates a release section with a `TODO` placeholder. It does not commit, tag, push, or publish anything.
+
 === Update Workspace Version
 
-Edit the `Cargo.toml` file to update the workspace version:
+The script updates the workspace version in `Cargo.toml`:
 
 ```toml
 [workspace.package]
@@ -84,7 +94,7 @@ version = "<new-version>"  # New version number (e.g., "0.13.12")
 
 === Update Dependency Versions
 
-Also update the workspace dependencies:
+It also keeps the exact internal dependency version synchronized:
 
 ```toml
 [workspace.dependencies]
@@ -95,15 +105,17 @@ typstyle-core = { path = "crates/typstyle-core", version = "=<new-version>" }
 
 === Add New Version Entry
 
-Add the new version at the top of the `CHANGELOG.md` file:
+Keep upcoming release notes in an optional `Unreleased` section at the top of `CHANGELOG.md`:
 
 ````markdown
-## v<new-version> - [YYYY-MM-DD]
+## Unreleased
 
 - Feature(CLI): Specific feature description
 - Bug fix: Specific fix description
 - Enhancement: Specific improvement description
 ````
+
+The release script changes this heading to `## v<new-version> - [YYYY-MM-DD]`. If the section is absent, it inserts a version heading with a `TODO` instead.
 
 === Changelog Writing Guidelines
 
@@ -196,4 +208,3 @@ Please confirm the following items before release:
 - #box[☐] Monitor CI/CD process
 - #box[☐] Verify successful release
 - #box[☐] Update related documentation
-
