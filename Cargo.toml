@@ -17,9 +17,18 @@ homepage = "https://typstyle-rs.github.io/typstyle/"
 typstyle-core = { path = "crates/typstyle-core", version = "=0.15.0" }
 typstyle-consistency = { path = "crates/typstyle-consistency" }
 
-# Used in core
-typst-syntax = "0.15.0"
+# typst and tinymist
+typst-syntax = "0.15.1"
 
+typst-assets = "0.15.1"
+typst-render = "0.15.1"
+typst-layout = "0.15.1"
+typst = "0.15.1"
+
+typst-shim = { version = "0.15.0" }
+tinymist-world = { version = "0.15.0", default-features = false, features = ["system"] }
+
+# Used in core
 icu_segmenter = "2.2"
 itertools = "0.15"
 prettyless = "0.3"
@@ -58,14 +67,6 @@ similar-asserts = "2.0"
 tempfile = "3"
 tiny-skia = "0.12"
 toml = "0.8"
-
-tinymist-world = { version = "0.15.0", default-features = false, features = ["system"] }
-typst-shim = { version = "0.15.0" }
-
-typst-assets = "0.15.0"
-typst-render = "0.15.0"
-typst-layout = "0.15.0"
-typst = "0.15.0"
 
 # Used in benchmark
 criterion = { version = "0.8" }
