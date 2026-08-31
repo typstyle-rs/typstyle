@@ -166,7 +166,7 @@ fn convert_text_sentence_per_line<'a>(
                 doc += arena.space();
             }
             first = false;
-            previous_was_abbreviation = is_common_abbreviation(sentence);
+            previous_was_abbreviation = ends_with_common_abbreviation(sentence);
             ended_sentence = source_ends_with_sentence(sentence);
         }
         start = end;
@@ -272,31 +272,47 @@ fn sentence_ends_with_punctuation(text: &str) -> bool {
     trim_sentence_closers(text).ends_with(['.', '!', '?', '。', '！', '？'])
 }
 
+fn is_boundary_punctuation(c: char) -> bool {
+    c.is_whitespace()
+        || matches!(
+            c,
+            '(' | ')'
+                | '['
+                | ']'
+                | '{'
+                | '}'
+                | '（'
+                | '）'
+                | '【'
+                | '】'
+                | '『'
+                | '』'
+                | '「'
+                | '」'
+                | '〉'
+                | '》'
+                | '"'
+                | '\''
+                | '”'
+                | '“'
+                | '’'
+                | '‘'
+                | '»'
+                | '«'
+                | '›'
+                | '‹'
+                | '*'
+                | '_'
+                | '`'
+                | '$'
+                | ','
+                | ';'
+                | ':'
+        )
+}
+
 fn trim_sentence_closers(text: &str) -> &str {
-    text.trim_end_matches(|c: char| {
-        c.is_whitespace()
-            || matches!(
-                c,
-                ')' | ']'
-                    | '}'
-                    | '）'
-                    | '】'
-                    | '』'
-                    | '」'
-                    | '〉'
-                    | '》'
-                    | '"'
-                    | '\''
-                    | '”'
-                    | '’'
-                    | '»'
-                    | '›'
-                    | '*'
-                    | '_'
-                    | '`'
-                    | '$'
-            )
-    })
+    text.trim_end_matches(is_boundary_punctuation)
 }
 
 fn ends_with_common_abbreviation(text: &str) -> bool {
@@ -307,8 +323,10 @@ fn ends_with_common_abbreviation(text: &str) -> bool {
 }
 
 fn is_common_abbreviation(text: &str) -> bool {
+    let clean = text.trim_matches(is_boundary_punctuation);
+    let lower = clean.to_ascii_lowercase();
     matches!(
-        text.to_ascii_lowercase().as_str(),
+        lower.as_str(),
         "dr."
             | "mr."
             | "mrs."
@@ -319,6 +337,12 @@ fn is_common_abbreviation(text: &str) -> bool {
             | "st."
             | "vs."
             | "etc."
+            | "cf."
+            | "viz."
+            | "ibid."
+            | "ca."
+            | "eq."
+            | "ref."
             | "e.g."
             | "i.e."
             | "al."
@@ -328,7 +352,22 @@ fn is_common_abbreviation(text: &str) -> bool {
             | "fig."
             | "sec."
             | "approx."
-    )
+    ) || is_multidot_acronym(clean)
+}
+
+fn is_multidot_acronym(s: &str) -> bool {
+    if !s.ends_with('.') {
+        return false;
+    }
+    let parts: Vec<&str> = s.split('.').collect();
+    if parts.len() >= 3 {
+        let non_empty = &parts[..parts.len() - 1];
+        non_empty.iter().all(|p| {
+            !p.is_empty() && p.chars().count() <= 2 && p.chars().all(|c| c.is_alphanumeric())
+        })
+    } else {
+        false
+    }
 }
 
 #[cfg(test)]
@@ -400,6 +439,22 @@ mod tests {
         assert_eq!(
             format_sentences("Smith *et al.* argue this. Next."),
             "Smith *et al.* argue this.\nNext.\n"
+        );
+    }
+
+    #[test]
+    fn sentence_mode_handles_multidot_abbreviations() {
+        assert_eq!(
+            format_sentences("We use tools, e.g., typstyle. Next."),
+            "We use tools, e.g., typstyle.\nNext.\n"
+        );
+        assert_eq!(
+            format_sentences("For example (i.e., this feature). Next."),
+            "For example (i.e., this feature).\nNext.\n"
+        );
+        assert_eq!(
+            format_sentences("Dies ist z.B. ein Test. Nächster Satz."),
+            "Dies ist z.B. ein Test.\nNächster Satz.\n"
         );
     }
 
