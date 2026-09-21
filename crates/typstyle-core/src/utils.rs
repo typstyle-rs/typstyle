@@ -11,6 +11,13 @@ pub fn strip_trailing_whitespace(s: &str) -> String {
     res
 }
 
+/// Ensure the input ends with exactly one newline.
+pub fn ensure_single_final_newline(mut s: String) -> String {
+    s.truncate(s.trim_end_matches('\n').len());
+    s.push('\n');
+    s
+}
+
 pub fn count_spaces_after_last_newline(s: &str, i: usize) -> usize {
     // Ensure the byte position `i` is a valid UTF-8 boundary
     debug_assert!(
@@ -95,6 +102,14 @@ mod tests {
         assert_eq!(s, "\n -\n");
         let s = strip_trailing_whitespace(" \n - \n ");
         assert_eq!(s, "\n -\n\n");
+    }
+
+    #[test]
+    fn test_ensure_single_final_newline() {
+        let s = ensure_single_final_newline("Hello".into());
+        assert_eq!(s, "Hello\n");
+        let s = ensure_single_final_newline("Hello\n\n".into());
+        assert_eq!(s, "Hello\n");
     }
 
     #[test]

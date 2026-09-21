@@ -72,7 +72,7 @@ impl<'a> Formatter<'a> {
         let mut buf = String::new();
         doc.render_fmt(self.printer.config().max_width, &mut buf)
             .map_err(|_| Error::RenderError)?;
-        let result = utils::strip_trailing_whitespace(&buf);
+        let result = utils::ensure_single_final_newline(utils::strip_trailing_whitespace(&buf));
         Ok(result)
     }
 
