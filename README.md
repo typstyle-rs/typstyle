@@ -5,7 +5,7 @@ A beautiful and reliable code formatter for [Typst](https://typst.app/).
 [![crates.io](https://img.shields.io/crates/v/typstyle)](https://crates.io/crates/typstyle)
 [![npm wasm](https://img.shields.io/npm/v/@typstyle/typstyle-wasm-bundler)](https://www.npmjs.com/package/@typstyle/typstyle-wasm-bundler)
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://typstyle-rs.github.io/typstyle/)
-[![CI](https://github.com/typstyle-rs/typstyle/workflows/Test%20and%20Release/badge.svg)](…)
+[![CI](https://github.com/typstyle-rs/typstyle/actions/workflows/ci.yml/badge.svg)](https://github.com/typstyle-rs/typstyle/actions/workflows/ci.yml)
 [![License](https://img.shields.io/crates/l/typstyle)](LICENSE)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/typstyle.svg)](https://repology.org/project/typstyle/versions)
