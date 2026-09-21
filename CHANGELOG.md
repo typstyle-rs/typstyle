@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Feature: Ensure formatted files end with exactly one newline.
+
 ## v0.15.1 - [2026-07-28]
 
 - Update `typst` to v0.15.1.
