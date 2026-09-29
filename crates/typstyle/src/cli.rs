@@ -91,6 +91,10 @@ pub struct StyleArgs {
     #[arg(long, default_value_t = false, global = true)]
     pub no_reorder_import_items: bool,
 
+    /// Trim all newlines after the final newline.
+    #[arg(long, default_value_t = false, global = true)]
+    pub trim_final_newlines: bool,
+
     /// Text wrapping mode: none (default), fill (wrap to line width), sentence (one per line), or fill-sentence (both).
     #[arg(
         long,

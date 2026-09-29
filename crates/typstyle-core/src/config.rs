@@ -15,6 +15,8 @@ pub struct Config {
     pub reorder_import_items: bool,
     /// Text wrapping mode for markup.
     pub wrap_mode: WrapMode,
+    /// When `true`, final newlines are trimmed, leaving exactly one.
+    pub trim_final_newlines: bool,
 }
 
 /// Text wrapping mode for markup.
@@ -42,6 +44,7 @@ impl Default for Config {
             reorder_import_items: true,
             collapse_markup_spaces: false,
             wrap_mode: WrapMode::None,
+            trim_final_newlines: false,
         }
     }
 }
@@ -77,6 +80,11 @@ impl Config {
 
     pub fn with_wrap_mode(mut self, wrap_mode: WrapMode) -> Self {
         self.wrap_mode = wrap_mode;
+        self
+    }
+
+    pub fn with_trim_final_newlines(mut self, trim_final_newlines: bool) -> Self {
+        self.trim_final_newlines = trim_final_newlines;
         self
     }
 }

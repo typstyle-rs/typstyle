@@ -54,6 +54,7 @@ impl StyleArgs {
             max_width: self.line_width,
             tab_spaces: self.indent_width,
             reorder_import_items: !self.no_reorder_import_items,
+            trim_final_newlines: self.trim_final_newlines,
             wrap_mode: match self.wrap_text {
                 WrapTextMode::None => WrapMode::None,
                 WrapTextMode::Fill => WrapMode::Fill,

@@ -6,6 +6,7 @@ export interface FormatOptions {
   collapseMarkupSpaces: boolean;
   reorderImportItems: boolean;
   wrapMode: typstyle.Config["wrap_mode"];
+  trimFinalNewlines: boolean;
 }
 
 // Default format style options
@@ -15,6 +16,7 @@ export const DEFAULT_FORMAT_OPTIONS: FormatOptions = {
   collapseMarkupSpaces: false,
   reorderImportItems: true,
   wrapMode: "none",
+  trimFinalNewlines: false,
 };
 
 /**
@@ -44,5 +46,6 @@ export function formatOptionsToConfig(
     collapse_markup_spaces: options.collapseMarkupSpaces,
     reorder_import_items: options.reorderImportItems,
     wrap_mode: options.wrapMode,
+    trim_final_newlines: options.trimFinalNewlines,
   };
 }

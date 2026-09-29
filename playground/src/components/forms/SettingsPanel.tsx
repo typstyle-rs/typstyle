@@ -17,6 +17,7 @@ export function SettingsPanel({
   const collapseMarkupSpacesId = useId();
   const reorderImportItemsId = useId();
   const wrapModeId = useId();
+  const trimFinalNewlinesId = useId();
 
   const lineWidthValues = [0, 20, 40, 60, 80, 100, 120];
 
@@ -168,6 +169,22 @@ export function SettingsPanel({
           <option value="sentence">Sentence</option>
           <option value="fill-sentence">Fill + Sentence</option>
         </select>
+      </div>
+
+      <div className="flex items-center justify-between w-full">
+        <label htmlFor={trimFinalNewlinesId}>Trim Final Newlines:</label>
+        <input
+          id={trimFinalNewlinesId}
+          type="checkbox"
+          className="checkbox"
+          checked={formatOptions.trimFinalNewlines}
+          onChange={(e) =>
+            setFormatOptions((prev) => ({
+              ...prev,
+              trimFinalNewlines: e.target.checked,
+            }))
+          }
+        />
       </div>
 
       <button type="button" className="btn w-full" onClick={handleReset}>
