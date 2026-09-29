@@ -87,6 +87,10 @@ pub struct StyleArgs {
     )]
     pub indent_width: usize,
 
+    /// Line-ending policy for formatted source output.
+    #[arg(long, value_enum, default_value_t = LineEndingMode::Lf)]
+    pub line_ending: LineEndingMode,
+
     /// Disable alphabetical reordering of import items.
     #[arg(long, default_value_t = false, global = true)]
     pub no_reorder_import_items: bool,
@@ -102,6 +106,16 @@ pub struct StyleArgs {
         global = true
     )]
     pub wrap_text: WrapTextMode,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, ValueEnum)]
+pub enum LineEndingMode {
+    /// Use formatter output without line-ending post-processing.
+    #[default]
+    Lf,
+    /// Restore CRLF only when the input contains CRLF and no bare LF or CR.
+    #[value(name = "crlf-preserve")]
+    CrlfPreserve,
 }
 
 /// Text wrapping mode for CLI

@@ -56,6 +56,24 @@ typstyle --check src/
 typstyle --diff src/
 ```
 
+=== Line Endings
+
+The default `lf` policy keeps the formatter's existing output behavior. Use
+`crlf-preserve` to restore an existing, consistent CRLF convention:
+
+```bash
+# Keep the default formatter output
+typstyle --line-ending=lf file.typ
+
+# Preserve consistent CRLF throughout the formatted source
+typstyle --line-ending=crlf-preserve --inplace file.typ
+```
+
+`crlf-preserve` applies only when the input contains at least one CRLF and no
+bare LF or bare CR. Mixed inputs and files without a line ending retain the
+formatter output. When active, restoration also covers multiline strings and
+raw blocks. Diff control lines retain their normal LF output.
+
 == Format Configuration
 
 === Line Width

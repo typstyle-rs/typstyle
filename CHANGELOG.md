@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Feature(CLI): Add `--line-ending=lf|crlf-preserve` to select the
+  formatted-source line-ending policy. The default leaves formatter output
+  unchanged. `crlf-preserve` restores CRLF throughout the formatted output only
+  when the input contains at least one CRLF and has no bare LF or bare CR;
+  otherwise it leaves formatter output unchanged.
+  ([#496](https://github.com/typstyle-rs/typstyle/issues/496))
+
 ## v0.15.1 - [2026-07-28]
 
 - Update `typst` to v0.15.1.

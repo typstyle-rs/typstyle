@@ -2,6 +2,8 @@
 /// their formatting via standard input/output.
 ///
 /// Adapted from: https://github.com/astral-sh/ruff/blob/main/crates/ruff_linter/src/fs.rs
+mod line_endings;
+
 use std::{
     io::Read,
     path::{Path, PathBuf},
@@ -10,6 +12,7 @@ use std::{
 
 use anyhow::{Context, Result, bail};
 use itertools::Itertools;
+use line_endings::apply_crlf_preserve;
 use log::{debug, error, info, warn};
 use typst_syntax::Source;
 use typstyle_core::{Config, Typstyle, format_ast};
@@ -17,7 +20,7 @@ use walkdir::{DirEntry, WalkDir};
 
 use crate::{
     ExitStatus,
-    cli::{CliArguments, DebugArgs, StyleArgs},
+    cli::{CliArguments, DebugArgs, LineEndingMode, StyleArgs},
     diff::SourceDiff,
     fs,
 };
@@ -171,7 +174,8 @@ fn format_one(
     let use_stdout = !args.inplace && !args.check && !args.diff;
     let unformatted = get_input(input)?;
 
-    let res = format_debug(&unformatted, typstyle, &args.debug);
+    let res = format_debug(&unformatted, typstyle, &args.debug)
+        .apply_line_ending(&unformatted, args.style.line_ending);
     match &res {
         FormatResult::Formatted(res) => {
             if args.inplace {
@@ -216,6 +220,24 @@ enum FormatResult {
     Formatted(String),
     Unchanged,
     Erroneous,
+}
+
+impl FormatResult {
+    fn apply_line_ending(self, original: &str, mode: LineEndingMode) -> Self {
+        let Self::Formatted(formatted) = self else {
+            return self;
+        };
+        let formatted = match mode {
+            LineEndingMode::Lf => formatted,
+            LineEndingMode::CrlfPreserve => apply_crlf_preserve(original, formatted),
+        };
+
+        if formatted == original {
+            Self::Unchanged
+        } else {
+            Self::Formatted(formatted)
+        }
+    }
 }
 
 fn format_debug(content: &str, typstyle: &Typstyle, args: &DebugArgs) -> FormatResult {
