@@ -154,3 +154,52 @@ fn test_wrap_text_rejects_invalid_value() {
     For more information, try '--help'.
     ");
 }
+
+#[test]
+fn test_table_functions() {
+    let space = Workspace::new();
+
+    let stdin = "#table(
+  [A],
+  [B],
+)
+
+#my-table(
+  [A],
+  [B],
+)";
+
+    typstyle_cmd_snapshot!(space.cli().pass_stdin(stdin), @r"
+    success: true
+    exit_code: 0
+    ----- stdout -----
+    #table(
+      [A],
+      [B],
+    )
+
+    #my-table(
+      [A],
+      [B],
+    )
+
+    ----- stderr -----
+    ");
+
+    typstyle_cmd_snapshot!(space.cli().args(["--table-functions=^my-table$"]).pass_stdin(stdin), @r"
+    success: true
+    exit_code: 0
+    ----- stdout -----
+    #table(
+      [A],
+      [B],
+    )
+
+    #my-table(
+      [A],
+      [B],
+    )
+
+    ----- stderr -----
+    ");
+}
