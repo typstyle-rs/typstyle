@@ -92,7 +92,7 @@ pub struct StyleArgs {
     pub no_reorder_import_items: bool,
 
     /// Regular expression used to detect table-like function calls.
-    #[arg(long, default_value = "^(table|grid)$", global = true)]
+    #[arg(long, default_value = "^$", global = true)]
     pub table_functions: String,
 
     /// Text wrapping mode: none (default), fill (wrap to line width), sentence (one per line), or fill-sentence (both).
