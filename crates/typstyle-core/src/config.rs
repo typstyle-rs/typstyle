@@ -15,6 +15,8 @@ pub struct Config {
     pub reorder_import_items: bool,
     /// Text wrapping mode for markup.
     pub wrap_mode: WrapMode,
+    /// Regular expression for names of functions that should be treated like tables.
+    pub table_functions: String,
 }
 
 /// Text wrapping mode for markup.
@@ -42,6 +44,7 @@ impl Default for Config {
             reorder_import_items: true,
             collapse_markup_spaces: false,
             wrap_mode: WrapMode::None,
+            table_functions: "".to_string(),
         }
     }
 }
@@ -58,6 +61,11 @@ impl Config {
 
     pub fn with_tab_spaces(mut self, tab_spaces: usize) -> Self {
         self.tab_spaces = tab_spaces;
+        self
+    }
+
+    pub fn with_table_functions(mut self, table_functions: impl Into<String>) -> Self {
+        self.table_functions = table_functions.into();
         self
     }
 

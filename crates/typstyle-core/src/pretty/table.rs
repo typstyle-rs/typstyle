@@ -1,3 +1,4 @@
+use regex::Regex;
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{Context, prelude::*, util::func_name};
@@ -15,7 +16,9 @@ impl<'a> PrettyPrinter<'a> {
         paren_nodes: &'a [SyntaxNode],
     ) -> Option<ArenaDoc<'a>> {
         // NOTE: args are not empty here
-        let columns = if is_table(table) && is_table_formattable(table, paren_nodes) {
+        let columns = if is_table(table, &self.config.table_functions)
+            && is_table_formattable(table, paren_nodes)
+        {
             get_table_columns(table)
         } else {
             None
@@ -79,8 +82,20 @@ impl<'a> PrettyPrinter<'a> {
     }
 }
 
-pub fn is_table(func_call: FuncCall) -> bool {
-    matches!(func_name(func_call), Some("table") | Some("grid"))
+pub fn is_table(func_call: FuncCall, table_functions: &str) -> bool {
+    let Some(name) = func_name(func_call) else {
+        return false;
+    };
+
+    if matches!(name, "table" | "grid") {
+        return true;
+    }
+
+    let Ok(re) = Regex::new(table_functions) else {
+        return false;
+    };
+
+    re.is_match(name)
 }
 
 fn is_table_formattable(func_call: FuncCall, paren_nodes: &[SyntaxNode]) -> bool {

@@ -32,6 +32,7 @@ tinymist-world = { version = "0.15.0", default-features = false, features = ["sy
 icu_segmenter = "2.2"
 itertools = "0.15"
 prettyless = "0.3"
+regex = "1.11"
 rustc-hash = "2.0"
 serde = "1.0"
 smallvec = "1"

@@ -91,6 +91,10 @@ pub struct StyleArgs {
     #[arg(long, default_value_t = false, global = true)]
     pub no_reorder_import_items: bool,
 
+    /// Regular expression used to detect table-like function calls.
+    #[arg(long, default_value = "^$", global = true)]
+    pub table_functions: String,
+
     /// Text wrapping mode: none (default), fill (wrap to line width), sentence (one per line), or fill-sentence (both).
     #[arg(
         long,

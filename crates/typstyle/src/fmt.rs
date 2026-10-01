@@ -54,6 +54,7 @@ impl StyleArgs {
             max_width: self.line_width,
             tab_spaces: self.indent_width,
             reorder_import_items: !self.no_reorder_import_items,
+            table_functions: self.table_functions.clone(),
             wrap_mode: match self.wrap_text {
                 WrapTextMode::None => WrapMode::None,
                 WrapTextMode::Fill => WrapMode::Fill,

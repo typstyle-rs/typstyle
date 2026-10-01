@@ -60,7 +60,7 @@ impl<'a> PrettyPrinter<'a> {
         func_call: FuncCall<'a>,
         paren_nodes: &'a [SyntaxNode],
     ) -> ArenaDoc<'a> {
-        if table::is_table(func_call) {
+        if table::is_table(func_call, &self.config.table_functions) {
             if let Some(table) = self.try_convert_table(ctx, func_call, paren_nodes) {
                 table
             } else {
