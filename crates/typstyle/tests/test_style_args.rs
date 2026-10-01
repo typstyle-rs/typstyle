@@ -159,14 +159,12 @@ fn test_wrap_text_rejects_invalid_value() {
 fn test_table_functions() {
     let space = Workspace::new();
 
-    let stdin = "#table(
-  [A],
-  [B],
+    let stdin = "#table(columns: 2,
+  [A], [B], [C], [D],
 )
 
-#my-table(
-  [A],
-  [B],
+#my-table(columns: 2,
+  [A], [B], [C], [D],
 )";
 
     typstyle_cmd_snapshot!(space.cli().pass_stdin(stdin), @r"
@@ -174,14 +172,12 @@ fn test_table_functions() {
     exit_code: 0
     ----- stdout -----
     #table(
-      [A],
-      [B],
+      columns: 2,
+      [A], [B],
+      [C], [D],
     )
 
-    #my-table(
-      [A],
-      [B],
-    )
+    #my-table(columns: 2, [A], [B], [C], [D])
 
     ----- stderr -----
     ");
@@ -191,15 +187,18 @@ fn test_table_functions() {
     exit_code: 0
     ----- stdout -----
     #table(
-      [A],
-      [B],
+      columns: 2,
+      [A], [B],
+      [C], [D],
     )
 
     #my-table(
-      [A],
-      [B],
+      columns: 2,
+      [A], [B],
+      [C], [D],
     )
 
     ----- stderr -----
     ");
+
 }
