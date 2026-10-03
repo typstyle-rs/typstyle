@@ -70,10 +70,9 @@ impl<'a> Formatter<'a> {
     pub fn render(&'a self) -> Result<String, Error> {
         let doc = self.build_doc()?;
         let mut buf = String::new();
-        doc.render_fmt(self.printer.config().max_width, &mut buf)
+        doc.render_fmt_with(self.printer.render_options(), &mut buf)
             .map_err(|_| Error::RenderError)?;
-        let result = utils::strip_trailing_whitespace(&buf);
-        Ok(result)
+        Ok(buf)
     }
 
     fn build_doc(&'a self) -> Result<ArenaDoc<'a>, Error> {

@@ -130,11 +130,11 @@ impl<'a> PrettyPrinter<'a> {
                 FlowItem::tight_spaced(self.arena.text(child.leaf_text().as_str()))
             }
             SyntaxKind::Space if child.leaf_text().has_linebreak() => {
-                FlowItem::tight(self.arena.hardline())
+                FlowItem::tight(self.arena.hard_line())
             }
             SyntaxKind::Parbreak => FlowItem::tight(
                 self.arena
-                    .hardline()
+                    .hard_line()
                     .repeat(child.leaf_text().count_linebreaks()),
             ),
             SyntaxKind::Markup => {
@@ -164,11 +164,11 @@ impl<'a> PrettyPrinter<'a> {
                 FlowItem::spaced(self.arena.text(child.leaf_text().as_str()))
             }
             SyntaxKind::Space if child.leaf_text().has_linebreak() => {
-                FlowItem::tight(self.arena.hardline())
+                FlowItem::tight(self.arena.hard_line())
             }
             SyntaxKind::Parbreak => FlowItem::tight(
                 self.arena
-                    .hardline()
+                    .hard_line()
                     .repeat(child.leaf_text().count_linebreaks()),
             ),
             SyntaxKind::Markup if !child.is_empty() => {
@@ -200,7 +200,11 @@ impl<'a> PrettyPrinter<'a> {
             return self.convert_space(ctx, space);
         }
 
-        let repr = collect_markup_repr(markup);
+        let mut repr = collect_markup_repr(markup);
+        if scope == MarkupScope::Document {
+            // In document scope, we should insert a trailing linebreak if not present.
+            repr.end_bound = Boundary::Break;
+        }
         let body = if scope == MarkupScope::InlineItem {
             self.convert_markup_body(ctx, &repr)
         } else {
@@ -218,7 +222,7 @@ impl<'a> PrettyPrinter<'a> {
             if scope == MarkupScope::Document || scope.can_trim() {
                 // should not add extra lines to the document
                 return if bound == Boundary::Break {
-                    self.arena.hardline()
+                    self.arena.hard_line()
                 } else {
                     self.arena.nil()
                 };
@@ -253,7 +257,7 @@ impl<'a> PrettyPrinter<'a> {
                         self.arena.spaces(n)
                     }
                 }
-                Boundary::Break | Boundary::WeakBreak => self.arena.hardline(),
+                Boundary::Break | Boundary::WeakBreak => self.arena.hard_line(),
             }
         };
 
@@ -301,7 +305,7 @@ impl<'a> PrettyPrinter<'a> {
                 };
             }
             if breaks > 0 {
-                doc += self.arena.hardline().repeat(breaks);
+                doc += self.arena.hard_line().repeat(breaks);
             }
         }
         doc

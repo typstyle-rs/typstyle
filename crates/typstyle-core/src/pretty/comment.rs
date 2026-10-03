@@ -36,7 +36,7 @@ pub fn comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
 
 /// Format line comment as regular text.
 pub fn line_comment<'a>(arena: &'a Arena<'a>, node: &'a SyntaxNode) -> ArenaDoc<'a> {
-    arena.text(node.leaf_text().as_str())
+    arena.text(node.leaf_text().as_str().trim_end())
 }
 
 /// Format block comments. They do not add a hardline to the doc.
@@ -80,7 +80,7 @@ fn align_multiline_together<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc
         if i == 0 {
             doc += line;
         } else {
-            doc += arena.hardline();
+            doc += arena.hard_line();
             if line.len() > leading {
                 doc += &line[leading..]; // Remove line prefix
             } // otherwise this line is blank
@@ -94,9 +94,9 @@ fn align_multiline_independent<'a>(arena: &'a Arena<'a>, text: &'a str) -> Arena
     let mut doc = arena.nil();
     for (i, line) in text.lines().enumerate() {
         if i > 0 {
-            doc += arena.hardline();
+            doc += arena.hard_line();
         }
-        doc += line.trim_start();
+        doc += line.trim();
     }
     doc.nest(1).align()
 }

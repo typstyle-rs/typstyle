@@ -61,7 +61,7 @@ impl<'a> PrettyPrinter<'a> {
 
                         let mut buf = String::new();
                         self.convert_math_children(ctx, cell_nodes.into_iter())
-                            .render_fmt(self.config.max_width, &mut buf)
+                            .render_fmt_with(self.render_options(), &mut buf)
                             .ok()?;
                         if ends_with_line_comment {
                             buf.push_str("\n "); // ensure an extra line is added
@@ -135,7 +135,7 @@ impl<'a> PrettyPrinter<'a> {
             Row::Comment(cmt) => {
                 // Emit a full‑line comment followed by a hard linebreak
                 // NOTE: this should not be the last row.
-                self.arena.text(cmt) + self.arena.hardline()
+                self.arena.text(cmt) + self.arena.hard_line()
             }
             Row::Cells(cells) => {
                 let mut row_doc = self.arena.nil();
@@ -186,7 +186,7 @@ impl<'a> PrettyPrinter<'a> {
                             let doc = self.arena.spaces(padding_left)
                                 + self.arena.intersperse(
                                     lines.into_iter().map(|(line, _)| line),
-                                    self.arena.hardline(),
+                                    self.arena.hard_line(),
                                 )
                                 + self.arena.spaces(trailing_padding);
                             (doc.nest(indent as isize), false)
@@ -223,7 +223,7 @@ impl<'a> PrettyPrinter<'a> {
                     });
                 }
                 if !is_last_row {
-                    row_doc += self.arena.hardline();
+                    row_doc += self.arena.hard_line();
                 }
                 row_doc
             }

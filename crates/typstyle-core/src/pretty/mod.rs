@@ -21,6 +21,7 @@ mod util;
 
 pub use context::{Context, Mode};
 use prelude::*;
+use prettyless::{IndentationPolicy, RenderOptions};
 use style::{FoldStyle, is_multiline_flavored};
 use typst_syntax::{SyntaxNode, ast::*};
 
@@ -43,6 +44,11 @@ impl<'a> PrettyPrinter<'a> {
 
     pub fn config(&self) -> &Config {
         &self.config
+    }
+
+    pub(crate) fn render_options(&self) -> RenderOptions {
+        RenderOptions::new(self.config.max_width)
+            .with_indentation_policy(IndentationPolicy::Deferred)
     }
 
     fn get_fold_style(&self, ctx: Context, node: impl AstNode<'a>) -> FoldStyle {
@@ -101,7 +107,7 @@ impl<'a> PrettyPrinter<'a> {
         self.arena
             .intersperse(
                 node.full_text().lines().map(str::to_string),
-                self.arena.hardline(),
+                self.arena.hard_line(),
             )
             .dedent_to_root()
     }
