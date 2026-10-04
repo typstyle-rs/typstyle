@@ -60,6 +60,7 @@ Format Configuration:
   -l, --line-width <LINE_WIDTH>      Maximum width of each line [default: 80] [aliases: column] [short aliases: c]
   -t, --indent-width <INDENT_WIDTH>  Number of spaces per indentation level [default: 2] [aliases: tab-width]
       --no-reorder-import-items      Disable alphabetical reordering of import items
+      --table-functions<=TABLE_FUNS> Regular expression used to detect table-like function calls
       --wrap-text[=<WRAP_TEXT>]      Text wrapping mode: none (default), fill (wrap to line width), sentence (one per line), or fill-sentence (both) [default: none] [possible values: none, fill, sentence, fill-sentence]
 
 Debug Options:

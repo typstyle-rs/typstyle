@@ -4359,6 +4359,7 @@ dependencies = [
  "insta",
  "itertools 0.15.0",
  "prettyless",
+ "regex",
  "rustc-hash",
  "serde",
  "serde_json",

@@ -22,6 +22,7 @@ typst-syntax.workspace = true
 icu_segmenter.workspace = true
 itertools.workspace = true
 prettyless.workspace = true
+regex.workspace = true
 rustc-hash.workspace = true
 serde = { workspace = true, optional = true }
 smallvec.workspace = true
