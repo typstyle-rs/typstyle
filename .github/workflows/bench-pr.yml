@@ -98,8 +98,8 @@ jobs:
           mkdir -p target/criterion
 
           # Merge base and PR benchmark results
-          cp -r base-results/* target/criterion/
-          cp -r pr-results/* target/criterion/
+          cp -r base-results/criterion/. target/criterion/
+          cp -r pr-results/criterion/. target/criterion/
 
           echo "Final benchmark structure:"
           ls -la target/criterion/

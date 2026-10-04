@@ -39,16 +39,28 @@ jobs:
           ref: ${{ inputs.git_ref }}
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      # Generate cache key from code content for smart caching
+      # Resolve the compiler before cache lookup: a cached result from another
+      # stable release must never be compared with a freshly compiled branch.
+      - uses: dtolnay/rust-toolchain@stable
+
+      # Benchmark inputs and the build environment both affect measured time.
       - name: Generate cache key from code content
         id: cache-key
         run: |
-          # Use GitHub's built-in hashFiles function for simpler and more reliable hashing
-          CONTENT_HASH="${{ hashFiles('crates/typstyle-core/**/*.rs', 'Cargo.lock') }}"
+          CONTENT_HASH="${{ hashFiles('crates/typstyle-core/**/*.rs', 'crates/typstyle-core/Cargo.toml', 'Cargo.toml', 'Cargo.lock', '.cargo/config*', 'tests/fixtures/**/*.typ', '.github/workflows/bench-job.yml') }}"
+          RUSTC_INFO="$(rustc -vV)"
+          CPU_INFO="$(lscpu --json | jq -c '[.lscpu[] | select(.field == "Architecture:" or .field == "CPU(s):" or .field == "Vendor ID:" or .field == "Model name:" or .field == "Model:" or .field == "Stepping:" or .field == "Flags:")]')"
+          ENVIRONMENT_HASH="$(printf '%s\n' "$RUSTC_INFO" "$CPU_INFO" "$(uname -sr)" "${RUSTFLAGS-}" "${CARGO_ENCODED_RUSTFLAGS-}" | sha256sum | cut -d ' ' -f 1)"
           echo "content-hash=${CONTENT_HASH:0:16}" >> $GITHUB_OUTPUT
+          echo "environment-hash=$ENVIRONMENT_HASH" >> $GITHUB_OUTPUT
           echo "Generated content hash: ${CONTENT_HASH:0:16}"
+          echo "Benchmark environment: $ENVIRONMENT_HASH"
+          mkdir -p target
+          jq -n --arg fingerprint "$ENVIRONMENT_HASH" --arg rustc "$RUSTC_INFO" --arg cpu "$CPU_INFO" \
+            '{fingerprint: $fingerprint, rustc: $rustc, cpu: ($cpu | fromjson)}' \
+            > target/benchmark-environment.json
 
-      # Cache criterion benchmark data using content-based keys
+      # No restore keys: source, fixtures, compiler, and runner must match.
       - name: Cache criterion benchmark data
         uses: actions/cache@v4
         id: bench-cache
@@ -56,8 +68,7 @@ jobs:
           path: |
             target/criterion
             target/bloat
-          key: criterion-${{ inputs.branch_type }}-${{ steps.cache-key.outputs.content-hash }}
-          # No restore-keys - benchmarks must match exact content for accuracy
+          key: criterion-v2-${{ inputs.branch_type }}-${{ steps.cache-key.outputs.environment-hash }}-${{ steps.cache-key.outputs.content-hash }}
 
       - name: Check for cached benchmark
         id: check-cache
@@ -81,10 +92,6 @@ jobs:
             fi
             echo "cache-hit=false" >> $GITHUB_OUTPUT
           fi
-
-      # Only install Rust and dependencies if we need to run benchmarks
-      - uses: dtolnay/rust-toolchain@stable
-        if: steps.check-cache.outputs.cache-hit != 'true'
 
       - name: Install cargo-bloat
         if: steps.check-cache.outputs.cache-hit != 'true'
@@ -128,5 +135,6 @@ jobs:
           path: |
             target/criterion
             target/bloat
+            target/benchmark-environment.json
           retention-days: 1
           if-no-files-found: error
