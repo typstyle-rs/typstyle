@@ -200,5 +200,4 @@ fn test_table_functions() {
 
     ----- stderr -----
     ");
-
 }
