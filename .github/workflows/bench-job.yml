@@ -55,10 +55,11 @@ jobs:
           echo "environment-hash=$ENVIRONMENT_HASH" >> $GITHUB_OUTPUT
           echo "Generated content hash: ${CONTENT_HASH:0:16}"
           echo "Benchmark environment: $ENVIRONMENT_HASH"
-          mkdir -p target
+          # rust-cache removes files under target on a partial cache match.
+          # Preserve this job's provenance outside the build cache until upload.
           jq -n --arg fingerprint "$ENVIRONMENT_HASH" --arg rustc "$RUSTC_INFO" --arg cpu "$CPU_INFO" \
             '{fingerprint: $fingerprint, rustc: $rustc, cpu: ($cpu | fromjson)}' \
-            > target/benchmark-environment.json
+            > "$RUNNER_TEMP/benchmark-environment.json"
 
       # No restore keys: source, fixtures, compiler, and runner must match.
       - name: Cache criterion benchmark data
@@ -126,6 +127,17 @@ jobs:
           else
             echo "Warning: Release binary not found at target/release/$BINARY_NAME"
           fi
+
+      # Run on both benchmark cache hits and fresh builds, after all restores.
+      - name: Prepare benchmark environment metadata
+        env:
+          EXPECTED_FINGERPRINT: ${{ steps.cache-key.outputs.environment-hash }}
+        run: |
+          jq -e --arg fingerprint "$EXPECTED_FINGERPRINT" \
+            '.fingerprint == $fingerprint and (.rustc | length > 0)' \
+            "$RUNNER_TEMP/benchmark-environment.json" > /dev/null
+          mkdir -p target
+          cp "$RUNNER_TEMP/benchmark-environment.json" target/benchmark-environment.json
 
       # Always upload artifacts for reliable cross-job data transfer
       - name: Upload benchmark results
