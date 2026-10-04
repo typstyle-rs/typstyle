@@ -134,17 +134,16 @@ def generate_bloat_diff [base_file: string, pr_file: string] {
         $base_crates | save -f base_crates.tmp
         $pr_crates | save -f pr_crates.tmp
 
-        let result = try {
-            # Note: `diff` exits with 1 in case of difference
-            ^diff -U5 base_crates.tmp pr_crates.tmp | lines | skip 2 | str join "\n"
-        } catch {
-            ""
-        }
+        # A difference is successful output with exit code 1, not a failure.
+        let result = (^diff -U5 base_crates.tmp pr_crates.tmp | complete)
 
         # Clean up temp files
         rm -f base_crates.tmp pr_crates.tmp
 
-        $result
+        if $result.exit_code != 0 and $result.exit_code != 1 {
+            error make {msg: $"Failed to compare crate sizes: ($result.stderr | str trim)"}
+        }
+        $result.stdout | lines | skip 2 | str join "\n"
     }
 
     # Return details - always show the diff section
