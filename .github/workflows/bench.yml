@@ -12,6 +12,8 @@ jobs:
   benchmark:
     name: Run Rust benchmark example
     runs-on: ubuntu-latest
+    env:
+      CRITERION_HOME: ${{ github.workspace }}/benchmark-results/criterion
     steps:
       - uses: actions/checkout@v4
       - name: rust toolchain
@@ -19,7 +21,12 @@ jobs:
       - name: Run rust cache
         uses: Swatinem/rust-cache@v2
       - name: Run benchmark
-        run: cargo bench --workspace -- --output-format bencher | tee output.txt
+        shell: bash
+        run: |
+          # Keep measurements independent of restored build-cache data.
+          # Historical comparisons are handled by the publishing action below.
+          rm -rf "$CRITERION_HOME"
+          cargo bench -p typstyle-core --benches -- --output-format bencher | tee output.txt
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:

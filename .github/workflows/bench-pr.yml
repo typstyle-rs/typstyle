@@ -13,12 +13,20 @@ on:
   pull_request:
     paths:
       - "crates/typstyle-core/**"
+      - "crates/typstyle/**"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "tests/fixtures/**/*.typ"
+      - ".cargo/config*"
+      - ".github/scripts/*benchmark*.nu"
       - ".github/workflows/bench-pr.yml"
       - ".github/workflows/bench-job.yml"
   workflow_dispatch:
     inputs:
+      pr_number:
+        description: "PR number to benchmark"
+        required: true
+        type: number
       force_rerun:
         description: "Force re-run benchmarks even if cache exists"
         required: false
@@ -39,37 +47,71 @@ jobs:
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: "true"
-          paths: '["crates/typstyle-core/**", "Cargo.toml", "Cargo.lock", ".github/workflows/bench-pr.yml", ".github/workflows/bench-job.yml"]'
+          paths: '["crates/typstyle-core/**", "crates/typstyle/**", "Cargo.toml", "Cargo.lock", "tests/fixtures/**/*.typ", ".cargo/config*", ".github/scripts/*benchmark*.nu", ".github/workflows/bench-pr.yml", ".github/workflows/bench-job.yml"]'
           paths_ignore: '["**/README.md"]'
           do_not_skip: '["workflow_dispatch"]'
+
+  revisions:
+    name: Resolve benchmark revisions
+    runs-on: ubuntu-latest
+    needs: pre_job
+    if: needs.pre_job.outputs.should_skip != 'true'
+    outputs:
+      base_sha: ${{ steps.revisions.outputs.base_sha }}
+      base_repository: ${{ steps.revisions.outputs.base_repository }}
+      head_sha: ${{ steps.revisions.outputs.head_sha }}
+      head_repository: ${{ steps.revisions.outputs.head_repository }}
+      pr_number: ${{ steps.revisions.outputs.pr_number }}
+    steps:
+      - name: Resolve exact PR commits
+        id: revisions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]; then
+            if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]] || [ "$PR_NUMBER" -le 0 ]; then
+              echo "A positive PR number is required" >&2
+              exit 1
+            fi
+            gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" > "$RUNNER_TEMP/benchmark-pr.json"
+          else
+            jq -e '.pull_request' "$GITHUB_EVENT_PATH" > "$RUNNER_TEMP/benchmark-pr.json"
+          fi
+          jq -er '
+            "base_sha=" + .base.sha,
+            "base_repository=" + .base.repo.full_name,
+            "head_sha=" + .head.sha,
+            "head_repository=" + .head.repo.full_name,
+            "pr_number=" + (.number | tostring)
+          ' "$RUNNER_TEMP/benchmark-pr.json" >> "$GITHUB_OUTPUT"
 
   bench-base:
     name: Benchmark base branch
     uses: ./.github/workflows/bench-job.yml
-    needs: pre_job
+    needs: [pre_job, revisions]
     if: needs.pre_job.outputs.should_skip != 'true'
     with:
       branch_type: base
-      git_ref: ${{ github.event.pull_request.base.sha }}
-      repository: ${{ github.event.pull_request.base.repo.full_name }}
-      force_rerun: ${{ github.event.inputs.force_rerun || false }}
+      git_ref: ${{ needs.revisions.outputs.base_sha }}
+      repository: ${{ needs.revisions.outputs.base_repository }}
+      force_rerun: ${{ inputs.force_rerun || false }}
 
   bench-pr:
     name: Benchmark PR branch
     uses: ./.github/workflows/bench-job.yml
-    needs: pre_job
+    needs: [pre_job, revisions]
     if: needs.pre_job.outputs.should_skip != 'true'
     with:
       branch_type: pr
-      git_ref: ${{ github.event.pull_request.head.ref }}
-      repository: ${{ github.event.pull_request.head.repo.full_name }}
-      force_rerun: ${{ github.event.inputs.force_rerun || false }}
+      git_ref: ${{ needs.revisions.outputs.head_sha }}
+      repository: ${{ needs.revisions.outputs.head_repository }}
+      force_rerun: ${{ inputs.force_rerun || false }}
 
   compare:
     name: Generate benchmark comparison
     runs-on: ubuntu-latest
-    needs: [bench-base, bench-pr]
-    if: github.event_name == 'pull_request'
+    needs: [revisions, bench-base, bench-pr]
     steps:
       - uses: actions/checkout@v4
 
@@ -112,8 +154,8 @@ jobs:
       - name: Save PR number
         run: |
           mkdir -p ./pr-info
-          echo ${{ github.event.pull_request.number }} > ./pr-info/PR_NUMBER
-          echo "Saved PR number: ${{ github.event.pull_request.number }}"
+          echo ${{ needs.revisions.outputs.pr_number }} > ./pr-info/PR_NUMBER
+          echo "Saved PR number: ${{ needs.revisions.outputs.pr_number }}"
 
       - name: Upload benchmark comparison and PR info
         uses: actions/upload-artifact@v4

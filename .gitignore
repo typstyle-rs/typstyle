@@ -1,4 +1,5 @@
 /target
+/benchmark-results
 *.log
 
 /github-pages

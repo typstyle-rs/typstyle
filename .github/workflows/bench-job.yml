@@ -32,6 +32,10 @@ jobs:
     name: Benchmark ${{ inputs.branch_type }} branch
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Keep measurements outside Cargo's target: rust-cache cleans it on restore
+    # and again in its post-job hook, before the benchmark cache is saved.
+    env:
+      CRITERION_HOME: ${{ github.workspace }}/benchmark-results/criterion
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,7 +51,7 @@ jobs:
       - name: Generate cache key from code content
         id: cache-key
         run: |
-          CONTENT_HASH="${{ hashFiles('crates/typstyle-core/**/*.rs', 'crates/typstyle-core/Cargo.toml', 'Cargo.toml', 'Cargo.lock', '.cargo/config*', 'tests/fixtures/**/*.typ', '.github/workflows/bench-job.yml') }}"
+          CONTENT_HASH="${{ hashFiles('crates/typstyle-core/**/*.rs', 'crates/typstyle-core/Cargo.toml', 'crates/typstyle/**/*.rs', 'crates/typstyle/Cargo.toml', 'Cargo.toml', 'Cargo.lock', '.cargo/config*', 'tests/fixtures/**/*.typ', '.github/workflows/bench-job.yml') }}"
           RUSTC_INFO="$(rustc -vV)"
           CPU_INFO="$(lscpu --json | jq -c '[.lscpu[] | select(.field == "Architecture:" or .field == "CPU(s):" or .field == "Vendor ID:" or .field == "Model name:" or .field == "Model:" or .field == "Stepping:" or .field == "Flags:")]')"
           ENVIRONMENT_HASH="$(printf '%s\n' "$RUSTC_INFO" "$CPU_INFO" "$(uname -sr)" "${RUSTFLAGS-}" "${CARGO_ENCODED_RUSTFLAGS-}" | sha256sum | cut -d ' ' -f 1)"
@@ -55,11 +59,34 @@ jobs:
           echo "environment-hash=$ENVIRONMENT_HASH" >> $GITHUB_OUTPUT
           echo "Generated content hash: ${CONTENT_HASH:0:16}"
           echo "Benchmark environment: $ENVIRONMENT_HASH"
-          # rust-cache removes files under target on a partial cache match.
-          # Preserve this job's provenance outside the build cache until upload.
+          mkdir -p benchmark-results
           jq -n --arg fingerprint "$ENVIRONMENT_HASH" --arg rustc "$RUSTC_INFO" --arg cpu "$CPU_INFO" \
             '{fingerprint: $fingerprint, rustc: $rustc, cpu: ($cpu | fromjson)}' \
-            > "$RUNNER_TEMP/benchmark-environment.json"
+            > benchmark-results/benchmark-environment.json
+
+          # The same validation protects cache reuse and freshly produced data.
+          # Keep it in runner storage: checked-out base revisions may predate it.
+          cat > "$RUNNER_TEMP/validate-benchmark-results.sh" <<'BASH'
+          set -euo pipefail
+          branch="$1"
+          jq -e '(."file-size" | numbers > 0) and (."text-section-size" | numbers > 0) and (.crates | type == "array")' \
+            "benchmark-results/bloat/bloat-$branch.json" > /dev/null
+          mapfile -t baselines < <(find "$CRITERION_HOME" -type d -name "$branch")
+          if [ "${#baselines[@]}" -eq 0 ]; then
+            echo "No Criterion baselines found for $branch" >&2
+            exit 1
+          fi
+          for baseline in "${baselines[@]}"; do
+            jq -e '(.iters | type == "array" and length > 0) and (.times | type == "array") and (.iters | length) == (.times | length)' \
+              "$baseline/sample.json" > /dev/null
+            jq -e '[.mean, .median, .median_abs_dev, .std_dev] | all(.[];
+              [.point_estimate, .standard_error, .confidence_interval.confidence_level,
+               .confidence_interval.lower_bound, .confidence_interval.upper_bound]
+              | all(.[]; type == "number"))' "$baseline/estimates.json" > /dev/null
+            jq -e '[.group_id, .full_id, .directory_name] | all(.[]; type == "string" and length > 0)' \
+              "$baseline/benchmark.json" > /dev/null
+          done
+          BASH
 
       # No restore keys: source, fixtures, compiler, and runner must match.
       - name: Cache criterion benchmark data
@@ -67,9 +94,9 @@ jobs:
         id: bench-cache
         with:
           path: |
-            target/criterion
-            target/bloat
-          key: criterion-v2-${{ inputs.branch_type }}-${{ steps.cache-key.outputs.environment-hash }}-${{ steps.cache-key.outputs.content-hash }}
+            benchmark-results/criterion
+            benchmark-results/bloat
+          key: criterion-v3-${{ inputs.branch_type }}-${{ steps.cache-key.outputs.environment-hash }}-${{ steps.cache-key.outputs.content-hash }}
 
       - name: Check for cached benchmark
         id: check-cache
@@ -77,7 +104,7 @@ jobs:
           # Check cache status and validate cached data
           if [ "${{ steps.bench-cache.outputs.cache-hit }}" == "true" ] && [ "${{ inputs.force_rerun }}" != "true" ]; then
             # Validate that cached data is complete and valid
-            if [ -d "target/criterion" ] && [ -n "$(ls -A target/criterion 2>/dev/null)" ] && [ -f "target/bloat/bloat-${{ inputs.branch_type }}.json" ]; then
+            if bash "$RUNNER_TEMP/validate-benchmark-results.sh" "${{ inputs.branch_type }}" > /dev/null 2>&1; then
               echo "Found valid cached benchmark and bloat results"
               echo "Using cache from key: ${{ steps.bench-cache.outputs.cache-matched-key }}"
               echo "cache-hit=true" >> $GITHUB_OUTPUT
@@ -106,8 +133,10 @@ jobs:
       - name: Run benchmark
         if: steps.check-cache.outputs.cache-hit != 'true'
         run: |
+          # Discard incomplete or explicitly bypassed benchmark cache data.
+          rm -rf "$CRITERION_HOME"
           echo "Running ${{ inputs.branch_type }} branch benchmark..."
-          cargo bench -p typstyle-core -- --save-baseline ${{ inputs.branch_type }}
+          cargo bench -p typstyle-core --benches -- --save-baseline ${{ inputs.branch_type }}
 
       - name: Build release binary and collect bloat data
         if: steps.check-cache.outputs.cache-hit != 'true'
@@ -118,35 +147,32 @@ jobs:
 
           if [ -f "target/release/$BINARY_NAME" ]; then
             # Create bloat data directory
-            mkdir -p target/bloat
+            mkdir -p benchmark-results/bloat
 
             # Generate cargo-bloat report in JSON format
-            cargo bloat --release --crates --bin $BINARY_NAME --message-format json > target/bloat/bloat-${{ inputs.branch_type }}.json 2>/dev/null || echo "{}" > target/bloat/bloat-${{ inputs.branch_type }}.json
+            cargo bloat --release --crates --bin $BINARY_NAME --message-format json > benchmark-results/bloat/bloat-${{ inputs.branch_type }}.json
 
             echo "Cargo-bloat analysis completed"
           else
-            echo "Warning: Release binary not found at target/release/$BINARY_NAME"
+            echo "Error: Release binary not found at target/release/$BINARY_NAME"
+            exit 1
           fi
 
       # Run on both benchmark cache hits and fresh builds, after all restores.
-      - name: Prepare benchmark environment metadata
+      - name: Validate benchmark results
         env:
           EXPECTED_FINGERPRINT: ${{ steps.cache-key.outputs.environment-hash }}
         run: |
           jq -e --arg fingerprint "$EXPECTED_FINGERPRINT" \
             '.fingerprint == $fingerprint and (.rustc | length > 0)' \
-            "$RUNNER_TEMP/benchmark-environment.json" > /dev/null
-          mkdir -p target
-          cp "$RUNNER_TEMP/benchmark-environment.json" target/benchmark-environment.json
+            benchmark-results/benchmark-environment.json > /dev/null
+          bash "$RUNNER_TEMP/validate-benchmark-results.sh" "${{ inputs.branch_type }}"
 
       # Always upload artifacts for reliable cross-job data transfer
       - name: Upload benchmark results
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-${{ inputs.branch_type }}
-          path: |
-            target/criterion
-            target/bloat
-            target/benchmark-environment.json
+          path: benchmark-results/
           retention-days: 1
           if-no-files-found: error
