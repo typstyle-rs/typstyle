@@ -19,14 +19,17 @@ jobs:
     if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Download benchmark comparison
+        id: download
         uses: dawidd6/action-download-artifact@v6
         with:
           name: benchmark-comparison
           run_id: ${{ github.event.workflow_run.id }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          if_no_artifact_found: ignore
 
       - name: Read benchmark results and PR info
         id: results
+        if: steps.download.outputs.found_artifact == 'true'
         run: |
           if [ -f benchmark-results.md ]; then
             echo "BENCHMARK_COMMENT<<EOF" >> $GITHUB_OUTPUT
@@ -39,6 +42,7 @@ jobs:
 
       - name: Get PR number
         id: pr
+        if: steps.download.outputs.found_artifact == 'true'
         run: |
           if [ -f pr-info/PR_NUMBER ]; then
             PR_NUMBER=$(cat pr-info/PR_NUMBER)
