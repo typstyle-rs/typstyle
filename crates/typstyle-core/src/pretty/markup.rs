@@ -11,9 +11,11 @@ use super::{
 use crate::{WrapMode, ext::StrExt, pretty::util::is_only_one_and};
 
 #[derive(Debug, PartialEq, Eq)]
-enum MarkupScope {
+pub(crate) enum MarkupScope {
     /// The top-level markup.
     Document,
+    /// A selection within markup, retaining its own boundaries.
+    Fragment,
     /// Markup enclosed by `[]`.
     ContentBlock,
     /// Strong or Emph.
@@ -32,7 +34,7 @@ impl MarkupScope {
 
 impl<'a> PrettyPrinter<'a> {
     pub fn convert_markup(&'a self, ctx: Context, markup: Markup<'a>) -> ArenaDoc<'a> {
-        self.convert_markup_impl(ctx, markup, MarkupScope::Document)
+        self.convert_markup_with_scope(ctx, markup, MarkupScope::Document)
     }
 
     pub(super) fn convert_content_block(
@@ -41,17 +43,17 @@ impl<'a> PrettyPrinter<'a> {
         content_block: ContentBlock<'a>,
     ) -> ArenaDoc<'a> {
         let content =
-            self.convert_markup_impl(ctx, content_block.body(), MarkupScope::ContentBlock);
+            self.convert_markup_with_scope(ctx, content_block.body(), MarkupScope::ContentBlock);
         content.group().brackets()
     }
 
     pub(super) fn convert_strong(&'a self, ctx: Context, strong: Strong<'a>) -> ArenaDoc<'a> {
-        let body = self.convert_markup_impl(ctx, strong.body(), MarkupScope::Strong);
+        let body = self.convert_markup_with_scope(ctx, strong.body(), MarkupScope::Strong);
         body.enclose("*", "*")
     }
 
     pub(super) fn convert_emph(&'a self, ctx: Context, emph: Emph<'a>) -> ArenaDoc<'a> {
-        let body = self.convert_markup_impl(ctx, emph.body(), MarkupScope::Strong);
+        let body = self.convert_markup_with_scope(ctx, emph.body(), MarkupScope::Strong);
         body.enclose("_", "_")
     }
 
@@ -90,7 +92,11 @@ impl<'a> PrettyPrinter<'a> {
                 FlowItem::spaced(self.arena.text(child.leaf_text().as_str()))
             } else if let Some(markup) = child.cast::<Markup>() {
                 if !child.is_empty() {
-                    FlowItem::spaced(self.convert_markup_impl(ctx, markup, MarkupScope::InlineItem))
+                    FlowItem::spaced(self.convert_markup_with_scope(
+                        ctx,
+                        markup,
+                        MarkupScope::InlineItem,
+                    ))
                 } else {
                     FlowItem::none()
                 }
@@ -140,7 +146,7 @@ impl<'a> PrettyPrinter<'a> {
             SyntaxKind::Markup => {
                 if !seen_term || !child.is_empty() {
                     // empty markup is ignored here
-                    FlowItem::spaced(self.convert_markup_impl(
+                    FlowItem::spaced(self.convert_markup_with_scope(
                         ctx,
                         child.cast().expect("markup"),
                         if !seen_term {
@@ -173,7 +179,7 @@ impl<'a> PrettyPrinter<'a> {
             ),
             SyntaxKind::Markup if !child.is_empty() => {
                 // empty markup is ignored here
-                FlowItem::spaced(self.convert_markup_impl(
+                FlowItem::spaced(self.convert_markup_with_scope(
                     ctx,
                     child.cast().expect("markup"),
                     MarkupScope::Item,
@@ -184,7 +190,7 @@ impl<'a> PrettyPrinter<'a> {
         self.indent(body)
     }
 
-    fn convert_markup_impl(
+    pub(super) fn convert_markup_with_scope(
         &'a self,
         ctx: Context,
         markup: Markup<'a>,
@@ -219,6 +225,16 @@ impl<'a> PrettyPrinter<'a> {
         // Add line or space (if any) to both sides.
         // Only turn space into, not the other way around.
         let get_delim = |bound: Boundary| {
+            if scope == MarkupScope::Fragment
+                && matches!(
+                    bound,
+                    Boundary::NilOrBreak | Boundary::WeakNilOrBreak | Boundary::WeakBreak
+                )
+            {
+                // These boundaries are inferred from surrounding markup. A partial edit must
+                // not materialize layout that lies outside the selected source range.
+                return self.arena.nil();
+            }
             if scope == MarkupScope::Document || scope.can_trim() {
                 // should not add extra lines to the document
                 return if bound == Boundary::Break {

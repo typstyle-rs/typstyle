@@ -78,6 +78,10 @@ fn apply_partial_format(input: &str, range: Range<usize>) -> String {
     apply_edit(input, format_range(input, range))
 }
 
+fn parses(text: &str) -> bool {
+    !Source::detached(text).root().diagnosis().errors
+}
+
 #[test]
 fn disabled_ancestor_preserves_descendant_selection() {
     let input = "#let x=/* @typstyle off */ {\n let a=1\n}\n#let y=3\n";
@@ -161,4 +165,48 @@ fn partial_edits_preserve_source_whitespace() {
         assert_eq!(result.source_range, range);
         assert_eq!(result.content, expected);
     }
+}
+
+#[test]
+fn markup_fragment_preserves_comment_boundaries() {
+    let input = "// hello\ntext\n";
+    let output = apply_partial_format(input, 0..1);
+    assert_eq!(output, input);
+}
+
+#[test]
+fn markup_fragment_does_not_add_document_newline() {
+    for (input, range, expected) in [
+        ("#let x=1\n#let y=2\n", 0..1, "#"),
+        (
+            "before\n```text\na  \nb\n```\nafter\n",
+            3..9,
+            "before\n```text\na  \nb\n```",
+        ),
+    ] {
+        let edit = format_range(input, range);
+        assert_eq!(edit.content, expected);
+        let output = apply_edit(input, edit);
+        assert!(parses(&output));
+    }
+}
+
+#[test]
+fn range_ir_preserves_fragment_layout() {
+    let input = "before\n```text\na\n```\nafter\n";
+    let text = format_range(input, 0..20);
+    let ir = format_range_ir(input, 0..20);
+    assert_eq!(ir.source_range, text.source_range);
+    insta::assert_snapshot!(ir.content, @r#"
+    Group([
+      "before",
+      HardLine,
+      "```",
+      "text",
+      HardLine,
+      "a",
+      HardLine,
+      "```",
+    ])
+    "#);
 }
