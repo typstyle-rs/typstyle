@@ -1,4 +1,5 @@
-use typst_syntax::{SyntaxKind, ast::*};
+use itertools::Itertools;
+use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{
     Context, Mode, PrettyPrinter,
@@ -56,12 +57,18 @@ impl<'a> PrettyPrinter<'a> {
     /// Only used for partial format.
     pub(super) fn convert_code(&'a self, ctx: Context, code: Code<'a>) -> ArenaDoc<'a> {
         let ctx = ctx.with_mode(Mode::Code);
-
-        ListStylist::new(self)
+        let children = code.to_untyped().children().as_slice();
+        let Some(start) = children.iter().position(|node| node.is::<Expr>()) else {
+            return self.convert_verbatim(code);
+        };
+        let end = children.iter().rposition(|node| node.is::<Expr>()).unwrap() + 1;
+        // Boundary trivia belongs to the surrounding statements. Preserve it verbatim
+        // so comments and separators cannot move across the replacement boundary.
+        let doc = ListStylist::new(self)
             .disallow_front_comment()
             .with_fold_style(FoldStyle::Never)
             .keep_linebreak(self.config.blank_lines_upper_bound)
-            .process_iterable(ctx, code.to_untyped().children(), |ctx, expr| {
+            .process_iterable(ctx, children[start..end].iter(), |ctx, expr| {
                 self.convert_expr(ctx, expr)
             })
             .print_doc(ListStyle {
@@ -70,7 +77,13 @@ impl<'a> PrettyPrinter<'a> {
                 tight_delim: true,
                 no_indent: true,
                 ..Default::default()
-            })
+            });
+
+        let boundary_doc = |nodes: &[SyntaxNode]| {
+            let text = nodes.iter().map(SyntaxNode::full_text).join("");
+            self.arena.multiline_text(text)
+        };
+        boundary_doc(&children[..start]) + doc + boundary_doc(&children[end..])
     }
 
     pub(super) fn convert_parenthesized_impl(

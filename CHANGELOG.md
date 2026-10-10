@@ -4,6 +4,11 @@
 
 - Fix: Preserve trailing spaces and whitespace-only lines inside multiline strings, raw blocks, and format-disabled source instead of trimming every rendered line.
 - Fix: Avoid generated indentation on blank lines and unnecessary flow spaces at line boundaries, including in partial formatting and aligned math. Line comments and block comments with leading stars still have trailing whitespace trimmed during comment formatting.
+- Fix: Range formatting now matches document formatting when the range covers the whole source. Previously the returned edit could be narrower than the requested range and its content could miss document layout such as the final newline.
+- Fix: Range formatting now honors `@typstyle off` directives attached to syntax outside the selected range, including when the document has unrelated syntax errors.
+- Fix: Range formatting no longer deletes code separators when the selection is whitespace-only, such as an empty cursor position or a line break between statements.
+- Fix: Range formatting of markup selections no longer adds document-level layout (such as a trailing newline) or layout inferred from source outside the replaced range.
+- Fix: Range formatting of code keeps comments and semicolons at the replacement boundary, so the applied edit cannot merge the formatted fragment with the following statement.
 
 ## v0.15.1 - [2026-07-28]
 
