@@ -12,7 +12,7 @@ use typst_syntax::{LinkedNode, Source, SyntaxKind, SyntaxNode, ast::*};
 
 use crate::{
     AttrStore, Error, PrettyPrinter, Typstyle,
-    pretty::Mode,
+    pretty::{MarkupScope, Mode},
     utils::{self, indent_4_to_2},
 };
 
@@ -135,7 +135,12 @@ impl Typstyle {
             };
             refined
         };
-        if node.span() != source.root().span()
+        let markup_scope = if node.span() == source.root().span() {
+            MarkupScope::Document
+        } else {
+            MarkupScope::Fragment
+        };
+        if markup_scope != MarkupScope::Document
             && source.text()[node_range.clone()].trim().is_empty()
         {
             return Ok(RangeResult::empty(selection_range.start));
@@ -146,7 +151,7 @@ impl Typstyle {
         let doc = if disabled {
             printer.convert_verbatim_text(&source.text()[node_range.clone()])
         } else {
-            printer.try_convert_with_mode(&node, mode)?
+            printer.try_convert_with_scope(&node, mode, markup_scope)?
         };
 
         // Infer indent from context.

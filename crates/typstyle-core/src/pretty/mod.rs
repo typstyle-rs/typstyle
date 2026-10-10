@@ -20,6 +20,7 @@ mod text;
 mod util;
 
 pub use context::{Context, Mode};
+pub(crate) use markup::MarkupScope;
 use prelude::*;
 use prettyless::{IndentationPolicy, RenderOptions};
 use style::{FoldStyle, is_multiline_flavored};
@@ -132,13 +133,20 @@ impl<'a> PrettyPrinter<'a> {
         node: &'a SyntaxNode,
         mode: Mode,
     ) -> Result<ArenaDoc<'a>, Error> {
+        self.try_convert_with_scope(node, mode, MarkupScope::Document)
+    }
+
+    pub(crate) fn try_convert_with_scope(
+        &'a self,
+        node: &'a SyntaxNode,
+        mode: Mode,
+        markup_scope: MarkupScope,
+    ) -> Result<ArenaDoc<'a>, Error> {
         let ctx = Context::default().with_mode(mode);
         let doc = if let Some(markup) = node.cast() {
-            self.convert_markup(ctx, markup)
+            self.convert_markup_with_scope(ctx, markup, markup_scope)
         } else if let Some(code) = node.cast() {
             self.convert_code(ctx, code)
-        } else if let Some(math) = node.cast() {
-            self.convert_math(ctx, math)
         } else if let Some(expr) = node.cast() {
             self.convert_expr(ctx, expr)
         } else if let Some(pattern) = node.cast() {
