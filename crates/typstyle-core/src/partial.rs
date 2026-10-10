@@ -106,7 +106,9 @@ impl Typstyle {
         if node.diagnosis().errors {
             return Err(Error::SyntaxError);
         }
-        let ancestors = std::iter::successors(Some(&node), |node| node.parent());
+        // Directives on siblings and ancestors also apply to a selected subtree.
+        let mut attrs = AttrStore::for_partial_formatting_context(source.root());
+        let mut ancestors = std::iter::successors(Some(&node), |node| node.parent());
         let mode = ancestors
             .clone()
             .find_map(|node| match node.kind() {
@@ -116,13 +118,23 @@ impl Typstyle {
                 _ => None,
             })
             .unwrap_or(Mode::Markup);
-        let Some((node, node_range)) = refine_node_range(node, selection_range.clone()) else {
-            return Ok(RangeResult::empty(selection_range.start)); // No edit
-        };
+        let disabled = ancestors.any(|node| attrs.is_format_disabled(node.get()));
 
-        let attrs = AttrStore::new(&node);
+        let (node, node_range) = if disabled {
+            (node.get().clone(), node.range())
+        } else {
+            let Some(refined) = refine_node_range(node, selection_range.clone()) else {
+                return Ok(RangeResult::empty(selection_range.start)); // No edit
+            };
+            refined
+        };
+        attrs.compute_for_subtree(&node);
         let printer = PrettyPrinter::new(self.config.clone(), attrs);
-        let doc = printer.try_convert_with_mode(&node, mode)?;
+        let doc = if disabled {
+            printer.convert_verbatim_text(&source.text()[node_range.clone()])
+        } else {
+            printer.try_convert_with_mode(&node, mode)?
+        };
 
         // Infer indent from context.
         let indent = utils::count_spaces_after_last_newline(source.text(), node_range.start);

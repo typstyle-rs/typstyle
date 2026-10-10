@@ -33,13 +33,28 @@ impl AttrStore {
     /// Creates a new `AttrStore` by computing formatting-related attributes
     /// for all descendants of the given syntax node.
     pub fn new(node: &SyntaxNode) -> AttrStore {
+        let mut store = Self::default();
+        store.compute_for_subtree(node);
+        store
+    }
+
+    pub(crate) fn compute_for_subtree(&mut self, node: &SyntaxNode) {
         if node.diagnosis().errors {
-            return Default::default(); // No attributes for erroneous nodes
+            return; // No attributes for erroneous nodes
         }
-        let mut store = AttrStore::default();
+        self.compute_no_format(node);
+        self.compute_multiline(node);
+        self.compute_math_align_point(node);
+    }
+
+    /// Computes attributes that may apply to a selected subtree from its surrounding source.
+    ///
+    /// Unlike [`Self::new`], this tolerates syntax errors because an unrelated error must not
+    /// discard an otherwise valid formatting directive. Keep this limited to attributes whose
+    /// recovery is meaningful without a fully valid syntax tree.
+    pub(crate) fn for_partial_formatting_context(node: &SyntaxNode) -> Self {
+        let mut store = Self::default();
         store.compute_no_format(node);
-        store.compute_multiline(node);
-        store.compute_math_align_point(node);
         store
     }
 

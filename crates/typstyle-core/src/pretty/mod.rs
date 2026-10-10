@@ -108,6 +108,11 @@ impl<'a> PrettyPrinter<'a> {
         self.arena.multiline_text(text.to_string())
     }
 
+    /// Produce a document that reproduces the given text as is, including all line breaks.
+    pub(crate) fn convert_verbatim_text(&'a self, text: &'a str) -> ArenaDoc<'a> {
+        self.arena.multiline_text(text)
+    }
+
     /// Converts a leaf node by emitting its text as is.
     ///
     /// For leaf nodes only. See [`Self::convert_trivia_untyped`].
