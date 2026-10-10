@@ -210,3 +210,79 @@ fn range_ir_preserves_fragment_layout() {
     ])
     "#);
 }
+
+#[test]
+fn partial_edit_preserves_semicolon_separator() {
+    let formatter = Typstyle::default();
+    for (input, selected) in [
+        ("#let x={let a=1; a}\n", "let a=1;"),
+        ("#let x={let a=1 /* comment */; a}\n", "/* comment */;"),
+        (
+            "#let x={let a=1; /* comment */ a}\n",
+            "let a=1; /* comment */",
+        ),
+        ("#let x={let a=1; // comment\n a}\n", "let a=1; // comment"),
+        (
+            "#let x={let a=1;\n /* comment */\n a}\n",
+            "let a=1;\n /* comment */",
+        ),
+        (
+            "#let x={let a=1; /* comment\n continued */ a}\n",
+            "let a=1; /* comment\n continued */",
+        ),
+        ("#let x={let a=1; a}\n", ";"),
+    ] {
+        let output = apply_partial_format(input, find_range(input, selected));
+        assert!(
+            parses(&output),
+            "partial edit produced invalid syntax: {output:?}"
+        );
+        assert_eq!(
+            formatter.format_text(&output).render().unwrap(),
+            formatter.format_text(input).render().unwrap(),
+            "input={input:?}, selected={selected:?}"
+        );
+    }
+}
+
+#[test]
+fn code_range_edits_preserve_valid_syntax_at_every_boundary() {
+    for input in [
+        "#let x={let a=1; let b=2; b}\n",
+        "#let x={let a=1 /* comment */; a}\n",
+        "#let x={let a=1; /* comment */ a}\n",
+        "#let x={let a=1;\n /* comment */\n a}\n",
+        "#let x={let a=1; // comment\n a}\n",
+        "#let x={let 名称=1; 名称}\n",
+    ] {
+        let boundaries: Vec<_> = input
+            .char_indices()
+            .map(|(index, _)| index)
+            .chain(std::iter::once(input.len()))
+            .collect();
+        for (index, &start) in boundaries.iter().enumerate() {
+            for &end in &boundaries[index..] {
+                let edit = format_range(input, start..end);
+                let output = apply_edit(input, edit);
+                assert!(
+                    parses(&output),
+                    "input={input:?}, range={start}..{end}, output={output:?}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn code_boundary_keeps_whitespace_around_semicolon() {
+    // Non-expression trivia adjacent to the separator is boundary trivia and
+    // is rendered verbatim so the applied edit cannot shift it.
+    let input = "#let x={let a=1 ;  a}\n";
+    let edit = format_range(input, find_range(input, "let a=1 ;"));
+    assert_eq!(edit.content, "let a = 1 ;");
+    assert!(parses(&apply_edit(input, edit)));
+
+    let edit = format_range(input, find_range(input, ";  a"));
+    assert_eq!(edit.content, ";  a");
+    assert!(parses(&apply_edit(input, edit)));
+}
