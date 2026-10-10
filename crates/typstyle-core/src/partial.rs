@@ -92,6 +92,9 @@ impl Typstyle {
         } else {
             trim_range(source.text(), utf8_range.clone())
         };
+        if !utf8_range.is_empty() && selection_range.is_empty() {
+            return Ok(RangeResult::empty(selection_range.start));
+        }
         if selection_range != utf8_range {
             node =
                 get_node_cover_range(&source, selection_range.clone()).ok_or(Error::SyntaxError)?;
@@ -106,6 +109,10 @@ impl Typstyle {
         if node.diagnosis().errors {
             return Err(Error::SyntaxError);
         }
+        if node.kind() == SyntaxKind::Space {
+            return Ok(RangeResult::empty(selection_range.start));
+        }
+
         // Directives on siblings and ancestors also apply to a selected subtree.
         let mut attrs = AttrStore::for_partial_formatting_context(source.root());
         let mut ancestors = std::iter::successors(Some(&node), |node| node.parent());
@@ -128,6 +135,12 @@ impl Typstyle {
             };
             refined
         };
+        if node.span() != source.root().span()
+            && source.text()[node_range.clone()].trim().is_empty()
+        {
+            return Ok(RangeResult::empty(selection_range.start));
+        }
+
         attrs.compute_for_subtree(&node);
         let printer = PrettyPrinter::new(self.config.clone(), attrs);
         let doc = if disabled {
@@ -292,7 +305,7 @@ mod tests {
     fn cover_markup_empty2() {
         let res = test(" a   b ", (0, 3)..(0, 3));
 
-        assert_debug_snapshot!(res.source_range, @"2..5");
+        assert_debug_snapshot!(res.source_range, @"3..3");
         assert_snapshot!(res.content, @"");
     }
 

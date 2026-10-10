@@ -126,3 +126,39 @@ fn selection_inside_raw_preserves_trailing_spaces() {
     assert_eq!(edit.content, "a  ");
     assert_eq!(apply_edit(input, edit), input);
 }
+
+#[test]
+fn whitespace_selection_does_not_delete_code_separator() {
+    let input = "#{let a=1\n\n a}\n";
+    let start = input.find('\n').unwrap();
+    for range in [start..start + 1, start + 1..start + 1] {
+        let edit = format_range(input, range.clone());
+        let ir = format_range_ir(input, range);
+        assert_eq!(ir.source_range, edit.source_range);
+        assert_eq!(ir.content, "");
+        assert_eq!(apply_edit(input, edit), input);
+    }
+}
+
+#[test]
+fn partial_edits_preserve_source_whitespace() {
+    let cases = [
+        ("\"a \nb\"", "\"a \nb\""),
+        ("```text\na  \nb\n```", "```text\na  \nb\n```"),
+        ("{\n  let a=1\n\n  a\n}", "{\n  let a = 1\n\n  a\n}"),
+        ("(1, \n 2)", "(1, \n 2)"),
+    ];
+    for (selected, expected) in cases {
+        let input = format!("#let x = /* @typstyle off */ {selected}\n#let y=2\n");
+        // Only the last case is disabled; the others test the normal renderer.
+        let input = if selected.starts_with('(') {
+            input
+        } else {
+            input.replace("/* @typstyle off */ ", "")
+        };
+        let range = find_range(&input, selected);
+        let result = format_range(&input, range.clone());
+        assert_eq!(result.source_range, range);
+        assert_eq!(result.content, expected);
+    }
+}
