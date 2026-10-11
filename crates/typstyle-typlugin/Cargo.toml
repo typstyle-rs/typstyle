@@ -19,4 +19,4 @@ typstyle-core = { workspace = true, features = ["serde"] }
 typst-syntax.workspace = true
 
 serde_json.workspace = true
-wasm-minimal-protocol = { git = "https://github.com/astrale-sharp/wasm-minimal-protocol" }
+wasm-minimal-protocol = "0.2.1"
