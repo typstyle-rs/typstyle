@@ -1,3 +1,5 @@
+//! Drives a formatter over Typst sources and compares the results against the originals.
+
 use std::{
     borrow::Cow,
     collections::HashSet,
@@ -22,6 +24,7 @@ use crate::{
     CheckingOptions, ComparisonInput, ErrorSink, FormattedWorld, SourceMap, compare_worlds,
 };
 
+/// The formatted sources produced by one formatter configuration.
 pub struct FormattedSources {
     /// The name of the formatter configuration, used for debugging.
     pub name: String,
@@ -29,6 +32,7 @@ pub struct FormattedSources {
     pub sources: SourceMap,
 }
 
+/// A test harness that loads Typst sources, formats them, and checks the results for consistency.
 pub struct FormatterHarness {
     /// The name of the test case, used for debugging.
     name: String,
@@ -41,10 +45,12 @@ pub struct FormatterHarness {
 }
 
 impl FormatterHarness {
+    /// Returns the virtual root that all sources are mapped under.
     fn vroot() -> &'static Path {
         Path::new(".")
     }
 
+    /// Creates a harness for the named test case rooted at the given physical directory.
     pub fn new(name: String, project_root: PathBuf) -> Result<Self> {
         Ok(Self {
             name,
@@ -142,10 +148,14 @@ impl FormatterHarness {
         Ok(())
     }
 
+    /// Snapshots the universe into a world that can be compiled.
     pub fn snapshot(&self) -> TypstSystemWorld {
         self.verse.snapshot()
     }
 
+    /// Formats all formattable sources in the world with the given formatter.
+    ///
+    /// Files that fail to format are reported to [`ErrorSink`] and omitted from the result.
     pub fn format<'a>(
         &'a mut self,
         world: &'a TypstSystemWorld,
@@ -174,6 +184,7 @@ impl FormatterHarness {
         Ok(formatted)
     }
 
+    /// Compiles the entry point and compares the original world against each formatted variant.
     pub fn compile_and_compare<'a>(
         &mut self,
         formatted: impl Iterator<Item = &'a FormattedSources>,
@@ -218,6 +229,7 @@ impl FormatterHarness {
     }
 }
 
+/// Returns whether any component of the path, relative to `source_dir`, is blacklisted.
 fn is_blacklisted(path: &Path, source_dir: &Path, blacklist: &HashSet<String>) -> bool {
     // Get the relative path starting at source_dir.
     if let Ok(rel_path) = path.strip_prefix(source_dir) {
@@ -236,6 +248,7 @@ fn is_blacklisted(path: &Path, source_dir: &Path, blacklist: &HashSet<String>) -
     false
 }
 
+/// Trims trailing whitespace from every line and normalizes line endings to `\n`.
 fn strip_trailing_whitespace(s: &str) -> String {
     if s.is_empty() {
         return "".to_string();

@@ -1,3 +1,10 @@
+//! The core pretty-printing machinery: converts a Typst syntax tree into a
+//! [`prettyless`] document.
+//!
+//! Conversions live in per-construct modules (`markup`, `math`, `code_*`, ...) and are
+//! driven by the generic layout engines in the `layout` module. The [`context`] module
+//! carries the per-traversal state, and [`style`] holds source-flavored style decisions.
+
 pub mod context;
 pub mod prelude;
 pub mod style;
@@ -28,6 +35,10 @@ use typst_syntax::{SyntaxNode, ast::*};
 
 use crate::{AttrStore, Config, Error};
 
+/// The core pretty printer that converts a Typst syntax tree into a pretty document.
+///
+/// It holds the style [`Config`], the [`AttrStore`] for format-disabled regions, and the
+/// document [`Arena`] that all produced documents are allocated in.
 pub struct PrettyPrinter<'a> {
     config: Config,
     attr_store: AttrStore,
@@ -35,6 +46,7 @@ pub struct PrettyPrinter<'a> {
 }
 
 impl<'a> PrettyPrinter<'a> {
+    /// Creates a new printer with the given style configuration and node attributes.
     pub fn new(config: Config, attr_store: AttrStore) -> Self {
         Self {
             config,
@@ -43,19 +55,32 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Returns the style configuration of this printer.
     pub fn config(&self) -> &Config {
         &self.config
     }
 
+    /// Builds the render options for rendering documents produced by this printer.
+    ///
+    /// Lines are wrapped at [`Config::max_width`] columns, and indentation is written
+    /// lazily (deferred) so that blank lines and trailing breaks carry no trailing spaces.
     pub(crate) fn render_options(&self) -> RenderOptions {
         RenderOptions::new(self.config.max_width)
             .with_indentation_policy(IndentationPolicy::Deferred)
     }
 
+    /// Typed counterpart of [`Self::get_fold_style_untyped`].
     fn get_fold_style(&self, ctx: Context, node: impl AstNode<'a>) -> FoldStyle {
         self.get_fold_style_untyped(ctx, node.to_untyped())
     }
 
+    /// Determines how the items of a list-like node should be laid out.
+    ///
+    /// A node with a line break before its first item ([`is_multiline_flavored`]) keeps
+    /// one item per line ([`FoldStyle::Never`]); otherwise, items are folded if they fit
+    /// on one line ([`FoldStyle::Fit`]). When line breaks are suppressed in the
+    /// [`Context`], folding is preferred: multiline nodes fall back to
+    /// [`FoldStyle::Fit`], and others are always folded ([`FoldStyle::Always`]).
     fn get_fold_style_untyped(&self, ctx: Context, node: &'a SyntaxNode) -> FoldStyle {
         let is_multiline = is_multiline_flavored(node);
         if ctx.break_suppressed {
@@ -75,16 +100,23 @@ impl<'a> PrettyPrinter<'a> {
 
 /// Utilities
 impl<'a> PrettyPrinter<'a> {
+    /// Nests the document by one indentation level ([`Config::tab_spaces`] spaces).
     pub(crate) fn indent(&'a self, doc: ArenaDoc<'a>) -> ArenaDoc<'a> {
         doc.nest(self.config.tab_spaces as isize)
     }
 
+    /// Wraps a document into an indented block delimited by line breaks.
+    ///
+    /// The leading break and the document are nested together, so the block body sits
+    /// one indentation level deeper than the surrounding text.
     pub(crate) fn block_indent(&'a self, doc: ArenaDoc<'a>) -> ArenaDoc<'a> {
         self.indent(self.arena.line_() + doc) + self.arena.line_()
     }
 }
 
 impl<'a> PrettyPrinter<'a> {
+    /// Returns a verbatim conversion of the node if formatting is disabled for it
+    /// (e.g., by a `@typstyle off` comment), or [`None`] otherwise.
     fn check_disabled(&'a self, node: &'a SyntaxNode) -> Option<ArenaDoc<'a>> {
         if self.attr_store.is_format_disabled(node) {
             Some(self.convert_verbatim_untyped(node))
@@ -109,7 +141,8 @@ impl<'a> PrettyPrinter<'a> {
         self.arena.multiline_text(text.to_string())
     }
 
-    /// Produce a document that reproduces the given text as is, including all line breaks.
+    /// Produce a document that reproduces the given text as is, including all line
+    /// breaks.
     pub(crate) fn convert_verbatim_text(&'a self, text: &'a str) -> ArenaDoc<'a> {
         self.arena.multiline_text(text)
     }
@@ -128,6 +161,10 @@ impl<'a> PrettyPrinter<'a> {
         self.arena.text(node.leaf_text().as_str())
     }
 
+    /// Converts a root syntax node into a document, starting from the given [`Mode`].
+    ///
+    /// The node is dispatched by its kind: it must be a [`Markup`], [`Code`], [`Expr`],
+    /// or [`Pattern`]. Returns [`Error::SyntaxError`] if it is none of these.
     pub fn try_convert_with_mode(
         &'a self,
         node: &'a SyntaxNode,
@@ -136,6 +173,11 @@ impl<'a> PrettyPrinter<'a> {
         self.try_convert_with_scope(node, mode, MarkupScope::Document)
     }
 
+    /// Like [`Self::try_convert_with_mode`], but with an explicit [`MarkupScope`] for
+    /// the top-level markup.
+    ///
+    /// Partial formatting uses [`MarkupScope::Fragment`] to format a selection within
+    /// markup while retaining its own whitespace boundaries.
     pub(crate) fn try_convert_with_scope(
         &'a self,
         node: &'a SyntaxNode,
@@ -157,6 +199,10 @@ impl<'a> PrettyPrinter<'a> {
         Ok(doc)
     }
 
+    /// Converts an expression, checking first whether its formatting is disabled.
+    ///
+    /// Disabled expressions (e.g., marked by `@typstyle off`) are converted verbatim;
+    /// otherwise they are dispatched by kind.
     pub fn convert_expr(&'a self, ctx: Context, expr: Expr<'a>) -> ArenaDoc<'a> {
         if let Some(res) = self.check_disabled(expr.to_untyped()) {
             return res;
@@ -164,6 +210,9 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_expr_impl(ctx, expr)
     }
 
+    /// Dispatches an expression to its kind-specific conversion.
+    ///
+    /// Unlike [`Self::convert_expr`], this does not check for format-disabled regions.
     fn convert_expr_impl(&'a self, ctx: Context, expr: Expr<'a>) -> ArenaDoc<'a> {
         match expr {
             Expr::Text(t) => self.convert_text(t),
@@ -230,6 +279,7 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Emits a fixed keyword, such as `none` or `break`, as plain text.
     fn convert_literal(&'a self, literal: &'a str) -> ArenaDoc<'a> {
         self.arena.text(literal)
     }

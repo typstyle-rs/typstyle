@@ -1,3 +1,6 @@
+//! Implements the markup body layout for the text-wrapping modes: re-flowing prose
+//! across lines and laying out one sentence per line.
+
 use icu_segmenter::{SentenceSegmenter, SentenceSegmenterBorrowed};
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
@@ -281,11 +284,13 @@ fn reflow_preserve_break_after(node: &SyntaxNode) -> bool {
         || is_block_raw(node)
 }
 
+/// Returns whether the node is an equation in block (display) style.
 fn is_block_equation(it: &SyntaxNode) -> bool {
     it.cast::<Equation>()
         .is_some_and(|equation| equation.block())
 }
 
+/// Returns whether the node is a raw block fenced with multiple backticks.
 fn is_block_raw(it: &SyntaxNode) -> bool {
     it.cast::<Raw>().is_some_and(|raw| raw.block())
 }
@@ -321,18 +326,26 @@ fn cannot_break_before_text(text: &str) -> bool {
     is_line_sensitive_markup_marker(first) || is_enum_marker(first)
 }
 
+/// Returns whether the text would start a list item, term, or heading if it began a
+/// line: `+`, `-`, `/`, or a run of `=`.
 fn is_line_sensitive_markup_marker(text: &str) -> bool {
     matches!(text, "+" | "-" | "/") || !text.is_empty() && text.chars().all(|c| c == '=')
 }
 
+/// Returns whether the source text ends a sentence: it ends with sentence punctuation
+/// that is not part of a common abbreviation.
 fn source_ends_with_sentence(text: &str) -> bool {
     sentence_ends_with_punctuation(text) && !ends_with_common_abbreviation(text)
 }
 
+/// Returns whether the text ends with sentence punctuation, ignoring trailing
+/// whitespace and closing brackets, quotes, and markup delimiters.
 fn sentence_ends_with_punctuation(text: &str) -> bool {
     trim_sentence_closers(text).ends_with(['.', '!', '?', '。', '！', '？'])
 }
 
+/// Strips trailing whitespace and closing brackets, quotes, and markup delimiters that
+/// may sit between the last word and the sentence-ending punctuation.
 fn trim_sentence_closers(text: &str) -> &str {
     text.trim_end_matches(|c: char| {
         c.is_whitespace()
@@ -360,6 +373,8 @@ fn trim_sentence_closers(text: &str) -> &str {
     })
 }
 
+/// Returns whether the last word of the text is a common abbreviation (e.g., `etc.`),
+/// so its trailing dot does not end a sentence.
 fn ends_with_common_abbreviation(text: &str) -> bool {
     trim_sentence_closers(text)
         .split_ascii_whitespace()
@@ -367,6 +382,8 @@ fn ends_with_common_abbreviation(text: &str) -> bool {
         .is_some_and(is_common_abbreviation)
 }
 
+/// Returns whether the word is a common abbreviation whose dot does not terminate a
+/// sentence.
 fn is_common_abbreviation(text: &str) -> bool {
     matches!(
         text.to_ascii_lowercase().as_str(),

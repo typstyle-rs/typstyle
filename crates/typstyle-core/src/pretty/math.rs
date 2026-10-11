@@ -1,3 +1,6 @@
+//! Formats equations and math constructs: delimited groups, attachments, primes,
+//! fractions, and roots.
+
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{
@@ -14,7 +17,14 @@ use super::{
 use crate::ext::StrExt;
 
 impl<'a> PrettyPrinter<'a> {
+    /// Converts an equation `$ ... $` as a `$`-delimited list of math lines.
+    ///
+    /// Inline equations always stay on one line and their content never aligns. When an
+    /// inline equation ends with a linebreak, the space before the closing `$` is kept
+    /// so the two are not glued together.
     pub(super) fn convert_equation(&'a self, ctx: Context, equation: Equation<'a>) -> ArenaDoc<'a> {
+        /// Returns whether the equation ends with a linebreak and a space before the
+        /// closing `$`, as in `$ x \ $`.
         fn has_trailing_linebreak(equation: Equation) -> bool {
             (equation.to_untyped().children().nth_back(1))
                 .is_some_and(|it| it.kind() == SyntaxKind::Space)
@@ -68,6 +78,10 @@ impl<'a> PrettyPrinter<'a> {
             })
     }
 
+    /// Converts a math node, checking first whether its formatting is disabled.
+    ///
+    /// Breaks are suppressed inside math; an aligned-grid layout is attempted before
+    /// falling back to converting the children in order.
     pub(super) fn convert_math(&'a self, ctx: Context, math: Math<'a>) -> ArenaDoc<'a> {
         if let Some(res) = self.check_disabled(math.to_untyped()) {
             return res;
@@ -79,6 +93,10 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_math_children(ctx, math.to_untyped().children())
     }
 
+    /// Converts a sequence of math children, switching to [`Mode::Code`] after a `#`.
+    ///
+    /// Spaces and comments are converted as usual; any other node (e.g., delimiters) is
+    /// emitted verbatim.
     pub(super) fn convert_math_children(
         &'a self,
         ctx: Context,
@@ -108,6 +126,11 @@ impl<'a> PrettyPrinter<'a> {
         doc
     }
 
+    /// Converts a math group enclosed in delimiters, such as `( ... )`.
+    ///
+    /// Spaces in the body are never made breakable; a source linebreak stays a hard
+    /// line. The inner math aligns only when the source has a linebreak after the
+    /// opening and a space before the closing delimiter.
     pub(super) fn convert_math_delimited(
         &'a self,
         ctx: Context,
@@ -164,6 +187,10 @@ impl<'a> PrettyPrinter<'a> {
         (self.indent(open_space + body) + close_space).enclose(open, close)
     }
 
+    /// Converts a math attachment, such as `x_1^2`.
+    ///
+    /// An underscore directly after a hash-prefixed expression gets a leading space, so
+    /// it is not parsed as part of the preceding identifier.
     pub(super) fn convert_math_attach(
         &'a self,
         ctx: Context,
@@ -191,6 +218,7 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts math primes as a run of apostrophes matching the count.
     pub(super) fn convert_math_primes(
         &'a self,
         _ctx: Context,
@@ -199,6 +227,7 @@ impl<'a> PrettyPrinter<'a> {
         self.arena.text("'".repeat(math_primes.count()))
     }
 
+    /// Converts a fraction, keeping spaces between the slash and its operands.
     pub(super) fn convert_math_frac(
         &'a self,
         ctx: Context,
@@ -215,6 +244,7 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a root expression, emitting its children tightly and dropping spaces.
     pub(super) fn convert_math_root(
         &'a self,
         ctx: Context,

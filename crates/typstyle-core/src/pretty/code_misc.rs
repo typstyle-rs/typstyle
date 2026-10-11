@@ -1,12 +1,17 @@
+//! Converts small code constructs: identifiers, list items, arguments, parameters, and
+//! patterns.
+
 use typst_syntax::ast::*;
 
 use super::{Context, PrettyPrinter, prelude::*};
 
 impl<'a> PrettyPrinter<'a> {
+    /// Converts an identifier as is.
     pub(super) fn convert_ident(&'a self, ident: Ident<'a>) -> ArenaDoc<'a> {
         self.convert_trivia(ident)
     }
 
+    /// Converts an array item, checking first whether its formatting is disabled.
     pub(super) fn convert_array_item(
         &'a self,
         ctx: Context,
@@ -21,6 +26,7 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Converts a dict item, checking first whether its formatting is disabled.
     pub(super) fn convert_dict_item(
         &'a self,
         ctx: Context,
@@ -36,6 +42,8 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Converts a call or content argument, checking first whether its formatting is
+    /// disabled.
     pub(super) fn convert_arg(&'a self, ctx: Context, arg: Arg<'a>) -> ArenaDoc<'a> {
         if let Some(res) = self.check_disabled(arg.to_untyped()) {
             return res;
@@ -47,6 +55,7 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Converts a parameter, checking first whether its formatting is disabled.
     pub(super) fn convert_param(&'a self, ctx: Context, param: Param<'a>) -> ArenaDoc<'a> {
         if let Some(res) = self.check_disabled(param.to_untyped()) {
             return res;
@@ -58,6 +67,7 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Converts a pattern, checking first whether its formatting is disabled.
     pub fn convert_pattern(&'a self, ctx: Context, pattern: Pattern<'a>) -> ArenaDoc<'a> {
         if let Some(res) = self.check_disabled(pattern.to_untyped()) {
             return res;
@@ -70,6 +80,7 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Converts a destructuring item, checking first whether its formatting is disabled.
     pub(super) fn convert_destructuring_item(
         &'a self,
         ctx: Context,

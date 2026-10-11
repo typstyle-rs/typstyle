@@ -1,3 +1,6 @@
+//! Integration tests for formatting a whole directory in place, covering hidden
+//! entries, verbose summaries, and conflicting flags.
+
 mod common;
 
 use common::{Workspace, typstyle_cmd_snapshot};

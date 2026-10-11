@@ -1,3 +1,5 @@
+//! Source-flavored styling decisions: how list-like nodes choose their fold style.
+
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use crate::ext::StrExt;

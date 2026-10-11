@@ -1,12 +1,18 @@
+//! Collects and reports consistency-check failures instead of failing fast.
+
 use anyhow::{Result, anyhow};
 
+/// Accumulates errors found during a consistency check, so a single run reports all of them.
 #[derive(Default)]
 pub struct ErrorSink {
+    /// What the sink's checks were about, shown as the report header.
     description: String,
+    /// The individual error messages.
     errors: Vec<String>,
 }
 
 impl ErrorSink {
+    /// Creates an empty sink labeled with the given description.
     pub fn new(description: String) -> Self {
         Self {
             description,
@@ -14,14 +20,17 @@ impl ErrorSink {
         }
     }
 
+    /// Records an error message.
     pub fn push(&mut self, err: impl Into<String>) {
         self.errors.push(err.into());
     }
 
+    /// Returns whether no errors were recorded.
     pub fn is_ok(&self) -> bool {
         self.errors.is_empty()
     }
 
+    /// Appends this sink's report to the parent sink, if any errors were recorded.
     pub fn sink_to(&self, parent: &mut Self) {
         if !self.errors.is_empty() {
             parent.push(format!("{self}"));
@@ -60,6 +69,7 @@ impl std::fmt::Display for ErrorSink {
     }
 }
 
+/// Asserts that two values are equal, pushing a diff into the sink instead of panicking.
 #[macro_export]
 macro_rules! sink_assert_eq {
     ($sink: ident, $left: expr, $right: expr $(,)?) => {
@@ -105,6 +115,7 @@ macro_rules! sink_assert_eq {
     };
 }
 
+/// Asserts that two strings are equal, pushing a diff into the sink instead of panicking.
 #[macro_export]
 macro_rules! sink_assert_str_eq {
     ($sink: ident, $left: expr, $right: expr $(,)?) => {

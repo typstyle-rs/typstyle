@@ -1,3 +1,5 @@
+//! Verifies that the consistency harness detects broken or misbehaving formatters.
+
 use std::path::{Path, PathBuf};
 
 use anyhow::{Result, bail};

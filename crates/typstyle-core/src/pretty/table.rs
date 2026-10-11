@@ -1,3 +1,6 @@
+//! Recognizes `table` and `grid` function calls and reflows their cells into rows of a
+//! fixed column count.
+
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{Context, prelude::*, util::func_name};
@@ -8,6 +11,8 @@ use crate::{
 };
 
 impl<'a> PrettyPrinter<'a> {
+    /// Converts a `table` or `grid` call into an aligned grid, or returns [`None`] if
+    /// it cannot be formatted as one.
     pub(super) fn try_convert_table(
         &'a self,
         ctx: Context,
@@ -23,7 +28,10 @@ impl<'a> PrettyPrinter<'a> {
         Some(self.convert_table(ctx, paren_nodes, columns))
     }
 
-    /// Handle parenthesized args of a table.
+    /// Converts the parenthesized arguments of a `table` or `grid` call into a grid.
+    ///
+    /// Ordinary cells are reflowed into rows of `columns` cells via [`TableCollector`];
+    /// named arguments, `header`/`footer` calls, and comments occupy their own rows.
     pub(super) fn convert_table(
         &'a self,
         ctx: Context,
@@ -79,10 +87,13 @@ impl<'a> PrettyPrinter<'a> {
     }
 }
 
+/// Returns whether the call is to `table` or `grid`.
 pub fn is_table(func_call: FuncCall) -> bool {
     matches!(func_name(func_call), Some("table") | Some("grid"))
 }
 
+/// Returns whether the call can be reflowed: it has no block comments and at least one
+/// positional argument.
 fn is_table_formattable(func_call: FuncCall, paren_nodes: &[SyntaxNode]) -> bool {
     // 1. no block comments
     if func_call
@@ -99,6 +110,12 @@ fn is_table_formattable(func_call: FuncCall, paren_nodes: &[SyntaxNode]) -> bool
         .any(|it| matches!(it.cast::<Arg>(), Some(Arg::Pos(_))))
 }
 
+/// Determines the column count of the call from its `columns` argument, evaluated with
+/// [`crate::liteval::Liteval`].
+///
+/// A missing or `auto` count defaults to 1, an integer is taken as is, and an array
+/// counts its items. Returns [`None`] when the count cannot be determined statically,
+/// e.g., for unsupported values or calls with spread arguments.
 fn get_table_columns(func_call: FuncCall) -> Option<usize> {
     use crate::liteval::{Liteval, Value};
 
@@ -124,12 +141,15 @@ fn get_table_columns(func_call: FuncCall) -> Option<usize> {
     }
 }
 
+/// Returns whether the call is to `header` or `footer`, which occupy a row of their own.
 fn is_header_footer(func_call: FuncCall) -> bool {
     const HEADER_FOOTER: &[&str] = &["header", "footer"];
 
     func_name(func_call).is_some_and(|name| HEADER_FOOTER.contains(&name))
 }
 
+/// Returns whether the argument is a `cell`, `hline`, or `vline` call, or a spread,
+/// which prevents the surrounding cells from being reflowed.
 fn is_special_cell(arg: Arg) -> bool {
     const BLACK_LIST: &[&str] = &["cell", "vline", "hline"];
 

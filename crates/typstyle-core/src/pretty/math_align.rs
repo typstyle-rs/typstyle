@@ -1,3 +1,6 @@
+//! Lays out math as a grid aligned at `&` align points, padding cells to a uniform
+//! column width.
+
 use itertools::Itertools;
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 use unicode_width::UnicodeWidthStr;
@@ -126,8 +129,11 @@ impl<'a> PrettyPrinter<'a> {
             sums
         };
 
+        /// How a cell is padded within its column.
         enum Alignment {
+            /// Pads after the content; used for cells following an align point.
             Left,
+            /// Pads before the content; used for cells preceding an align point.
             Right,
         }
 
@@ -235,22 +241,29 @@ impl<'a> PrettyPrinter<'a> {
 
 /// A fully measured grid of rows and column widths.
 struct Aligned<'a> {
+    /// The rendered rows of the grid.
     rows: Vec<Row<'a>>,
+    /// The display width of each column, including separator padding.
     col_widths: Vec<usize>,
 }
 
 /// A single row, either a list of cells or a standalone comment.
 enum Row<'a> {
+    /// A row of rendered cells.
     Cells(Vec<Cell>),
+    /// A full-line comment, emitted verbatim with a trailing linebreak.
     Comment(&'a str),
 }
 
 /// A formatted cell, storing its content and computed width.
 #[derive(Debug)]
 enum Cell {
+    /// An empty cell, rendering nothing.
     Empty,
-    SingleLine(String, usize),       // text and its width
-    MultiLine(Vec<(String, usize)>), // lines with their widths
+    /// A single-line cell, holding the text and its display width.
+    SingleLine(String, usize),
+    /// A multi-line cell, holding each line and its display width.
+    MultiLine(Vec<(String, usize)>),
 }
 
 impl Cell {
@@ -273,18 +286,25 @@ impl Cell {
     }
 }
 
+/// A grid of rows collected from the source, before rendering.
 struct RawAligned<'a> {
+    /// The rows of the grid, split at align points and linebreaks.
     rows: Vec<RawRow<'a>>,
+    /// Whether the source ends with a linebreak, requiring a trailing `\\` on the last
+    /// row.
     has_trailing_backslash: bool,
 }
 
 /// A raw row before rendering, coming from syntax nodes.
 enum RawRow<'a> {
+    /// The cells of the row, each holding its syntax nodes.
     Cells(Vec<Vec<&'a SyntaxNode>>),
+    /// A line comment occupying the whole row.
     Comment(&'a SyntaxNode),
 }
 
 impl RawRow<'_> {
+    /// Returns the number of cells in this row; a comment row has none.
     pub fn len(&self) -> usize {
         match self {
             RawRow::Cells(items) => items.len(),

@@ -1,3 +1,5 @@
+//! Conversion of operators, bindings, closures, control flow, and set/show rules.
+
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{
@@ -9,6 +11,7 @@ use super::{
 use crate::ext::{BoolExt, StrExt};
 
 impl<'a> PrettyPrinter<'a> {
+    /// Converts a named pair, `name: value`, as found in dicts, arguments, and patterns.
     pub(super) fn convert_named(&'a self, ctx: Context, named: Named<'a>) -> ArenaDoc<'a> {
         let mut seen_name = false;
         self.convert_flow_like(ctx, named.to_untyped(), |ctx, child, _| {
@@ -26,6 +29,7 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a keyed dictionary entry, `key: value`, where the key is an expression.
     pub(super) fn convert_keyed(&'a self, ctx: Context, keyed: Keyed<'a>) -> ArenaDoc<'a> {
         let mut seen_key = false;
         self.convert_flow_like(ctx, keyed.to_untyped(), |ctx, child, _| {
@@ -40,6 +44,7 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a spread, `..expr`.
     pub(super) fn convert_spread(&'a self, ctx: Context, spread: Spread<'a>) -> ArenaDoc<'a> {
         self.convert_flow_like(ctx, spread.to_untyped(), |ctx, child, _| {
             if child.kind() == SyntaxKind::Dots {
@@ -53,6 +58,9 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a unary expression.
+    ///
+    /// Only the keyword operator `not` takes a space before its operand.
     pub(super) fn convert_unary(&'a self, ctx: Context, unary: Unary<'a>) -> ArenaDoc<'a> {
         let is_op_keyword = unary.op() == UnOp::Not;
         self.convert_flow_like(ctx, unary.to_untyped(), |ctx, child, _| {
@@ -70,6 +78,10 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a binary expression.
+    ///
+    /// Chainable operators are laid out as a chain via [`Self::convert_binary_chain`];
+    /// assignments and break-suppressed contexts use a plain flow.
     pub(super) fn convert_binary(&'a self, ctx: Context, binary: Binary<'a>) -> ArenaDoc<'a> {
         // Layout every binary expression except assignment as chain.
         if !ctx.break_suppressed && is_chainable_binary(binary) {
@@ -87,10 +99,15 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a closure, such as `f(x) = body` or `x => body`.
     pub(super) fn convert_closure(&'a self, ctx: Context, closure: Closure<'a>) -> ArenaDoc<'a> {
+        /// The next part of the closure to expect.
         enum LookAhead {
+            /// The optional function name.
             Name,
+            /// The parameter list.
             Params,
+            /// The body expression.
             Body,
         }
         let is_named = closure.name().is_some();
@@ -135,6 +152,7 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a `let` binding, with or without an initial value.
     pub(super) fn convert_let_binding(
         &'a self,
         ctx: Context,
@@ -152,6 +170,7 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a destructuring assignment, `pattern = value`.
     pub(super) fn convert_destruct_assignment(
         &'a self,
         ctx: Context,
@@ -172,6 +191,7 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a `context` expression.
     pub(super) fn convert_contextual(
         &'a self,
         ctx: Context,
@@ -180,6 +200,7 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_expr_flow(ctx, contextual.to_untyped())
     }
 
+    /// Converts an `if`-`else` conditional.
     pub(super) fn convert_conditional(
         &'a self,
         ctx: Context,
@@ -188,6 +209,7 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_expr_flow(ctx, conditional.to_untyped())
     }
 
+    /// Converts a `while` loop.
     pub(super) fn convert_while_loop(
         &'a self,
         ctx: Context,
@@ -196,10 +218,15 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_expr_flow(ctx, while_loop.to_untyped())
     }
 
+    /// Converts a `for` loop.
     pub(super) fn convert_for_loop(&'a self, ctx: Context, for_loop: ForLoop<'a>) -> ArenaDoc<'a> {
+        /// The next part of the loop header to expect.
         enum LookAhead {
+            /// The iterated pattern.
             Pattern,
+            /// The iterable expression.
             Iterable,
+            /// The body expression.
             Body,
         }
         let mut look_ahead = LookAhead::Pattern;
@@ -229,6 +256,7 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a `return` statement, with or without a value.
     pub(super) fn convert_return(
         &'a self,
         ctx: Context,
@@ -237,6 +265,7 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_expr_flow(ctx, return_stmt.to_untyped())
     }
 
+    /// Converts a module include.
     pub(super) fn convert_include(
         &'a self,
         ctx: Context,
@@ -245,6 +274,7 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_expr_flow(ctx, include.to_untyped())
     }
 
+    /// Converts a `set` rule.
     pub(super) fn convert_set_rule(&'a self, ctx: Context, set_rule: SetRule<'a>) -> ArenaDoc<'a> {
         self.convert_flow_like(ctx, set_rule.to_untyped(), |ctx, child, _| {
             if let Some(expr) = child.cast() {
@@ -261,6 +291,7 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a `show` rule, `selector: transform`.
     pub(super) fn convert_show_rule(
         &'a self,
         ctx: Context,
@@ -288,6 +319,11 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_flow_like_iter(ctx, node.children(), producer)
     }
 
+    /// Converts an iterator of nodes as a flow with the given item producer.
+    ///
+    /// Keywords, comments, and `#` are handled here; everything else is delegated to
+    /// `producer`, which receives the [`FlowState`] of the preceding child. The line
+    /// break after a line comment is deferred to the next non-comment child.
     pub(super) fn convert_flow_like_iter(
         &'a self,
         ctx: Context,
@@ -348,6 +384,7 @@ impl<'a> PrettyPrinter<'a> {
     }
 }
 
+/// Flags describing the child preceding the current one in a flow.
 pub(super) struct FlowState {
     /// The previous item was a line comment.
     pub at_line_comment: bool,

@@ -1,3 +1,6 @@
+//! Converts parenthesized expressions, deciding when redundant parentheses are dropped
+//! or re-inserted around multiline bodies.
+
 use typst_syntax::ast::*;
 
 use super::{Context, Mode, prelude::*, util::has_comment_children};

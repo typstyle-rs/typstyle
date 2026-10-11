@@ -1,3 +1,8 @@
+//! Lays out chains of field accesses, method calls, or binary operators.
+//!
+//! A chain is kept on one line when possible; otherwise it breaks at its operators,
+//! with the following segments indented.
+
 use std::iter;
 
 use itertools::Itertools;
@@ -10,7 +15,9 @@ use crate::{
 
 /// Intermediate representation in chain formatting.
 enum ChainItem<'a> {
+    /// A converted operand, possibly extended by a fallback doc such as call arguments.
     Body(ArenaDoc<'a>),
+    /// A chain operator, such as `.` or a binary operator.
     Op(ArenaDoc<'a>),
     /// Either line comment or block comment.
     Comment(ArenaDoc<'a>),
@@ -20,7 +27,9 @@ enum ChainItem<'a> {
 
 /// A stylist that can format items as chains.
 pub struct ChainStylist<'a> {
+    /// The printer that provides the arena and comment conversion.
     printer: &'a PrettyPrinter<'a>,
+    /// The collected chain items in source order.
     items: Vec<ChainItem<'a>>,
     /// The number of chain operators in the chain.
     chain_op_num: usize,
@@ -28,6 +37,7 @@ pub struct ChainStylist<'a> {
     has_comment: bool,
 }
 
+/// Style options for printing chains.
 #[derive(Default)]
 pub struct ChainStyle {
     /// Do not break line if the chain consists of only one operator.
@@ -37,6 +47,7 @@ pub struct ChainStyle {
 }
 
 impl<'a> ChainStylist<'a> {
+    /// Creates a new stylist with no items.
     pub fn new(printer: &'a PrettyPrinter<'a>) -> Self {
         Self {
             printer,

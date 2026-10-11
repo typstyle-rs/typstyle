@@ -1,3 +1,5 @@
+//! Renders pixel-level differences between the pages of two documents.
+
 use tiny_skia::{Color, Pixmap, PremultipliedColorU8};
 
 /// Compute a diff image highlighting pixel differences.

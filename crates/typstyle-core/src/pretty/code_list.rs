@@ -1,3 +1,6 @@
+//! Conversion of delimited lists: code blocks, parenthesized nodes, arrays, dictionaries,
+//! and parameter lists.
+
 use itertools::Itertools;
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
@@ -10,6 +13,10 @@ use super::{
 };
 
 impl<'a> PrettyPrinter<'a> {
+    /// Converts a code block, `{ ... }`.
+    ///
+    /// A block whose body is format-disabled is converted verbatim; a block can only
+    /// fold when it holds at most one expression and no comments.
     pub(super) fn convert_code_block(
         &'a self,
         ctx: Context,
@@ -54,6 +61,8 @@ impl<'a> PrettyPrinter<'a> {
             })
     }
 
+    /// Converts the [`Expr`] children as a list, preserving the boundary trivia verbatim.
+    ///
     /// Only used for partial format.
     pub(super) fn convert_code(&'a self, ctx: Context, code: Code<'a>) -> ArenaDoc<'a> {
         let ctx = ctx.with_mode(Mode::Code);
@@ -86,6 +95,10 @@ impl<'a> PrettyPrinter<'a> {
         boundary_doc(&children[..start]) + doc + boundary_doc(&children[end..])
     }
 
+    /// Converts a parenthesized node as a single-item list of patterns.
+    ///
+    /// The delimiters are omitted in flat layout when they are redundant (around a
+    /// literal, array, dict, destructuring, or block) and no comments are present.
     pub(super) fn convert_parenthesized_impl(
         &'a self,
         ctx: Context,
@@ -117,6 +130,8 @@ impl<'a> PrettyPrinter<'a> {
             })
     }
 
+    /// Converts an array, `(1, 2, 3)`.
+    ///
     /// In math mode, we have `$fun(1, 2; 3, 4)$ == $fun(#(1, 2), #(3, 4))$`.
     pub(super) fn convert_array(&'a self, ctx: Context, array: Array<'a>) -> ArenaDoc<'a> {
         let ctx = ctx.with_mode(Mode::CodeCont);
@@ -152,6 +167,9 @@ impl<'a> PrettyPrinter<'a> {
             })
     }
 
+    /// Converts a dictionary, `(key: value, ...)`.
+    ///
+    /// A dictionary containing only spread items opens with `(:`.
     pub(super) fn convert_dict(&'a self, ctx: Context, dict: Dict<'a>) -> ArenaDoc<'a> {
         let ctx = ctx.with_mode(Mode::CodeCont);
 
@@ -169,6 +187,10 @@ impl<'a> PrettyPrinter<'a> {
             })
     }
 
+    /// Converts a destructuring pattern.
+    ///
+    /// A destructuring with a single pattern item is always folded and keeps a trailing
+    /// separator, as in `(x,)`.
     pub(super) fn convert_destructuring(
         &'a self,
         ctx: Context,
@@ -193,6 +215,10 @@ impl<'a> PrettyPrinter<'a> {
             })
     }
 
+    /// Converts a parameter list.
+    ///
+    /// For unnamed closures, the delimiters are omitted when there is exactly one simple
+    /// positional parameter or placeholder.
     pub(super) fn convert_params(
         &'a self,
         ctx: Context,

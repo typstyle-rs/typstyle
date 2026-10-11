@@ -29,3 +29,6 @@ wasm-bindgen.workspace = true
 
 [build-dependencies]
 syn.workspace = true
+
+[lints]
+workspace = true

@@ -1,7 +1,12 @@
+//! Definition of the `typstyle` command-line interface, parsed with clap.
+//!
+//! [`StyleArgs`] maps the style options to the formatter's [`typstyle_core::Config`].
+
 use std::{path::PathBuf, sync::LazyLock};
 
 use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum, error::ErrorKind};
 
+/// Arguments of the `typstyle` CLI.
 #[derive(Parser)]
 #[command(
   name = "typstyle",
@@ -9,6 +14,7 @@ use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum, error::ErrorKind
   author, version, long_version(LONG_VERSION.as_str())
 )]
 pub struct CliArguments {
+    /// The subcommand to run, if any.
     #[command(subcommand)]
     pub command: Option<Command>,
 
@@ -29,17 +35,21 @@ pub struct CliArguments {
     #[arg(long, default_value_t = false, global = true, conflicts_with = "check")]
     pub diff: bool,
 
+    /// Options configuring the formatting style.
     #[command(flatten, next_help_heading = "Format Configuration")]
     pub style: StyleArgs,
 
+    /// Options for printing debug output of the formatter.
     #[command(flatten, next_help_heading = "Debug Options")]
     pub debug: DebugArgs,
 
+    /// Options controlling the logging verbosity.
     #[command(flatten, next_help_heading = "Log Levels")]
     pub log_level: LogLevelArgs,
 }
 
 impl CliArguments {
+    /// Exits with an error if in-place formatting is requested without any input files.
     pub fn validate_input(&self) {
         if self.command.is_none() && self.inplace && self.input.is_empty() {
             let mut cmd = Self::command();
@@ -52,6 +62,7 @@ impl CliArguments {
     }
 }
 
+/// Subcommands of the `typstyle` CLI.
 #[derive(Subcommand)]
 pub enum Command {
     #[cfg(feature = "completion")]
@@ -64,6 +75,7 @@ pub enum Command {
     },
 }
 
+/// Style options that map to the formatter's [`typstyle_core::Config`].
 #[derive(Args)]
 pub struct StyleArgs {
     /// Maximum width of each line.
@@ -118,6 +130,7 @@ pub enum WrapTextMode {
     FillSentence,
 }
 
+/// Debug options for printing intermediate artifacts of the formatter.
 #[derive(Args)]
 pub struct DebugArgs {
     /// Print the AST of the input file
@@ -133,6 +146,7 @@ pub struct DebugArgs {
     pub timing: bool,
 }
 
+/// Options controlling how much is logged.
 #[derive(Args)]
 pub struct LogLevelArgs {
     /// Enable verbose logging.
@@ -143,8 +157,8 @@ pub struct LogLevelArgs {
     pub quiet: bool,
 }
 
-static NONE: &str = "None";
 static LONG_VERSION: LazyLock<String> = LazyLock::new(|| {
+    const NONE: &str = "None";
     format!(
         "
 Version:             {}

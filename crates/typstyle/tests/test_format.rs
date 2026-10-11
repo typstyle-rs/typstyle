@@ -1,3 +1,6 @@
+//! Integration tests for formatting explicit files and directories, covering
+//! stdout, in-place, check, and diff modes.
+
 mod common;
 
 use common::{Workspace, typstyle_cmd_snapshot};

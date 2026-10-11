@@ -28,3 +28,6 @@ typst.workspace = true
 colored.workspace = true
 similar.workspace = true
 tiny-skia.workspace = true
+
+[lints]
+workspace = true

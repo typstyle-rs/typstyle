@@ -1,8 +1,11 @@
+//! Converts comments, aligning multiline block comments with their surroundings.
+
 use typst_syntax::{SyntaxKind, SyntaxNode};
 
 use super::{Context, PrettyPrinter, prelude::*};
 
 impl<'a> PrettyPrinter<'a> {
+    /// Converts a comment node.
     pub(super) fn convert_comment(&'a self, _ctx: Context, node: &'a SyntaxNode) -> ArenaDoc<'a> {
         comment(&self.arena, node)
     }

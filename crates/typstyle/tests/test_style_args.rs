@@ -1,3 +1,6 @@
+//! Integration tests for the style options: indent width, import-item
+//! reordering, and text wrapping modes.
+
 mod common;
 
 use common::{Workspace, typstyle_cmd_snapshot};

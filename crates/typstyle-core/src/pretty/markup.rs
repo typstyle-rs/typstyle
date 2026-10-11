@@ -1,3 +1,6 @@
+//! Converts markup constructs: content blocks, strong and emph, raw blocks, references,
+//! headings, and list, enum, and term items.
+
 mod wrapping;
 
 use Option::None;
@@ -10,6 +13,8 @@ use super::{
 };
 use crate::{WrapMode, ext::StrExt, pretty::util::is_only_one_and};
 
+/// Distinguishes how a markup body is laid out and how whitespace at its boundaries
+/// may be trimmed or turned into line breaks.
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) enum MarkupScope {
     /// The top-level markup.
@@ -27,16 +32,19 @@ pub(crate) enum MarkupScope {
 }
 
 impl MarkupScope {
+    /// Returns whether leading and trailing whitespace of the markup may be stripped.
     fn can_trim(&self) -> bool {
         matches!(self, Self::Item | Self::InlineItem)
     }
 }
 
 impl<'a> PrettyPrinter<'a> {
+    /// Converts top-level markup, forcing a trailing line break at the document end.
     pub fn convert_markup(&'a self, ctx: Context, markup: Markup<'a>) -> ArenaDoc<'a> {
         self.convert_markup_with_scope(ctx, markup, MarkupScope::Document)
     }
 
+    /// Converts a content block `[...]` into a grouped, bracketed block.
     pub(super) fn convert_content_block(
         &'a self,
         ctx: Context,
@@ -47,16 +55,22 @@ impl<'a> PrettyPrinter<'a> {
         content.group().brackets()
     }
 
+    /// Converts strong emphasis `*...*`.
     pub(super) fn convert_strong(&'a self, ctx: Context, strong: Strong<'a>) -> ArenaDoc<'a> {
         let body = self.convert_markup_with_scope(ctx, strong.body(), MarkupScope::Strong);
         body.enclose("*", "*")
     }
 
+    /// Converts emphasis `_..._`.
     pub(super) fn convert_emph(&'a self, ctx: Context, emph: Emph<'a>) -> ArenaDoc<'a> {
         let body = self.convert_markup_with_scope(ctx, emph.body(), MarkupScope::Strong);
         body.enclose("_", "_")
     }
 
+    /// Converts a raw block or inline raw span.
+    ///
+    /// Multiline spans delimited by a single backtick cannot be reformatted, so they are
+    /// reproduced verbatim.
     pub(super) fn convert_raw(&'a self, ctx: Context, raw: Raw<'a>) -> ArenaDoc<'a> {
         // no format multiline single backtick raw block
         if !raw.block() && raw.lines().nth(1).is_some() {
@@ -78,6 +92,7 @@ impl<'a> PrettyPrinter<'a> {
         doc
     }
 
+    /// Converts a reference `@target` with its optional supplement in brackets.
     pub(super) fn convert_ref(&'a self, ctx: Context, reference: Ref<'a>) -> ArenaDoc<'a> {
         let mut doc = self.arena.text("@") + self.arena.text(reference.target());
         if let Some(supplement) = reference.supplement() {
@@ -86,6 +101,8 @@ impl<'a> PrettyPrinter<'a> {
         doc
     }
 
+    /// Converts a heading, emitting its marker followed by the title as an inline item
+    /// ([`MarkupScope::InlineItem`]).
     pub(super) fn convert_heading(&'a self, ctx: Context, heading: Heading<'a>) -> ArenaDoc<'a> {
         self.convert_flow_like(ctx, heading.to_untyped(), |ctx, child, _| {
             if child.kind() == SyntaxKind::HeadingMarker {
@@ -106,6 +123,7 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a list item `- ...`.
     pub(super) fn convert_list_item(
         &'a self,
         ctx: Context,
@@ -114,6 +132,7 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_list_item_like(ctx, list_item.to_untyped())
     }
 
+    /// Converts an enum item `1. ...`.
     pub(super) fn convert_enum_item(
         &'a self,
         ctx: Context,
@@ -122,6 +141,10 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_list_item_like(ctx, enum_item.to_untyped())
     }
 
+    /// Converts a term item `/ term: description`.
+    ///
+    /// The term is converted in [`MarkupScope::InlineItem`] scope and the description in
+    /// [`MarkupScope::Item`] scope, preserving line breaks inside the description.
     pub(super) fn convert_term_item(
         &'a self,
         ctx: Context,
@@ -164,6 +187,8 @@ impl<'a> PrettyPrinter<'a> {
         self.indent(body)
     }
 
+    /// Converts the body shared by list, enum, and term items: the marker followed by
+    /// the content in [`MarkupScope::Item`] scope, indented one level.
     fn convert_list_item_like(&'a self, ctx: Context, item: &'a SyntaxNode) -> ArenaDoc<'a> {
         let body = self.convert_flow_like(ctx, item, |ctx, child, _| match child.kind() {
             SyntaxKind::ListMarker | SyntaxKind::EnumMarker | SyntaxKind::TermMarker => {
@@ -190,6 +215,11 @@ impl<'a> PrettyPrinter<'a> {
         self.indent(body)
     }
 
+    /// Converts a markup node, honoring the given [`MarkupScope`].
+    ///
+    /// The markup is split into lines by [`collect_markup_repr`], the body is converted
+    /// according to [`crate::Config::wrap_mode`], and the [`Boundary`] recorded at each
+    /// end is materialized into spacing or line breaks.
     pub(super) fn convert_markup_with_scope(
         &'a self,
         ctx: Context,
@@ -293,6 +323,10 @@ impl<'a> PrettyPrinter<'a> {
         (body_with_before + close).group()
     }
 
+    /// Converts the markup lines without wrapping, preserving spaces and line breaks.
+    ///
+    /// Expressions on a line that mixes text with other markup are converted with breaks
+    /// suppressed, so their inline layout stays as written.
     fn convert_markup_body(&'a self, ctx: Context, repr: &MarkupRepr<'a>) -> ArenaDoc<'a> {
         let mut doc = self.arena.nil();
         for &MarkupLine {
@@ -328,16 +362,25 @@ impl<'a> PrettyPrinter<'a> {
     }
 }
 
+/// A single line of markup, as split by [`collect_markup_repr`].
 #[derive(Default)]
 struct MarkupLine<'a> {
+    /// The syntax nodes of this line.
     nodes: SmallVec<[&'a SyntaxNode; 4]>,
+    /// The number of line breaks that follow this line.
     breaks: usize,
+    /// Whether the line contains text alongside other markup, so breaks within it are
+    /// suppressed.
     mixed_text: bool,
 }
 
+/// The line structure of a markup body, with the whitespace boundary at each end.
 struct MarkupRepr<'a> {
+    /// The lines of the markup, split at parbreaks and line breaks.
     lines: Vec<MarkupLine<'a>>,
+    /// The whitespace before the first node of the markup.
     start_bound: Boundary,
+    /// The whitespace after the last node of the markup.
     end_bound: Boundary,
 }
 
@@ -360,6 +403,8 @@ enum Boundary {
 }
 
 impl Boundary {
+    /// Returns the boundary described by a run of source whitespace: [`Boundary::Break`]
+    /// if it contains a linebreak, [`Boundary::Space`] otherwise.
     pub fn from_space(space: &str) -> Self {
         if space.has_linebreak() {
             Self::Break
@@ -368,6 +413,8 @@ impl Boundary {
         }
     }
 
+    /// Turns a [`Boundary::Space`] into [`Boundary::NilOrBreak`], leaving other
+    /// boundaries unchanged.
     pub fn strip_space(self) -> Self {
         match self {
             Self::Space(_) => Self::NilOrBreak,
@@ -376,9 +423,9 @@ impl Boundary {
     }
 }
 
-// Break markup into lines, split by stmt, parbreak, newline, multiline raw,
-// equation if a line contains text, it will be skipped by the formatter
-// to keep the original format.
+/// Splits the markup into lines at parbreaks and line breaks, recording the whitespace
+/// boundary at each end (peeking through comments) and which lines mix text with other
+/// markup, so the formatter can keep their original layout instead of re-flowing them.
 fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
     /// A subset of "blocky" elements that we cannot safely handle currently.
     /// By default show rule, these elements seem to have weak spaces on both sides.
