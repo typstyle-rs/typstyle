@@ -10,7 +10,7 @@ impl BoolExt for bool {
     }
 }
 
-pub trait StrExt {
+pub(crate) trait StrExt {
     fn has_linebreak(&self) -> bool;
 
     fn count_linebreaks(&self) -> usize;
