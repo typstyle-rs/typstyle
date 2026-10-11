@@ -1,18 +1,25 @@
 // Borrowed from https://github.com/astral-sh/ruff/blob/main/crates/ruff_linter/src/source_kind.rs
 // Copied from crates/typstyle/src/diff.rs
 
+//! Renders source differences as colored unified diffs for consistency reports.
+
 use std::borrow::Cow;
 
 use colored::Colorize;
 use similar::{ChangeTag, TextDiff};
 
+/// A unified diff between two source texts, rendered in color on display.
 pub struct CodeDiff<'a> {
+    /// The computed line-based diff.
     diff: TextDiff<'a, 'a, str>,
+    /// The optional file names shown as `---`/`+++` header lines.
     header: Option<(&'a str, &'a str)>,
+    /// Whether to hint at missing trailing newlines.
     missing_newline_hint: bool,
 }
 
 impl<'a> CodeDiff<'a> {
+    /// Creates a diff between the original and modified texts, compared line by line.
     pub fn new(original: &'a str, modified: &'a str) -> Self {
         let diff = TextDiff::from_lines(original, modified);
         Self {
@@ -63,10 +70,13 @@ impl std::fmt::Display for CodeDiff<'_> {
 }
 
 // Borrowed from https://github.com/astral-sh/ruff/blob/main/crates/ruff_linter/src/text_helpers.rs
+/// Renders control characters visibly so diffs stay readable.
 trait ShowNonprinting {
+    /// Returns the text with control characters replaced by visible symbols.
     fn show_nonprinting(&self) -> Cow<'_, str>;
 }
 
+/// Implements [`ShowNonprinting`] for `str`, replacing the given control characters.
 macro_rules! impl_show_nonprinting {
     ($(($from:expr, $to:expr)),+) => {
         impl ShowNonprinting for str {

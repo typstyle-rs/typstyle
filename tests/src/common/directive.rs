@@ -1,3 +1,8 @@
+//! A directive system embedded at the top of fixture files.
+//!
+//! Consecutive `/// typstyle:` lines set formatting options and include other fixture
+//! files; see [`parse_directives`] for the syntax.
+
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result, bail};

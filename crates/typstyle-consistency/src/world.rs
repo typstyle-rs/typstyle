@@ -1,3 +1,5 @@
+//! Provides [`FormattedWorld`], which layers formatted sources over a base compilation world.
+
 use anyhow::Result;
 use rustc_hash::FxHashMap;
 use tinymist_world::{CompilerFeat, CompilerWorld, SourceWorld, vfs::PathResolution};
@@ -10,15 +12,19 @@ use typst::{
     utils::LazyHash,
 };
 
+/// Maps file IDs to their formatted sources.
 pub type SourceMap = FxHashMap<FileId, Source>;
 
 /// A world that contains the formatted sources.
 pub struct FormattedWorld<'a, F: CompilerFeat> {
+    /// The base world providing everything except the overridden sources.
     pub(crate) base: &'a CompilerWorld<F>,
+    /// The formatted sources that replace the base ones.
     pub(crate) formatted: SourceMap,
 }
 
 impl<'a, F: CompilerFeat> FormattedWorld<'a, F> {
+    /// Returns the base world the formatted sources are layered on.
     pub fn base(&self) -> &'a CompilerWorld<F> {
         self.base
     }

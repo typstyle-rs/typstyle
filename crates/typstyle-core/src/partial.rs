@@ -26,6 +26,7 @@ pub struct RangeResult {
 }
 
 impl RangeResult {
+    /// Creates an empty result whose range is the single position `pos`.
     fn empty(pos: usize) -> Self {
         Self {
             source_range: pos..pos,
@@ -34,8 +35,11 @@ impl RangeResult {
     }
 }
 
+/// Selects what a range operation produces.
 enum RangeOutput {
+    /// The formatted text.
     Text,
+    /// The pretty IR.
     Ir,
 }
 
@@ -77,6 +81,7 @@ impl Typstyle {
         self.format_source_range_impl(source, utf8_range, RangeOutput::Ir)
     }
 
+    /// Implements both [`Self::format_source_range`] and [`Self::format_source_range_ir`].
     fn format_source_range_impl(
         &self,
         source: Source,
@@ -188,6 +193,12 @@ pub fn format_range_ast(source: &Source, utf8_range: Range<usize>) -> Result<Ran
     })
 }
 
+/// Narrows the covering node to the smallest children that span the range.
+///
+/// For [`SyntaxKind::Markup`], [`SyntaxKind::Code`], and [`SyntaxKind::Math`] nodes
+/// larger than the range, builds a synthetic node holding only the covering children;
+/// other nodes are returned unchanged with their full range. Returns [`None`] if no
+/// children cover the range.
 fn refine_node_range(node: LinkedNode, range: Range<usize>) -> Option<(SyntaxNode, Range<usize>)> {
     if node.range() == range {
         return Some((node.get().clone(), range));
@@ -221,12 +232,14 @@ fn trim_range(s: &str, mut rng: Range<usize>) -> Range<usize> {
     rng
 }
 
-/// Get a Markup/Expr/Pattern node from source with minimal span that covering the given range.
+/// Get a Markup/Code/Expr/Pattern node from source with minimal span that covering the given range.
 fn get_node_cover_range(source: &Source, range: Range<usize>) -> Option<LinkedNode<'_>> {
     let range = range.start..range.end.min(source.lines().len_bytes());
     get_node_cover_range_impl(range, LinkedNode::new(source.root()))
 }
 
+/// Finds the smallest [`Markup`], [`Code`], [`Expr`], or [`Pattern`] node containing
+/// the range, preferring children over parents; [`None`] if no such node covers it.
 fn get_node_cover_range_impl<'a>(
     range: Range<usize>,
     node: LinkedNode<'a>,

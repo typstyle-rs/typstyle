@@ -1,3 +1,5 @@
+//! Whole-file tests over the fixture files: snapshots, convergence, and consistency.
+
 use std::{env, error::Error, fs, path::Path};
 
 use insta::internals::Content;
@@ -100,6 +102,10 @@ pub fn collect_tests() -> Result<Vec<Trial>, Box<dyn Error>> {
     Ok(tests)
 }
 
+/// Formats a fixture file at the given max width and asserts the output against its snapshot.
+///
+/// Erroneous sources must match an empty snapshot. Output with leading or trailing blank
+/// lines is padded with `// DUMMY` so that whitespace is preserved in the snapshot.
 fn check_snapshot(path: &Path, width: usize) -> Result<(), Failed> {
     let (source, opt) = read_source_with_options(path)?;
     let mut cfg = opt.config;
@@ -132,6 +138,13 @@ fn check_snapshot(path: &Path, width: usize) -> Result<(), Failed> {
     Ok(())
 }
 
+/// Checks that repeatedly formatting a fixture file at the given max width converges.
+///
+/// Erroneous sources and fixtures with
+/// [`skip_consistency`](typstyle_tests::common::Options::skip_consistency) set are
+/// skipped. The fixture's
+/// [`relax_convergence`](typstyle_tests::common::Options::relax_convergence) allows its
+/// output to change for a few iterations before the check fails.
 fn check_convergence(path: &Path, width: usize) -> Result<(), Failed> {
     let (source, opt) = read_source_with_options(path)?;
     let mut cfg = opt.config;
@@ -171,6 +184,12 @@ fn check_convergence(path: &Path, width: usize) -> Result<(), Failed> {
     Ok(())
 }
 
+/// Checks that formatting a fixture file does not change what it compiles to.
+///
+/// The fixture is formatted at the given max width and compiled next to the original,
+/// and the outputs must match. Erroneous sources and fixtures with
+/// [`skip_consistency`](typstyle_tests::common::Options::skip_consistency) set are
+/// skipped. Only available with the `consistency` feature.
 #[cfg(feature = "consistency")]
 fn check_output_consistency(path: &Path, width: usize) -> Result<(), Failed> {
     use std::path::PathBuf;

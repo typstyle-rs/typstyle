@@ -1,6 +1,12 @@
+//! Collects table and grid cells into rows aligned by a fixed column count.
+//!
+//! Comments and blank lines form their own rows instead of being reflowed.
+
 use crate::pretty::prelude::*;
 
+/// Collects table or grid cells and reflows them into rows of a fixed column count.
 pub struct TableCollector<'a> {
+    /// The arena that the row documents are allocated in.
     arena: &'a Arena<'a>,
     /// When columns == 0, we will not reflow cells.
     columns: usize,
@@ -11,7 +17,9 @@ pub struct TableCollector<'a> {
     current_row_cells: Vec<ArenaDoc<'a>>,
 }
 
+/// A row of the collected table.
 enum Row<'a> {
+    /// A row of cells joined by commas.
     Cells {
         /// The combined doc of the cells in this row.
         doc: ArenaDoc<'a>,
@@ -20,11 +28,17 @@ enum Row<'a> {
     },
     /// A blocky arg that occupies the entire row.
     Block(ArenaDoc<'a>),
+    /// A comment occupying its own row.
     Comment(ArenaDoc<'a>),
+    /// A blank line preserved from the source.
     Linebreak,
 }
 
 impl<'a> TableCollector<'a> {
+    /// Creates a collector that reflows cells into rows of [`Self::columns`] cells.
+    ///
+    /// With `columns == 0`, cells are not reflowed; rows are only flushed at source
+    /// line breaks.
     pub fn new(arena: &'a Arena<'a>, columns: usize) -> Self {
         Self {
             columns,
@@ -34,6 +48,7 @@ impl<'a> TableCollector<'a> {
         }
     }
 
+    /// Pushes a cell, flushing the current row once it holds [`Self::columns`] cells.
     pub fn push_cell(&mut self, doc: ArenaDoc<'a>) {
         self.current_row_cells.push(doc);
         if self.current_row_cells.len() == self.columns {
@@ -41,17 +56,25 @@ impl<'a> TableCollector<'a> {
         }
     }
 
+    /// Pushes a row that occupies an entire line, flushing any pending cells first.
     pub fn push_row(&mut self, doc: ArenaDoc<'a>) {
         self.flush_cells();
         self.rows.push(Row::Block(doc));
     }
 
+    /// Pushes a comment as its own row, suppressing the automatic break after the
+    /// previous row.
     pub fn push_comment(&mut self, doc: ArenaDoc<'a>) {
         self.flush_cells();
         self.disable_last_auto_break();
         self.rows.push(Row::Comment(doc));
     }
 
+    /// Records `n` source line breaks between cells.
+    ///
+    /// A single break flushes the pending cells only when not reflowing
+    /// ([`Self::columns`] is 0); multiple breaks also insert a blank line and
+    /// suppress the automatic break after the previous row.
     pub fn push_newline(&mut self, n: usize) {
         if n == 1 && self.columns == 0 || n > 1 {
             self.flush_cells();
@@ -62,6 +85,7 @@ impl<'a> TableCollector<'a> {
         }
     }
 
+    /// Flushes the pending cells into a row joined by commas and optional line breaks.
     fn flush_cells(&mut self) {
         if !self.current_row_cells.is_empty() {
             self.rows.push(Row::Cells {
@@ -77,12 +101,15 @@ impl<'a> TableCollector<'a> {
         }
     }
 
+    /// Suppresses the optional line break after the last cells row.
     fn disable_last_auto_break(&mut self) {
         if let Some(Row::Cells { auto_break, .. }) = self.rows.last_mut() {
             *auto_break = false;
         }
     }
 
+    /// Builds the final document, joining rows with hard line breaks and dropping
+    /// trailing blank lines.
     pub fn collect(mut self) -> ArenaDoc<'a> {
         self.flush_cells();
         while matches!(self.rows.last(), Some(Row::Linebreak)) {

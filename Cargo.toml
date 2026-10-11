@@ -7,7 +7,6 @@ default-members = ["crates/typstyle"]
 version = "0.15.1"
 rust-version = "1.92"
 edition = "2024"
-description = "Beautiful and reliable typst code formatter"
 license = "Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/typstyle-rs/typstyle"
@@ -74,6 +73,10 @@ criterion = { version = "0.8" }
 # Build
 vergen = { version = "9.1", features = ["build", "cargo", "rustc"] }
 vergen-gitcl = { version = "9.1" }
+
+[workspace.lints.rust]
+missing_docs = "warn"
+redundant_imports = "warn"
 
 [profile.dev.package]
 insta.opt-level = 3

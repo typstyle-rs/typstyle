@@ -1,3 +1,5 @@
+//! Benchmarks pretty-printing of the test assets with the default configuration.
+
 use std::fs;
 
 use criterion::{Criterion, criterion_group, criterion_main};

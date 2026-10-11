@@ -1,9 +1,16 @@
+//! Embeds Typstyle into Typst as a WASM plugin via the wasm-minimal-protocol.
+//!
+//! All exported functions take the source text and a JSON-serialized [`Config`] as UTF-8
+//! bytes and return UTF-8 bytes, so they can be called from Typst through the plugin API.
+
 use typstyle_core::{Config, Typstyle, format_ast};
 use wasm_minimal_protocol::*;
 
 initiate_protocol!();
 
+/// A result carrying an error message across the plugin boundary.
 type StrResult<T> = Result<T, String>;
+/// The result of a fallible plugin function: UTF-8 bytes or an error message.
 type WasmResult = Result<Vec<u8>, String>;
 
 /// Parses the content and returns its AST.
@@ -65,10 +72,12 @@ pub fn format_ir(text: &[u8], config: &[u8]) -> WasmResult {
     Ok(ret.into_bytes())
 }
 
+/// Interprets the input bytes as UTF-8 text.
 fn parse_text(text: &[u8]) -> StrResult<&str> {
     std::str::from_utf8(text).map_err(|_| "Invalid UTF-8 in input text".to_string())
 }
 
+/// Deserializes the formatter configuration from JSON bytes.
 fn parse_config(config: &[u8]) -> StrResult<Config> {
     serde_json::from_slice(config).map_err(|e| format!("Failed to parse config: {e}"))
 }

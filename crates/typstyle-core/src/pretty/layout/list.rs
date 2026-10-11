@@ -1,3 +1,8 @@
+//! Lays out delimited lists of items, such as function arguments or dict entries.
+//!
+//! Items and inter-item trivia (comments, line breaks) are collected, then printed
+//! according to a [`FoldStyle`] and a [`ListStyle`].
+
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use crate::{
@@ -5,24 +10,39 @@ use crate::{
     pretty::{Context, Mode, PrettyPrinter, prelude::*, style::FoldStyle},
 };
 
+/// Lays out a delimited list of items, collecting the trivia between them.
 pub struct ListStylist<'a> {
+    /// The printer that provides the arena and comment conversion.
     printer: &'a PrettyPrinter<'a>,
 
+    /// Whether pending comments can be attached after the last item.
     can_attach: bool,
+    /// Comments that are not yet attached to any item.
     free_comments: Vec<ArenaDoc<'a>>,
+    /// Whether a `#` token was seen, so the next item is converted in code mode and
+    /// prefixed with `#`.
     peek_hash: bool,
+    /// The collected items, comments, and line breaks in source order.
     items: Vec<Item<'a>>,
+    /// The number of real items, excluding comments and line breaks.
     real_item_count: usize,
+    /// Whether any comment was collected.
     has_comment: bool,
+    /// Whether any line comment was collected, which forbids folding.
     has_line_comment: bool,
 
+    /// The fold style to print the list with.
     fold_style: FoldStyle,
+    /// Whether to disallow attaching pending comments to the front of the next item.
     disallow_front_comment: bool,
+    /// Whether comments must stay attached to items instead of being put on their
+    /// own lines.
     disallow_comment_detach: bool,
     /// Some: max_consecutive_lines; None: ignore
     keep_linebreak: Option<usize>,
 }
 
+/// An element of the list: a real item, a detached comment, or a line break.
 enum Item<'a> {
     /// Detached comments that can be put on a line.
     Comment(ArenaDoc<'a>),
@@ -37,6 +57,7 @@ enum Item<'a> {
     Linebreak(usize),
 }
 
+/// Delimiters, separators, and special cases used to print a laid-out list.
 pub struct ListStyle {
     /// The separator between items.
     pub separator: &'static str,
@@ -81,6 +102,7 @@ impl Default for ListStyle {
 }
 
 impl<'a> ListStylist<'a> {
+    /// Creates a new stylist with default settings.
     pub fn new(printer: &'a PrettyPrinter<'a>) -> Self {
         Self {
             printer,
@@ -100,16 +122,22 @@ impl<'a> ListStylist<'a> {
         }
     }
 
+    /// Preserves up to `count` blank lines between items, collapsing any excess.
     pub fn keep_linebreak(mut self, count: usize) -> Self {
         self.keep_linebreak = Some(count);
         self
     }
 
+    /// Disallows attaching pending comments to the front of the next item; they are
+    /// emitted on their own lines instead.
     pub fn disallow_front_comment(mut self) -> Self {
         self.disallow_front_comment = true;
         self
     }
 
+    /// Sets the fold style of the list.
+    ///
+    /// With [`FoldStyle::Always`], comments cannot be detached onto their own lines.
     pub fn with_fold_style(mut self, fold_style: FoldStyle) -> Self {
         self.fold_style = fold_style;
         if fold_style == FoldStyle::Always {
@@ -150,6 +178,7 @@ impl<'a> ListStylist<'a> {
         self.process_iterable_impl(ctx, list_node.children(), item_checker)
     }
 
+    /// Processes an iterable of nodes, converting those that can be cast to `T`.
     pub fn process_iterable<T: AstNode<'a>>(
         self,
         ctx: Context,
@@ -188,6 +217,7 @@ impl<'a> ListStylist<'a> {
         self
     }
 
+    /// Adds a real item, flushing any pending comments in front of it.
     fn add_item(&mut self, item_body: ArenaDoc<'a>) {
         let arena = &self.printer.arena;
 
@@ -223,6 +253,8 @@ impl<'a> ListStylist<'a> {
         self.can_attach = true;
     }
 
+    /// Processes a non-item node: collects comments, attaches them on commas,
+    /// records line breaks (honoring [`Self::keep_linebreak`]), and peeks `#` tokens.
     fn process_trivia(&mut self, ctx: Context, node: &'a SyntaxNode) {
         match node.kind() {
             SyntaxKind::LineComment | SyntaxKind::BlockComment => {

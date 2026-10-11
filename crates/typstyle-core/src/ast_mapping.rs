@@ -1,3 +1,7 @@
+//! Span mapping over the debug AST output.
+//!
+//! Maps leaf nodes of the formatted debug AST back to their source byte ranges.
+
 use std::fmt::Write;
 
 use typst_syntax::SyntaxNode;
@@ -7,9 +11,13 @@ use typst_syntax::SyntaxNode;
 #[cfg_attr(feature = "serde", derive(serde::Serialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct SpanMapping {
+    /// Start of the range in the source text.
     pub src_start: usize,
+    /// End of the range in the source text.
     pub src_end: usize,
+    /// Start of the corresponding range in the output text.
     pub out_start: usize,
+    /// End of the corresponding range in the output text.
     pub out_end: usize,
 }
 

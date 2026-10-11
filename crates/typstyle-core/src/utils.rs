@@ -1,3 +1,9 @@
+//! Small text utilities shared across the crate.
+
+/// Counts the consecutive spaces between the last newline before the byte position
+/// `i` and `i` itself, i.e., the indentation at the start of the current line.
+///
+/// Returns 0 if no newline precedes `i`.
 pub fn count_spaces_after_last_newline(s: &str, i: usize) -> usize {
     // Ensure the byte position `i` is a valid UTF-8 boundary
     debug_assert!(

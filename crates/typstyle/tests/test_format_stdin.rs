@@ -1,3 +1,6 @@
+//! Integration tests for formatting stdin when no input files are given,
+//! covering check, diff, in-place errors, and debug output.
+
 mod common;
 
 use common::{Workspace, typstyle_cmd_snapshot};

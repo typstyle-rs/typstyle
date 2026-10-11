@@ -1,3 +1,8 @@
+//! Entry point of the libtest-mimic test harness for Typstyle.
+//!
+//! Collects the unit, partial, and (with the `consistency` feature) repository
+//! end-to-end tests and runs them.
+
 #[cfg(feature = "consistency")]
 #[path = "repo-e2e.rs"]
 mod repo_e2e;

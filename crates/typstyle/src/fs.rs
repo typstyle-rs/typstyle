@@ -1,3 +1,5 @@
+//! Helpers for normalizing and displaying file paths.
+
 // Adapted from: https://github.com/astral-sh/ruff/blob/main/crates/ruff_linter/src/fs.rs
 
 use std::path::{Path, PathBuf};

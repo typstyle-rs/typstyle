@@ -1,3 +1,5 @@
+//! Tests for partial formatting of a source range.
+
 use std::ops::Range;
 
 use typst_syntax::Source;

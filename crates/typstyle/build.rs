@@ -1,3 +1,5 @@
+//! Emits the build-time metadata shown in the binary's `--version` output.
+
 use anyhow::Result;
 
 fn main() -> Result<()> {

@@ -1,3 +1,5 @@
+//! Compares original and formatted documents for consistent evaluation and compilation results.
+
 use std::path::PathBuf;
 
 use anyhow::Result;
@@ -26,7 +28,9 @@ pub struct CheckingOptions {
 
 /// Input for document comparison, consisting of a name and a world to compile.
 pub struct ComparisonInput<'a> {
+    /// The name of the input, used in error reports.
     pub name: String,
+    /// The world that resolves and compiles the sources.
     pub world: &'a dyn SourceWorld,
 }
 

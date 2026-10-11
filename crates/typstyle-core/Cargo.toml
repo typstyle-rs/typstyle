@@ -36,3 +36,6 @@ serde_json.workspace = true
 [features]
 serde = ["dep:serde"]
 mapping = []
+
+[lints]
+workspace = true

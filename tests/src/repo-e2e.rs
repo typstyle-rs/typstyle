@@ -1,3 +1,8 @@
+//! End-to-end tests that format and compile real-world Typst repositories.
+//!
+//! Each test case from the `e2e-repos.toml` fixture is cloned, formatted, and compiled
+//! to verify that formatting preserves the compiled output.
+
 use std::{collections::HashSet, fs, path::Path};
 
 use anyhow::{Context, anyhow, bail};
@@ -8,11 +13,14 @@ use typstyle_consistency::{CheckingOptions, ErrorSink, FormattedSources, Formatt
 use typstyle_core::{Config, Typstyle};
 use typstyle_tests::common::{fixtures_dir, test_dir};
 
+/// The parsed content of the `e2e-repos.toml` fixture.
 #[derive(Deserialize)]
 struct TestConfig {
+    /// The repository test cases to run.
     testcase: Vec<Testcase>,
 }
 
+/// A repository test case, as declared in the `e2e-repos.toml` fixture.
 #[derive(Debug, Clone, Deserialize)]
 struct Testcase {
     /// The name of this test case. Does not require to be unique.
@@ -45,11 +53,15 @@ struct Testcase {
     blacklist: HashSet<String>,
 }
 
+/// A formatting configuration paired with a name identifying it in the comparison output.
 struct NamedConfig {
+    /// The name of the configuration, used in error and comparison output.
     name: &'static str,
+    /// The style configuration used to format the repository.
     config: Config,
 }
 
+/// Creates one test for each non-skipped test case in the `e2e-repos.toml` fixture.
 pub(super) fn collect_tests() -> Vec<Trial> {
     let config = toml::from_str::<TestConfig>(
         &fs::read_to_string(fixtures_dir().join("e2e-repos.toml")).unwrap(),
@@ -69,6 +81,9 @@ pub(super) fn collect_tests() -> Vec<Trial> {
         .collect()
 }
 
+/// Runs a single test case: clones its repository, formats it, and compiles the results.
+///
+/// The cloned repository is removed afterwards.
 fn run_testcase(testcase: Testcase) -> anyhow::Result<()> {
     let e2e_dir = test_dir().join("e2e");
     // do mkdir -p project_root/tests/e2e
@@ -100,6 +115,10 @@ fn run_testcase(testcase: Testcase) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Clones the test case's repository into the target directory, checking out the
+/// configured revision if any.
+///
+/// An existing directory is kept as is, for quick debugging.
 fn clone_testcase_repo(testcase: &Testcase, testcase_dir: &Path) -> anyhow::Result<()> {
     if fs::exists(testcase_dir)? {
         return Ok(()); // for quick debugging
@@ -127,6 +146,11 @@ fn clone_testcase_repo(testcase: &Testcase, testcase_dir: &Path) -> anyhow::Resu
     Ok(())
 }
 
+/// Formats every file of the cloned repository with each given configuration and
+/// compiles the results for comparison.
+///
+/// The test case must declare an `entrypoint` or an `examples` directory, and the
+/// compiled output must match the original.
 fn check_testcase(
     testcase: &Testcase,
     testcase_dir: &Path,
@@ -193,6 +217,9 @@ fn check_testcase(
     }
 }
 
+/// Builds a closure that formats a source in two passes, failing if the passes disagree.
+///
+/// Sources with syntax errors are rejected.
 fn make_formatter(config: Config) -> impl Fn(Source) -> anyhow::Result<String> {
     move |source| {
         let root = source.root();

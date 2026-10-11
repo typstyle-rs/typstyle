@@ -1,3 +1,6 @@
+//! Tests that whitespace-only layout decisions (blank lines, indentation)
+//! round-trip without introducing stray spaces.
+
 use typstyle_core::{Config, Typstyle, WrapMode};
 
 #[test]
