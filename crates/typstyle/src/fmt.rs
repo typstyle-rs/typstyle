@@ -25,6 +25,7 @@ use crate::{
     fs,
 };
 
+/// The mode in which the formatter reports and writes results.
 #[derive(Debug, Clone, Copy)]
 pub(crate) enum FormatMode {
     /// Write the formatted contents back to the file.
@@ -36,6 +37,7 @@ pub(crate) enum FormatMode {
 }
 
 impl FormatMode {
+    /// Determines the mode from the CLI arguments: check wins over diff.
     pub(crate) fn from_cli(cli: &CliArguments) -> Self {
         if cli.check {
             FormatMode::Check
@@ -48,6 +50,7 @@ impl FormatMode {
 }
 
 impl StyleArgs {
+    /// Converts the style options into the formatter's [`Config`].
     pub fn to_config(&self) -> Config {
         use typstyle_core::WrapMode;
 
@@ -68,6 +71,10 @@ impl StyleArgs {
     }
 }
 
+/// Formats the input from stdin, returning the resulting exit status.
+///
+/// In check or diff mode, returns [`ExitStatus::Failure`] if the input would
+/// be reformatted.
 pub fn format_stdin(args: &CliArguments) -> Result<ExitStatus> {
     let typstyle = Typstyle::new(args.style.to_config());
 
@@ -77,6 +84,10 @@ pub fn format_stdin(args: &CliArguments) -> Result<ExitStatus> {
     })
 }
 
+/// Formats all Typst files under the given input paths.
+///
+/// Logs a summary of the run and returns [`ExitStatus::Failure`] in check or
+/// diff mode if any file would be reformatted.
 pub fn format(args: &CliArguments) -> Result<ExitStatus> {
     #[derive(Default)]
     struct Summary {
@@ -153,19 +164,11 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
     })
 }
 
-/// Formats a single `.typ` file or input from stdin.
+/// Formats a single `.typ` file, or stdin if no path is given.
 ///
-/// This function formats the file provided as an argument, or reads from stdin if no file is given.
-/// If in-place formatting is requested, it overwrites the file with the formatted content.
-///
-/// # Parameters
-/// - `input`: An optional path to a `.typ` file to be formatted. If `None`, input is read from stdin.
-/// - `args`: CLI arguments.
-///
-/// # Returns
-/// - `Ok(FormatStatus::Changed)` if the file was reformatted.
-/// - `Ok(FormatStatus::Unchanged)` if the file was unchanged or contained errors.
-/// - `Err` if reading from or writing to the file fails.
+/// Depending on the mode, prints the result to stdout, writes it back to the
+/// file in place, reports it in check mode, or prints a unified diff. Unchanged
+/// and erroneous inputs are echoed unchanged to stdout for piping.
 fn format_one(
     input: Option<&Path>,
     typstyle: &Typstyle,
@@ -216,9 +219,13 @@ fn format_one(
     Ok(res)
 }
 
+/// The outcome of formatting one input.
 enum FormatResult {
+    /// The formatted content, which differs from the original.
     Formatted(String),
+    /// The input is already formatted.
     Unchanged,
+    /// The input cannot be parsed and was left as is.
     Erroneous,
 }
 
@@ -240,6 +247,10 @@ impl FormatResult {
     }
 }
 
+/// Formats one source while printing the debug output selected by the options.
+///
+/// Prints the AST, the pretty IR, and the elapsed time if requested, and
+/// reports [`FormatResult::Erroneous`] if the source cannot be rendered.
 fn format_debug(content: &str, typstyle: &Typstyle, args: &DebugArgs) -> FormatResult {
     let source = Source::detached(content);
     let root = source.root();
@@ -271,6 +282,7 @@ fn format_debug(content: &str, typstyle: &Typstyle, args: &DebugArgs) -> FormatR
     }
 }
 
+/// Reads the input from the given file, or from stdin if no path is given.
 fn get_input(input: Option<&Path>) -> Result<String> {
     match input {
         Some(path) => std::fs::read_to_string(path)
@@ -285,11 +297,17 @@ fn get_input(input: Option<&Path>) -> Result<String> {
     }
 }
 
+/// Writes the formatted content back to the file.
 fn write_back(path: &Path, content: &str) -> Result<()> {
     std::fs::write(path, content)
         .with_context(|| format!("failed to write to the file {}", path.display()))
 }
 
+/// Resolves the input paths to the files to format.
+///
+/// Directories are searched recursively for `.typ` files, skipping hidden
+/// entries. Duplicates are removed, and the results are sorted if any
+/// directory was expanded.
 fn resolve_typst_files(input: &[PathBuf]) -> Vec<PathBuf> {
     fn is_hidden(entry: &DirEntry) -> bool {
         entry
@@ -322,6 +340,7 @@ fn resolve_typst_files(input: &[PathBuf]) -> Vec<PathBuf> {
     files
 }
 
+/// Prints the unified diff of the changes made to the given path.
 fn print_unified_diff(original: &str, modified: &str, path: Option<&Path>) {
     print!(
         "{}",

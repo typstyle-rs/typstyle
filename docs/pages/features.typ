@@ -18,7 +18,15 @@ Typstyle follows a consistent set of formatting rules to ensure your Typst code 
 
 - *Default line width*: 80 characters (configurable with `--line-width`)
 - *Default indentation*: 2 spaces per level (configurable with `--indent-width`)
-- *File endings*: Typstyle ensures files end with a newline character
+- *File endings*: Documents containing content end with a newline character. Partial formatting follows the selected node's layout.
+
+= Whitespace Preservation
+
+Typstyle preserves trailing spaces and whitespace-only lines inside multiline strings, raw blocks, and source protected by `@typstyle off`. These spaces can affect content and are not removed by a global cleanup pass.
+
+Blank lines created by the layout carry no indentation, and generated flow separators are omitted at line boundaries. The same behavior applies to partial formatting and aligned math.
+
+Comments have their own normalization rules: trailing whitespace is removed from line comments and from block-comment lines with leading stars.
 
 = Comments
 

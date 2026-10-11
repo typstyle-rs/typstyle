@@ -1,3 +1,9 @@
+//! Core library of Typstyle, a code formatter for the Typst language.
+//!
+//! The main entry points are [`Typstyle`], which holds the style [`Config`], and the
+//! [`Formatter`] it creates for a single source. With the `mapping` feature enabled,
+//! span mappings for debug AST output are also available.
+
 pub mod attr;
 pub mod ext;
 pub mod liteval;
@@ -15,10 +21,13 @@ use typst_syntax::{Source, SyntaxNode};
 
 use crate::utils::indent_4_to_2;
 
+/// Errors returned when formatting a source.
 #[derive(Error, Debug)]
 pub enum Error {
+    /// The source contains syntax errors and cannot be converted.
     #[error("The document has syntax errors")]
     SyntaxError,
+    /// Rendering the pretty document into text failed.
     #[error("An error occurred while rendering the document")]
     RenderError,
 }
@@ -26,6 +35,7 @@ pub enum Error {
 /// Main struct for Typst formatting.
 #[derive(Debug, Clone, Default)]
 pub struct Typstyle {
+    /// The style configuration used for formatting.
     config: Config,
 }
 
@@ -49,11 +59,14 @@ impl Typstyle {
 
 /// Handles the formatting of a specific Typst source.
 pub struct Formatter<'a> {
+    /// The source being formatted.
     source: Source,
+    /// The printer that turns the source tree into a pretty document.
     printer: PrettyPrinter<'a>,
 }
 
 impl<'a> Formatter<'a> {
+    /// Creates a formatter for the given source, precomputing its [`AttrStore`].
     fn new(config: Config, source: Source) -> Self {
         let attr_store = AttrStore::new(source.root());
         let printer = PrettyPrinter::new(config, attr_store);
@@ -67,15 +80,21 @@ impl<'a> Formatter<'a> {
     }
 
     /// Renders the formatted document to a string.
+    ///
+    /// Preserves literal whitespace in multiline strings, raw blocks, and
+    /// format-disabled source. Generated indentation and flow spacing avoid
+    /// trailing layout padding; comment whitespace follows comment formatting
+    /// rules. The document layout supplies the final newline.
     pub fn render(&'a self) -> Result<String, Error> {
         let doc = self.build_doc()?;
         let mut buf = String::new();
-        doc.render_fmt(self.printer.config().max_width, &mut buf)
+        doc.render_fmt_with(self.printer.render_options(), &mut buf)
             .map_err(|_| Error::RenderError)?;
-        let result = utils::strip_trailing_whitespace(&buf);
-        Ok(result)
+        Ok(buf)
     }
 
+    /// Converts the source into a pretty document, reporting [`Error::SyntaxError`]
+    /// if the source does not parse.
     fn build_doc(&'a self) -> Result<ArenaDoc<'a>, Error> {
         let root = self.source.root();
         if root.diagnosis().errors {

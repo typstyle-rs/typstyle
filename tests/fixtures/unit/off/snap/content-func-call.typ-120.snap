@@ -1,12 +1,11 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/off/content-func-call.typ
-snapshot_kind: text
 ---
 // DUMMY
 
 #table(
-  columns: /* @typstyle off */ (1fr,
+  columns: /* @typstyle off */ (1fr, 
 auto, auto),
   inset: 10pt, align: horizon, [],
   [*Area*],

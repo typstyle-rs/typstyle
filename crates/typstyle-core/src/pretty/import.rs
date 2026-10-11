@@ -1,3 +1,5 @@
+//! Conversion of module imports and their item lists.
+
 use std::collections::HashSet;
 
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
@@ -13,6 +15,10 @@ use super::{
 };
 
 impl<'a> PrettyPrinter<'a> {
+    /// Converts a module import, `#import "source": items`.
+    ///
+    /// The source part is converted as a flow; the items, if any, are appended after a
+    /// space.
     pub(super) fn convert_import(&'a self, ctx: Context, import: ModuleImport<'a>) -> ArenaDoc<'a> {
         // ImportItems are optional and may be wrapped in parentheses.
         let nodes = import.to_untyped().children().as_slice();
@@ -76,6 +82,7 @@ impl<'a> PrettyPrinter<'a> {
         prefix_doc + self.arena.space() + import_items_doc
     }
 
+    /// Converts the import items after the colon as a list, sorted when configured.
     fn convert_import_items(
         &'a self,
         ctx: Context,
@@ -113,6 +120,7 @@ impl<'a> PrettyPrinter<'a> {
             })
     }
 
+    /// Converts an import item path, `a.b.c`.
     fn convert_import_item_path(
         &'a self,
         ctx: Context,
@@ -129,6 +137,7 @@ impl<'a> PrettyPrinter<'a> {
         })
     }
 
+    /// Converts a renamed import item, `path as new_name`.
     fn convert_import_item_renamed(
         &'a self,
         ctx: Context,

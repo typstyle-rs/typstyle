@@ -1,31 +1,41 @@
+//! Converts plain text, spaces, and paragraph breaks.
+
 use typst_syntax::{SyntaxNode, ast::*};
 
 use super::{Context, PrettyPrinter, prelude::*};
 use crate::ext::StrExt;
 
 impl<'a> PrettyPrinter<'a> {
+    /// Converts a text token, which only consists of words joined by single spaces.
     pub(super) fn convert_text(&'a self, text: Text<'a>) -> ArenaDoc<'a> {
         // `Text` only consists of words joined by single spaces
         self.convert_literal(text.get())
     }
 
+    /// Converts a text token in a wrapping mode, breaking between words as needed.
     pub(super) fn convert_text_wrapped(&'a self, text: Text<'a>) -> ArenaDoc<'a> {
         // For sentence-per-line mode, we need to handle it at the markup level,
         // not at individual text nodes. So just use regular wrapping here.
         wrap_text(&self.arena, text.get())
     }
 
+    /// Converts a space, collapsing it according to the current [`super::Mode`].
     pub(super) fn convert_space(&'a self, ctx: Context, space: Space<'a>) -> ArenaDoc<'a> {
         self.convert_space_untyped(ctx, space.to_untyped())
     }
 
+    /// Untyped counterpart of [`Self::convert_space`].
+    ///
+    /// A source line break stays a hard line; otherwise, spaces in markup are preserved
+    /// or collapsed depending on [`crate::Config::collapse_markup_spaces`], and code
+    /// spaces always collapse.
     pub(super) fn convert_space_untyped(
         &'a self,
         ctx: Context,
         node: &'a SyntaxNode,
     ) -> ArenaDoc<'a> {
         if node.leaf_text().has_linebreak() {
-            self.arena.hardline()
+            self.arena.hard_line()
         } else if ctx.mode.is_markup() && !self.config.collapse_markup_spaces {
             self.arena.text(node.leaf_text().as_str())
         } else {
@@ -33,16 +43,17 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Converts a paragraph break, preserving the number of blank lines it spans.
     pub(super) fn convert_parbreak(&'a self, parbreak: Parbreak) -> ArenaDoc<'a> {
         let newline_count = parbreak.to_untyped().leaf_text().count_linebreaks();
-        self.arena.hardline().repeat(newline_count)
+        self.arena.hard_line().repeat(newline_count)
     }
 }
 
 /// Wraps `text` into a `ArenaDoc`, using `softline()` between words,
 /// except before tokens that can be parsed as enum markers, where we use a hard space.
 ///
-/// See: https://github.com/typst/typst/blob/8ace67d942a4b8c6b9d95b73b3a39f5d0259c7b2/crates/typst-syntax/src/lexer.rs#L479-L488
+/// See: <https://github.com/typst/typst/blob/8ace67d942a4b8c6b9d95b73b3a39f5d0259c7b2/crates/typst-syntax/src/lexer.rs#L479-L488>
 pub(super) fn wrap_text<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'a> {
     let mut tokens = text.split_ascii_whitespace();
     // start with first token (or nil() if empty)

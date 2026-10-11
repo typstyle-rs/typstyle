@@ -5,7 +5,7 @@ A beautiful and reliable code formatter for [Typst](https://typst.app/).
 [![crates.io](https://img.shields.io/crates/v/typstyle)](https://crates.io/crates/typstyle)
 [![npm wasm](https://img.shields.io/npm/v/@typstyle/typstyle-wasm-bundler)](https://www.npmjs.com/package/@typstyle/typstyle-wasm-bundler)
 [![docs](https://img.shields.io/badge/docs-latest-blue)](https://typstyle-rs.github.io/typstyle/)
-[![CI](https://github.com/typstyle-rs/typstyle/workflows/Test%20and%20Release/badge.svg)](…)
+[![CI](https://github.com/typstyle-rs/typstyle/actions/workflows/ci.yml/badge.svg)](https://github.com/typstyle-rs/typstyle/actions/workflows/ci.yml)
 [![License](https://img.shields.io/crates/l/typstyle)](LICENSE)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/typstyle.svg)](https://repology.org/project/typstyle/versions)
@@ -169,6 +169,12 @@ Typstyle also gives up formatting **part** of the code if it is not able to form
 - contains syntaxes that are not supported by the formatter
 
 And please let us know the issue by creating an issue on the [GitHub repository](https://github.com/typstyle-rs/typstyle)
+
+### Whitespace Preservation
+
+Typstyle preserves trailing spaces and whitespace-only lines inside multiline strings, raw blocks, and format-disabled source. These spaces can affect content, so the formatter does not trim every output line. Generated indentation and flow spacing avoid adding trailing padding to blank lines or line boundaries. Comments are normalized by their own formatting rules.
+
+Whole-document formatting supplies the final newline through the document layout. Partial formatting follows the selected node's layout rather than appending a newline to every formatted fragment.
 
 ### Testing
 

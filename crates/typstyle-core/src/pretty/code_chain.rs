@@ -1,3 +1,5 @@
+//! Conversion of field-access and binary-operator chains.
+
 use itertools::Itertools;
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
@@ -10,6 +12,7 @@ use super::{
 use crate::PrettyPrinter;
 
 impl<'a> PrettyPrinter<'a> {
+    /// Converts a field access, as a dot chain if possible.
     pub(super) fn convert_field_access(
         &'a self,
         ctx: Context,
@@ -21,6 +24,7 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_field_access_plain(ctx, field_access)
     }
 
+    /// Converts a field access as `target.field`, without chain handling.
     fn convert_field_access_plain(
         &'a self,
         ctx: Context,
@@ -72,7 +76,10 @@ impl<'a> PrettyPrinter<'a> {
         None
     }
 
-    /// Used for ident.ident(args)
+    /// Converts the special case `ident.ident(args)`, keeping the idents on one line.
+    ///
+    /// Returns [`None`] if the chain is not a [`FuncCall`] rooted at an [`Ident`], or if
+    /// the estimated chain width reaches [`crate::Config::chain_width`].
     fn try_convert_dot_chain_plain(
         &'a self,
         ctx: Context,
@@ -108,6 +115,10 @@ impl<'a> PrettyPrinter<'a> {
         Some(doc)
     }
 
+    /// Converts the node as a dot chain using [`ChainStylist`].
+    ///
+    /// A chain with a single field access and no comments is kept on one line
+    /// ([`ChainStyle::no_break_single`]).
     fn convert_dot_chain(&'a self, ctx: Context, node: &'a SyntaxNode) -> ArenaDoc<'a> {
         ChainStylist::new(self)
             .process_resolved(
@@ -137,6 +148,9 @@ impl<'a> PrettyPrinter<'a> {
             })
     }
 
+    /// Converts a binary expression as a chain of its same-precedence operands.
+    ///
+    /// Operators are surrounded by spaces; the chain breaks across lines unless it fits.
     pub(super) fn convert_binary_chain(&'a self, ctx: Context, binary: Binary<'a>) -> ArenaDoc<'a> {
         let op = binary.op();
         let prec = op.precedence();
@@ -165,6 +179,10 @@ impl<'a> PrettyPrinter<'a> {
     }
 }
 
+/// Resolves a field-access and function-call chain into its nodes, outermost first.
+///
+/// Follows the target of [`FieldAccess`] and the callee of [`FuncCall`] down to the
+/// innermost expression.
 pub(super) fn resolve_dot_chain(node: &SyntaxNode) -> impl Iterator<Item = &SyntaxNode> {
     iterate_deep_nodes(node, |current| {
         if let Some(field_access) = current.cast::<FieldAccess>() {
@@ -177,6 +195,10 @@ pub(super) fn resolve_dot_chain(node: &SyntaxNode) -> impl Iterator<Item = &Synt
     })
 }
 
+/// Resolves a binary expression into its nodes, outermost first.
+///
+/// Only [`Binary`] nodes with the same operator precedence as the root are descended
+/// into, so differently binding subexpressions stay intact.
 pub(super) fn resolve_binary_chain(binary: Binary<'_>) -> impl Iterator<Item = &'_ SyntaxNode> {
     let prec = binary.op().precedence();
     iterate_deep_nodes(binary.to_untyped(), move |current| {

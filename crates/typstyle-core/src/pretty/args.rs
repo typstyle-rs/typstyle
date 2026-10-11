@@ -1,3 +1,6 @@
+//! Helpers for inspecting function-call arguments, used to decide how they are laid
+//! out.
+
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use crate::pretty::{code_chain::resolve_dot_chain, util::is_empty_or_one_if};
@@ -67,6 +70,8 @@ pub fn is_combinable(expr: Expr) -> bool {
     }
 }
 
+/// Returns whether the expression is a literal or an identifier, i.e., an argument that
+/// never forces an argument list onto multiple lines.
 fn is_literal_or_ident(expr: Expr) -> bool {
     expr.is_literal() || matches!(expr, Expr::Ident(_))
 }

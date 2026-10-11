@@ -1,3 +1,5 @@
+//! Conversion of function calls and their argument lists.
+
 use itertools::Itertools;
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
@@ -16,6 +18,10 @@ use super::{
 use crate::{ext::StrExt, pretty::args};
 
 impl<'a> PrettyPrinter<'a> {
+    /// Converts a function call, `callee(args)`.
+    ///
+    /// Calls with a field-access callee are first tried as dot chains; in
+    /// [`Mode::Math`], the arguments use math layout.
     pub(super) fn convert_func_call(
         &'a self,
         ctx: Context,
@@ -34,15 +40,20 @@ impl<'a> PrettyPrinter<'a> {
             }
     }
 
+    /// Converts a math call, converting its callee verbatim and its args as math args.
     pub(super) fn convert_math_call(
         &'a self,
         ctx: Context,
         math_call: MathCall<'a>,
     ) -> ArenaDoc<'a> {
-        self.convert_verbatim_untyped(math_call.callee().to_untyped())
+        self.convert_verbatim(math_call.callee())
             + self.convert_math_args(ctx, math_call.args().to_untyped())
     }
 
+    /// Converts the arguments of a function call.
+    ///
+    /// Parenthesized arguments go through [`Self::convert_parenthesized_args_of_func`],
+    /// which also considers table layout.
     pub(super) fn convert_args_of_func(
         &'a self,
         ctx: Context,
@@ -71,6 +82,10 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
+    /// Converts the arguments of a call, split into parenthesized and trailing nodes.
+    ///
+    /// `parenthesized_nodes_handler` converts the nodes enclosed by the parentheses; an
+    /// empty argument list emits `()`, and no parentheses at all emit nothing.
     pub(super) fn convert_args(
         &'a self,
         ctx: Context,
@@ -106,6 +121,10 @@ impl<'a> PrettyPrinter<'a> {
         )
     }
 
+    /// Converts parenthesized arguments as a comma-separated list.
+    ///
+    /// The fold style is refined by [`suggest_fold_style_for_args`]; empty argument
+    /// lists always fold.
     pub(super) fn convert_parenthesized_args_normal(
         &'a self,
         ctx: Context,
@@ -139,6 +158,7 @@ impl<'a> PrettyPrinter<'a> {
             })
     }
 
+    /// Converts parenthesized arguments as a plain, indented list via [`PlainStylist`].
     fn convert_parenthesized_args_as_list(
         &'a self,
         ctx: Context,
@@ -159,6 +179,10 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_math_args(ctx, args.to_untyped())
     }
 
+    /// Converts the children of a math argument list.
+    ///
+    /// Semicolons and `#`-prefixed code receive special spacing; the list is
+    /// block-indented when the source spans multiple lines.
     fn convert_math_args(&'a self, ctx: Context, args: &'a SyntaxNode) -> ArenaDoc<'a> {
         // strip spaces
         let mut peek_linebreak = false;
@@ -199,7 +223,7 @@ impl<'a> PrettyPrinter<'a> {
                     peek_hashed_arg = at_hashed_arg || at_arg;
                     if child.leaf_text().has_linebreak() {
                         peek_linebreak = true;
-                        FlowItem::tight(self.arena.hardline())
+                        FlowItem::tight(self.arena.hard_line())
                     } else {
                         FlowItem::none()
                     }
@@ -237,6 +261,7 @@ impl<'a> PrettyPrinter<'a> {
     }
 }
 
+/// Returns whether the children end with a `#expr` sequence.
 fn is_ends_with_hashed_expr(mut children: std::slice::Iter<'_, SyntaxNode>) -> bool {
     children.next_back().is_some_and(|it| it.is::<Expr>())
         && children

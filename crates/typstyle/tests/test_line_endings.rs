@@ -1,3 +1,5 @@
+//! Tests for line ending behaviors.
+
 mod common;
 
 use std::process::Output;

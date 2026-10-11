@@ -1,3 +1,8 @@
+//! The CLI of Typstyle, a code formatter for the Typst language.
+//!
+//! Parses the arguments in [`CliArguments`], initializes logging, and formats
+//! stdin or the given files in place, in check mode, or as a unified diff.
+
 mod cli;
 mod diff;
 mod fmt;
@@ -13,6 +18,7 @@ use fmt::{format, format_stdin};
 
 use crate::cli::CliArguments;
 
+/// The exit statuses reported by the CLI.
 #[derive(Copy, Clone)]
 pub enum ExitStatus {
     /// Execution was successful and there were no errors.

@@ -1,8 +1,8 @@
 name: Benchmark for PR
-# This workflow runs benchmarks in parallel jobs with caching for performance.
+# Base and PR benchmarks run serially on one runner with cached builds.
 # Base benchmarks use the upstream repository to ensure base revision exists.
 # PR benchmarks use the fork repository for the head revision.
-# Results are compared in a final job using artifacts for reliable data transfer.
+# Fresh measurements are compared directly on the same runner.
 
 permissions:
   contents: read
@@ -13,17 +13,19 @@ on:
   pull_request:
     paths:
       - "crates/typstyle-core/**"
+      - "crates/typstyle/**"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "tests/fixtures/**/*.typ"
+      - ".cargo/config*"
       - ".github/workflows/bench-pr.yml"
-      - ".github/workflows/bench-job.yml"
+      - ".github/scripts/*benchmark*.nu"
   workflow_dispatch:
     inputs:
-      force_rerun:
-        description: "Force re-run benchmarks even if cache exists"
-        required: false
-        default: false
-        type: boolean
+      pr_number:
+        description: "PR number to benchmark"
+        required: true
+        type: number
 
 jobs:
   pre_job:
@@ -39,87 +41,77 @@ jobs:
         uses: fkirc/skip-duplicate-actions@v5
         with:
           cancel_others: "true"
-          paths: '["crates/typstyle-core/**", "Cargo.toml", "Cargo.lock", ".github/workflows/bench-pr.yml", ".github/workflows/bench-job.yml"]'
+          paths: '["crates/typstyle-core/**", "crates/typstyle/**", "Cargo.toml", "Cargo.lock", "tests/fixtures/**/*.typ", ".cargo/config*", ".github/workflows/bench-pr.yml", ".github/scripts/*benchmark*.nu"]'
           paths_ignore: '["**/README.md"]'
           do_not_skip: '["workflow_dispatch"]'
 
-  bench-base:
-    name: Benchmark base branch
-    uses: ./.github/workflows/bench-job.yml
-    needs: pre_job
-    if: needs.pre_job.outputs.should_skip != 'true'
-    with:
-      branch_type: base
-      git_ref: ${{ github.event.pull_request.base.sha }}
-      repository: ${{ github.event.pull_request.base.repo.full_name }}
-      force_rerun: ${{ github.event.inputs.force_rerun || false }}
-
-  bench-pr:
-    name: Benchmark PR branch
-    uses: ./.github/workflows/bench-job.yml
-    needs: pre_job
-    if: needs.pre_job.outputs.should_skip != 'true'
-    with:
-      branch_type: pr
-      git_ref: ${{ github.event.pull_request.head.ref }}
-      repository: ${{ github.event.pull_request.head.repo.full_name }}
-      force_rerun: ${{ github.event.inputs.force_rerun || false }}
-
-  compare:
-    name: Generate benchmark comparison
+  benchmark:
+    name: Benchmark base and PR
     runs-on: ubuntu-latest
-    needs: [bench-base, bench-pr]
-    if: github.event_name == 'pull_request'
+    timeout-minutes: 10
+    needs: pre_job
+    if: needs.pre_job.outputs.should_skip != 'true'
+    env:
+      BENCHMARK_RESULTS: ${{ github.workspace }}/benchmark-results
+      CRITERION_HOME: ${{ github.workspace }}/benchmark-results/criterion
+      # Match cargo-bloat's strip override to reuse benchmark dependencies.
+      CARGO_PROFILE_RELEASE_STRIP: "false"
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Setup Nushell
         uses: hustcer/setup-nu@v3
 
-      - name: Install critcmp
+      - name: Resolve PR revisions
+        id: revisions
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ inputs.pr_number }}
+        run: nu .github/scripts/benchmark-pair.nu revisions
+
+      - name: Checkout benchmark source
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.revisions.outputs.head_repository }}
+          ref: ${{ steps.revisions.outputs.head_sha }}
+          path: benchmark-workspace
+          # The helper fetches the base commit using the job's read-only token.
+          persist-credentials: true
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install benchmark tools
         uses: taiki-e/install-action@v2
         with:
-          tool: critcmp
+          tool: cargo-bloat,critcmp
 
-      - name: Download base benchmark results
-        uses: actions/download-artifact@v4
+      - uses: Swatinem/rust-cache@v2
         with:
-          name: benchmark-base
-          path: base-results
+          workspaces: benchmark-workspace
 
-      - name: Download PR benchmark results
-        uses: actions/download-artifact@v4
-        with:
-          name: benchmark-pr
-          path: pr-results
-
-      - name: Prepare benchmark data for comparison
-        run: |
-          mkdir -p target/criterion
-
-          # Merge base and PR benchmark results
-          cp -r base-results/* target/criterion/
-          cp -r pr-results/* target/criterion/
-
-          echo "Final benchmark structure:"
-          ls -la target/criterion/
+      - name: Run base then PR
+        run: nu .github/scripts/benchmark-pair.nu run
 
       - name: Generate comparison results
-        run: |
-          # Generate complete benchmark and binary size comparison report
-          nu .github/scripts/generate-benchmark-report.nu base-results pr-results
-
-      - name: Save PR number
-        run: |
-          mkdir -p ./pr-info
-          echo ${{ github.event.pull_request.number }} > ./pr-info/PR_NUMBER
-          echo "Saved PR number: ${{ github.event.pull_request.number }}"
+        shell: nu {0}
+        run: nu .github/scripts/generate-benchmark-report.nu ($env.BENCHMARK_RESULTS | path join base) ($env.BENCHMARK_RESULTS | path join pr)
 
       - name: Upload benchmark comparison and PR info
         uses: actions/upload-artifact@v4
         with:
           name: benchmark-comparison
-          path: |
-            benchmark-results.md
-            pr-info/
+          path: benchmark-results/
           retention-days: 7
+          if-no-files-found: error
+          overwrite: true
+
+      - name: Upload benchmark diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-diagnostics-${{ github.run_attempt }}
+          path: benchmark-results/
+          retention-days: 7
+          if-no-files-found: ignore

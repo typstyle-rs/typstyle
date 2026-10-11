@@ -1,3 +1,7 @@
+//! Snapshot tests for formatting only a part of a fixture file.
+//!
+//! Uses [`Typstyle::format_source_range`] to reformat selected byte ranges.
+
 use std::{ops::Range, path::Path};
 
 use insta::internals::Content;
@@ -5,12 +9,16 @@ use libtest_mimic::{Failed, Trial};
 use typstyle_core::Typstyle;
 use typstyle_tests::common::{fixtures_dir, read_source};
 
+/// A partial-formatting test case: a fixture file and the byte ranges to format in it.
 struct Testcase {
+    /// The fixture file path relative to the fixtures directory.
     path: &'static str,
+    /// The byte ranges of the file to format, one test per range.
     ranges: Vec<Range<usize>>,
 }
 
 impl Testcase {
+    /// Creates a test case for the given fixture path and byte ranges.
     pub fn new(path: &'static str, ranges: impl IntoIterator<Item = Range<usize>>) -> Testcase {
         Self {
             path,
@@ -50,6 +58,10 @@ pub fn collect_tests() -> Vec<Trial> {
         .collect()
 }
 
+/// Formats a byte range of a fixture file and asserts the output against its snapshot.
+///
+/// The snapshot records the original range text and the formatted result. Ranges that
+/// fail to format are marked as erroneous in the snapshot info and snapshotted as is.
 fn check_snapshot(path: &Path, range: Range<usize>) -> Result<(), Failed> {
     let source = read_source(path)?;
 
@@ -93,6 +105,7 @@ fn check_snapshot(path: &Path, range: Range<usize>) -> Result<(), Failed> {
     Ok(())
 }
 
+/// Converts a byte range to an insta [`Content`] map with `start` and `end` entries.
 fn range_to_content(range: &Range<usize>) -> Content {
     Content::Map(vec![
         ("start".into(), (range.start as u64).into()),

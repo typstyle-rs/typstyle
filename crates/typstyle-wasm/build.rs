@@ -1,7 +1,13 @@
+//! Generates the TypeScript `Config` interface from the `Config` struct in typstyle-core.
+//!
+//! The generated interface is written to `OUT_DIR` and included by the WASM bindings, so
+//! JavaScript consumers get type definitions for the formatter configuration.
+
 use std::{env, fs, path::Path};
 
 use syn::{Attribute, FieldsNamed, Item, ItemStruct, Lit, Meta, Type, parse::Parser};
 
+/// Generates the TypeScript interface for the core `Config` struct into `OUT_DIR`.
 fn main() {
     // Define the path to the Config struct in the typstyle-core crate.
     // Adjust this relative path if your directory structure is different.
@@ -139,6 +145,9 @@ fn rust_type_to_ts_type(ast: &syn::File, ty: &Type) -> Option<String> {
     None
 }
 
+/// Extracts the value of a serde attribute with the given key, e.g. `rename`.
+///
+/// Attributes nested in `#[cfg_attr(...)]` are considered as well.
 fn extract_serde_value(attrs: &[Attribute], key: &str) -> Option<String> {
     attrs.iter().find_map(|attr| {
         if attr.path().is_ident("serde") {
@@ -159,6 +168,7 @@ fn extract_serde_value(attrs: &[Attribute], key: &str) -> Option<String> {
     })
 }
 
+/// Extracts the value of a name-value meta item with the given key from a `serde(...)` list.
 fn extract_serde_value_from_meta(meta: &Meta, key: &str) -> Option<String> {
     let Meta::List(list) = meta else {
         return None;

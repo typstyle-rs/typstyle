@@ -1,3 +1,5 @@
+//! Style configuration for the Typstyle formatter.
+
 /// Configuration Options for Typstyle Printer.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -47,25 +49,34 @@ impl Default for Config {
 }
 
 impl Config {
+    /// Creates a configuration with the default values (see [`Config::default`]).
     pub fn new() -> Self {
         Default::default()
     }
 
+    /// Sets the maximum width of each line ([`Config::max_width`]).
     pub fn with_width(mut self, max_width: usize) -> Self {
         self.max_width = max_width;
         self
     }
 
+    /// Sets the number of spaces per indentation level ([`Config::tab_spaces`]).
     pub fn with_tab_spaces(mut self, tab_spaces: usize) -> Self {
         self.tab_spaces = tab_spaces;
         self
     }
 
+    /// Returns the maximum width for keeping field-access chains on one line.
+    ///
+    /// Chains whose estimated length reaches this bound (a fraction of
+    /// [`Config::max_width`]) are broken across lines.
     pub fn chain_width(&self) -> usize {
         const CHAIN_WIDTH_RATIO: f32 = 0.6;
         (self.max_width as f32 * CHAIN_WIDTH_RATIO) as usize
     }
 
+    /// Sets whether markup text is wrapped: `true` selects [`WrapMode::Fill`],
+    /// `false` selects [`WrapMode::None`].
     pub fn with_wrap_text(mut self, wrap_text: bool) -> Self {
         self.wrap_mode = if wrap_text {
             WrapMode::Fill
@@ -75,6 +86,7 @@ impl Config {
         self
     }
 
+    /// Sets the text wrapping mode ([`Config::wrap_mode`]).
     pub fn with_wrap_mode(mut self, wrap_mode: WrapMode) -> Self {
         self.wrap_mode = wrap_mode;
         self

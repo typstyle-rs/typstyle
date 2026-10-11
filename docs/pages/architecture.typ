@@ -10,11 +10,11 @@ To format code, Typstyle follows a pipeline of five steps:
 
 + *Parsing*: The input is parsed into an Abstract Syntax Tree (AST) using the `typst-syntax` package. If the input contains syntax errors, formatting is skipped and the original code is returned unchanged.
 + *Attach Attributes*: The AST is traversed and metadata is attached to nodes — marking regions to skip, detecting multiline intent, and tagging structures that need special handling.
-+ *Formatting*: The attributed AST is converted into a Wadler-style pretty-print document tree, which is then rendered into a formatted string.
-+ *Post Processing*: Final cleanup is applied to ensure consistent file endings and remove artifacts.
-+ *Output*: The formatted code is returned.
++ *Formatting*: The attributed AST is converted into a Wadler-style pretty-print document tree.
++ *Rendering*: The document tree is rendered with deferred indentation and conditional flow spacing.
++ *Output*: The rendered string is returned without globally trimming line endings.
 
-Steps 2 and 3 are where the core formatting logic lives.
+Steps 2 through 4 are where the core formatting logic lives.
 
 = Pipeline in Detail
 
@@ -35,17 +35,19 @@ Before formatting, Typstyle walks the AST and attaches processing metadata:
 
 This is the heart of Typstyle. The attributed AST is transformed into an intermediate *pretty-print document* using Philip Wadler's algorithm, which optimally decides where to insert line breaks while respecting the configured line width.
 
-The document tree encodes layout choices — flat vs. multiline via grouping, indentation depth via nesting, and alternative layouts via choice combinators. Once complete, the tree is rendered to a string with consistent indentation and line breaks.
+The document tree encodes layout choices — flat vs. multiline via grouping, indentation depth via nesting, and alternative layouts via choice combinators. Whole-document layout supplies the final newline; partial formatting follows the selected node's layout.
 
-== Post Processing
+== Rendering and Whitespace
 
-After rendering, Typstyle applies final normalization to produce a clean, consistent output.
+Full documents, formatted ranges, and intermediate math cells use the same rendering options. Generated indentation is deferred until content commits it, so blank lines and terminal breaks do not acquire indentation. Weak spaces represent generated flow separators that can disappear at line boundaries.
+
+Literal source whitespace in multiline strings, raw blocks, and format-disabled nodes is preserved. The rendered string is returned directly instead of trimming every line. Comment normalization happens while building comment documents, where line-comment ends and block-comment lines with leading stars are trimmed locally.
 
 = Crate Architecture
 
 Typstyle is organized as a Cargo workspace with several crates:
 
-- *`typstyle-core`*: The core formatting engine — parsing, attribute attachment, Wadler-style pretty printing, and post processing. All formatting logic lives here.
+- *`typstyle-core`*: The core formatting engine — parsing, attribute attachment, Wadler-style pretty printing, and rendering. All formatting logic lives here.
 - *`typstyle`*: The CLI binary. Handles argument parsing, file discovery (including recursive directory walking), stdin/stdout I/O, and check/diff modes.
 - *`typstyle-wasm`*: WebAssembly bindings that expose the core formatter to JavaScript runtimes. Used by the web playground and NPM package.
 - *`typstyle-typlugin`*: A Typst plugin compiled to WASM, enabling Typstyle to format code from within Typst documents (used by the documentation site for live examples).

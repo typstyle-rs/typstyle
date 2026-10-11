@@ -4,28 +4,42 @@
 
 use typst_syntax::ast::*;
 
+/// A value of a simple constant Typst expression.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Value {
+    /// The `none` value.
     None,
+    /// The `auto` value.
     Auto,
+    /// An integer.
     Int(i64),
     /// Only represented by length.
+    ///
+    /// An array evaluates to the number of its items.
     Array(usize),
 }
 
+/// An error encountered while evaluating a constant expression.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum EvalError {
+    /// The expression kind or operator is not supported by the evaluator.
     NotSupported,
+    /// The operands do not support the operation (e.g., division by zero).
     InvalidOperation,
 }
 
+/// The result of evaluating a constant expression.
 pub type EvalResult = Result<Value, EvalError>;
 
+/// A lightweight, read-only evaluator of Typst AST nodes into [`Value`]s.
 pub trait Liteval {
+    /// Evaluates the node to a [`Value`], or reports an [`EvalError`].
     fn liteval(&self) -> EvalResult;
 }
 
 impl Liteval for Expr<'_> {
+    /// Evaluates the expression by kind; unsupported kinds yield
+    /// [`EvalError::NotSupported`].
     fn liteval(&self) -> EvalResult {
         match self {
             Expr::None(v) => v.liteval(),
@@ -41,36 +55,44 @@ impl Liteval for Expr<'_> {
 }
 
 impl Liteval for None<'_> {
+    /// Evaluates the `none` literal to [`Value::None`].
     fn liteval(&self) -> EvalResult {
         Ok(Value::None)
     }
 }
 
 impl Liteval for Auto<'_> {
+    /// Evaluates the `auto` literal to [`Value::Auto`].
     fn liteval(&self) -> EvalResult {
         Ok(Value::Auto)
     }
 }
 
 impl Liteval for Int<'_> {
+    /// Evaluates the integer literal to [`Value::Int`].
     fn liteval(&self) -> EvalResult {
         Ok(Value::Int(self.get()))
     }
 }
 
 impl Liteval for Parenthesized<'_> {
+    /// Evaluates the parenthesized inner expression.
     fn liteval(&self) -> EvalResult {
         self.expr().liteval()
     }
 }
 
 impl Liteval for Array<'_> {
+    /// Evaluates the array to [`Value::Array`] with the number of its items.
     fn liteval(&self) -> EvalResult {
         Ok(Value::Array(self.items().count()))
     }
 }
 
 impl Liteval for Unary<'_> {
+    /// Evaluates the unary expression.
+    ///
+    /// Only `+` and `-` on integers are supported; `not` is not supported.
     fn liteval(&self) -> EvalResult {
         let expr = self.expr().liteval()?;
         match self.op() {
@@ -87,6 +109,10 @@ impl Liteval for Unary<'_> {
     }
 }
 impl Liteval for Binary<'_> {
+    /// Evaluates the binary expression.
+    ///
+    /// Supports integer arithmetic, array concatenation (`+`), and array scaling
+    /// (`*` by a non-negative integer); division by zero is invalid.
     fn liteval(&self) -> EvalResult {
         let lhs = self.lhs().liteval()?;
         let rhs = self.rhs().liteval()?;

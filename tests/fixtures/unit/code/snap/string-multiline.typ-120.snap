@@ -1,12 +1,11 @@
 ---
 source: tests/src/unit.rs
 input_file: tests/fixtures/unit/code/string-multiline.typ
-snapshot_kind: text
 ---
 #{
   assert(
     true,
-    message: "Target
+    message: "Target 
               qubit for multi qubit gate does not exist aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   )
 }
@@ -14,12 +13,12 @@ snapshot_kind: text
 #{
   assert(
     true,
-    message: "Target
+    message: "Target 
               qubit for multi qubit
      gate does not exist aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
                   aaaaaaaaaaaaaaaa
-
-
+                  
+          
 c",
   )
 }

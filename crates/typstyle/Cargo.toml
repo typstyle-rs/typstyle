@@ -46,3 +46,6 @@ vergen-gitcl = { workspace = true, optional = true }
 default = ["git-info", "completion"]
 git-info = ["vergen-gitcl"]
 completion = ["clap_complete"]
+
+[lints]
+workspace = true
