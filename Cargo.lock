@@ -2531,7 +2531,7 @@ dependencies = [
 [[package]]
 name = "prettyless"
 version = "0.3.0"
-source = "git+https://github.com/typstyle-rs/prettyless?rev=8c4bc63446899609dd3cbb3c9fb5feb2ab86a9e9#8c4bc63446899609dd3cbb3c9fb5feb2ab86a9e9"
+source = "git+https://github.com/typstyle-rs/prettyless?rev=0174fe2d9b2a9d6b309e071a2226aeb51aa01a1c#0174fe2d9b2a9d6b309e071a2226aeb51aa01a1c"
 dependencies = [
  "typed-arena",
  "unicode-width 0.2.2",

@@ -39,7 +39,7 @@ impl<'a> PrettyPrinter<'a> {
         ctx: Context,
         math_call: MathCall<'a>,
     ) -> ArenaDoc<'a> {
-        self.convert_verbatim_untyped(math_call.callee().to_untyped())
+        self.convert_verbatim(math_call.callee())
             + self.convert_math_args(ctx, math_call.args().to_untyped())
     }
 

@@ -25,7 +25,7 @@ use prettyless::{IndentationPolicy, RenderOptions};
 use style::{FoldStyle, is_multiline_flavored};
 use typst_syntax::{SyntaxNode, ast::*};
 
-use crate::{AttrStore, Config, Error, ext::StrExt};
+use crate::{AttrStore, Config, Error};
 
 pub struct PrettyPrinter<'a> {
     config: Config,
@@ -92,32 +92,32 @@ impl<'a> PrettyPrinter<'a> {
         }
     }
 
-    /// For inner or lead nodes.
+    /// Converts a node by reproducing its full source text as is.
+    ///
+    /// For inner or lead nodes only. See [`Self::convert_verbatim_untyped`].
     fn convert_verbatim(&'a self, node: impl AstNode<'a>) -> ArenaDoc<'a> {
         self.convert_verbatim_untyped(node.to_untyped())
     }
 
-    /// For inner or lead nodes.
+    /// Converts a node by reproducing its full source text, including all of its
+    /// descendants, as is.
+    ///
+    /// For inner or lead nodes only.
     fn convert_verbatim_untyped(&'a self, node: &'a SyntaxNode) -> ArenaDoc<'a> {
         let text = node.full_text();
-        if !text.has_linebreak() {
-            return self.arena.text(text.to_string());
-        }
-        // When the text spans multiple lines, we should split it to ensure proper fitting.
-        self.arena
-            .intersperse(
-                node.full_text().lines().map(str::to_string),
-                self.arena.hard_line(),
-            )
-            .dedent_to_root()
+        self.arena.multiline_text(text.to_string())
     }
 
-    /// For leaf only.
+    /// Converts a leaf node by emitting its text as is.
+    ///
+    /// For leaf nodes only. See [`Self::convert_trivia_untyped`].
     fn convert_trivia(&'a self, node: impl AstNode<'a>) -> ArenaDoc<'a> {
         self.convert_trivia_untyped(node.to_untyped())
     }
 
-    /// For leaf only.
+    /// Emits the leaf text of a node as is.
+    ///
+    /// For leaf nodes only.
     fn convert_trivia_untyped(&'a self, node: &'a SyntaxNode) -> ArenaDoc<'a> {
         self.arena.text(node.leaf_text().as_str())
     }
