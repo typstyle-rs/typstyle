@@ -4457,7 +4457,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle"
-version = "0.15.1"
+version = "0.15.2"
 dependencies = [
  "anstream",
  "anyhow",
@@ -4480,7 +4480,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-consistency"
-version = "0.15.1"
+version = "0.15.2"
 dependencies = [
  "anyhow",
  "colored",
@@ -4499,7 +4499,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-core"
-version = "0.15.1"
+version = "0.15.2"
 dependencies = [
  "criterion",
  "icu_segmenter",
@@ -4517,7 +4517,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-tests"
-version = "0.15.1"
+version = "0.15.2"
 dependencies = [
  "anyhow",
  "console",
@@ -4533,7 +4533,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-typlugin"
-version = "0.15.1"
+version = "0.15.2"
 dependencies = [
  "serde_json",
  "typst-syntax",
@@ -4543,7 +4543,7 @@ dependencies = [
 
 [[package]]
 name = "typstyle-wasm"
-version = "0.15.1"
+version = "0.15.2"
 dependencies = [
  "console_error_panic_hook",
  "js-sys",

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.15.2 - [2026-10-11]
 
 - Feature(CLI): Add `--line-ending=lf|crlf|preserve` with `preserve` as the default.
   Preservation generates CRLF only when the input contains at least one CRLF
@@ -12,6 +12,10 @@
   or default conservative preservation in document and partial formatting. Detection
   uses the whole original document, including for range edits. Literal text remains
   verbatim. The CLI uses the pretty renderer directly without output conversion.
+- Feature: Add `wrap_mode = "fill-sentence"` / `--wrap-text=fill-sentence`, a middle ground
+  between `fill` and `sentence`: like `sentence`, each sentence starts on a new line; like
+  `fill`, each sentence's words are reflowed to the line width instead of leaving it as one
+  unbounded line or preserving manual line breaks.
 - Fix: Preserve trailing spaces and whitespace-only lines inside multiline strings, raw blocks, and format-disabled source instead of trimming every rendered line.
 - Fix: Avoid generated indentation on blank lines and unnecessary flow spaces at line boundaries, including in partial formatting and aligned math. Line comments and block comments with leading stars still have trailing whitespace trimmed during comment formatting.
 - Fix: Range formatting now matches document formatting when the range covers the whole source. Previously the returned edit could be narrower than the requested range and its content could miss document layout such as the final newline.
