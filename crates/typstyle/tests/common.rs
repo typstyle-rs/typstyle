@@ -96,12 +96,6 @@ impl Workspace {
         fs::read_to_string(p).unwrap()
     }
 
-    /// Reads the file at the project-relative path as bytes.
-    pub fn read_bytes(&self, path: impl AsRef<Path>) -> Vec<u8> {
-        let p = self.project_path().join(path.as_ref());
-        fs::read(p).unwrap()
-    }
-
     /// Returns whether the tracked file's last modified time has changed.
     pub fn is_modified(&self, path: impl AsRef<Path>) -> bool {
         !self.is_unmodified(path)

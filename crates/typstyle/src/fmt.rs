@@ -2,8 +2,6 @@
 /// their formatting via standard input/output.
 ///
 /// Adapted from: https://github.com/astral-sh/ruff/blob/main/crates/ruff_linter/src/fs.rs
-mod line_endings;
-
 use std::{
     io::Read,
     path::{Path, PathBuf},
@@ -12,15 +10,14 @@ use std::{
 
 use anyhow::{Context, Result, bail};
 use itertools::Itertools;
-use line_endings::apply_crlf_preserve;
 use log::{debug, error, info, warn};
 use typst_syntax::Source;
-use typstyle_core::{Config, Typstyle, format_ast};
+use typstyle_core::{Config, LineEnding, Typstyle, WrapMode, format_ast};
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{
     ExitStatus,
-    cli::{CliArguments, DebugArgs, LineEndingMode, StyleArgs},
+    cli::{CliArguments, DebugArgs, LineEndingMode, StyleArgs, WrapTextMode},
     diff::SourceDiff,
     fs,
 };
@@ -52,13 +49,14 @@ impl FormatMode {
 impl StyleArgs {
     /// Converts the style options into the formatter's [`Config`].
     pub fn to_config(&self) -> Config {
-        use typstyle_core::WrapMode;
-
-        use crate::cli::WrapTextMode;
-
         Config {
             max_width: self.line_width,
             tab_spaces: self.indent_width,
+            line_ending: match self.line_ending {
+                LineEndingMode::Lf => LineEnding::Lf,
+                LineEndingMode::Crlf => LineEnding::Crlf,
+                LineEndingMode::Preserve => LineEnding::Preserve,
+            },
             reorder_import_items: !self.no_reorder_import_items,
             wrap_mode: match self.wrap_text {
                 WrapTextMode::None => WrapMode::None,
@@ -177,8 +175,7 @@ fn format_one(
     let use_stdout = !args.inplace && !args.check && !args.diff;
     let unformatted = get_input(input)?;
 
-    let res = format_debug(&unformatted, typstyle, &args.debug)
-        .apply_line_ending(&unformatted, args.style.line_ending);
+    let res = format_debug(&unformatted, typstyle, &args.debug);
     match &res {
         FormatResult::Formatted(res) => {
             if args.inplace {
@@ -227,24 +224,6 @@ enum FormatResult {
     Unchanged,
     /// The input cannot be parsed and was left as is.
     Erroneous,
-}
-
-impl FormatResult {
-    fn apply_line_ending(self, original: &str, mode: LineEndingMode) -> Self {
-        let Self::Formatted(formatted) = self else {
-            return self;
-        };
-        let formatted = match mode {
-            LineEndingMode::Lf => formatted,
-            LineEndingMode::CrlfPreserve => apply_crlf_preserve(original, formatted),
-        };
-
-        if formatted == original {
-            Self::Unchanged
-        } else {
-            Self::Formatted(formatted)
-        }
-    }
 }
 
 /// Formats one source while printing the debug output selected by the options.

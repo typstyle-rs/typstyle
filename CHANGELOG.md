@@ -2,12 +2,16 @@
 
 ## Unreleased
 
-- Feature(CLI): Add `--line-ending=lf|crlf-preserve` to select the
-  formatted-source line-ending policy. The default leaves formatter output
-  unchanged. `crlf-preserve` restores CRLF throughout the formatted output only
-  when the input contains at least one CRLF and has no bare LF or bare CR;
-  otherwise it leaves formatter output unchanged.
+- Feature(CLI): Add `--line-ending=lf|crlf|preserve` with `preserve` as the default.
+  Preservation generates CRLF only when the input contains at least one CRLF
+  and has no bare LF or bare CR; otherwise it generates LF. `lf` and `crlf` force
+  generated breaks. The default
+  `--check` now accepts formatted CRLF files; use `--line-ending=lf` to enforce LF.
   ([#496](https://github.com/typstyle-rs/typstyle/issues/496))
+- Feature(Core): Add `Config::line_ending` and `with_line_ending` for LF, CRLF,
+  or default conservative preservation in document and partial formatting. Detection
+  uses the whole original document, including for range edits. Literal text remains
+  verbatim. The CLI uses the pretty renderer directly without output conversion.
 - Fix: Preserve trailing spaces and whitespace-only lines inside multiline strings, raw blocks, and format-disabled source instead of trimming every rendered line.
 - Fix: Avoid generated indentation on blank lines and unnecessary flow spaces at line boundaries, including in partial formatting and aligned math. Line comments and block comments with leading stars still have trailing whitespace trimmed during comment formatting.
 - Fix: Range formatting now matches document formatting when the range covers the whole source. Previously the returned edit could be narrower than the requested range and its content could miss document layout such as the final newline.

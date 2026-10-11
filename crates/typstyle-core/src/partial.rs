@@ -48,8 +48,9 @@ impl Typstyle {
     ///
     /// The formatted range may be larger than the input to ensure valid syntax.
     /// Whitespace handling matches [`crate::Formatter::render`], but line endings
-    /// follow the selected node's layout; code fragments do not receive an extra
-    /// final newline solely because they are formatted.
+    /// use [`crate::Config::line_ending`] for the selected node's layout. Source-dependent
+    /// policies inspect the entire original source, not just the selected range.
+    /// Code fragments do not receive an extra final newline solely because they are formatted.
     ///
     /// # Arguments
     /// - `source`: The source code.
@@ -88,6 +89,7 @@ impl Typstyle {
         utf8_range: Range<usize>,
         output: RangeOutput,
     ) -> Result<RangeResult, Error> {
+        let config = self.config.clone().for_source(source.text());
         // An exact node selection retains that node's boundaries. Otherwise, whitespace
         // around the requested syntax remains outside the replacement.
         let mut node =
@@ -152,7 +154,7 @@ impl Typstyle {
         }
 
         attrs.compute_for_subtree(&node);
-        let printer = PrettyPrinter::new(self.config.clone(), attrs);
+        let printer = PrettyPrinter::new(config, attrs);
         let doc = if disabled {
             printer.convert_verbatim_text(&source.text()[node_range.clone()])
         } else {
