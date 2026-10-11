@@ -53,6 +53,7 @@ Options:
   -i, --inplace  Format the file in place
       --check    Run in 'check' mode. Exits with 0 if input is formatted correctly. Exits with a non-zero status code if formatting is required
       --diff     Run in 'diff' mode. Shows unified diff of what formatting changes would be made. Exits with 0 if input is formatted correctly. Exits with a non-zero status code if formatting is required
+      --line-ending <LINE_ENDING>  Line-ending policy for formatted source output [default: preserve] [possible values: lf, crlf, preserve]
   -h, --help     Print help
   -V, --version  Print version
 
@@ -71,6 +72,21 @@ Log Levels:
   -v, --verbose  Enable verbose logging
   -q, --quiet    Print diagnostics, but nothing else
 ```
+
+The selected line-ending policy controls generated layout before the formatted
+source is written, printed, checked, or diffed. Diff control lines keep their
+normal LF output:
+
+- `lf` always generates LF breaks.
+- `crlf` always generates CRLF breaks.
+- `preserve` (default) generates CRLF breaks when the input contains at least
+  one CRLF and has no bare LF or bare CR. Mixed endings, bare CR, and inputs
+  without newlines fall back to LF.
+
+All policies preserve newlines in strings, verbatim raw spans, and format-disabled
+source. Raw-block boundary breaks follow the layout policy. Range formatting
+detects against the entire original document. To enforce LF in CI, use
+`typstyle --check --line-ending=lf` explicitly.
 
 #### Examples
 

@@ -56,6 +56,31 @@ typstyle --check src/
 typstyle --diff src/
 ```
 
+=== Line Endings
+
+The default `preserve` policy retains consistent LF or CRLF conventions.
+Use `lf` or `crlf` to force generated breaks:
+
+```bash
+# Force LF, including when checking in CI
+typstyle --line-ending=lf file.typ
+
+# Force CRLF
+typstyle --line-ending=crlf --inplace file.typ
+
+# Preserve the existing convention (the default)
+typstyle --line-ending=preserve --inplace file.typ
+```
+
+`preserve` generates CRLF only when the input contains at least one CRLF and no
+bare LF or bare CR. Mixed endings, bare CR, and inputs without newlines fall back
+to LF. Detection uses the whole original document,
+including for range formatting. All policies select generated layout breaks; newlines in strings,
+verbatim raw spans, and format-disabled source remain verbatim. Raw-block boundary
+breaks follow the layout policy.
+Diff control lines retain their normal LF output.
+The default `--check` accepts formatted CRLF files; use `--line-ending=lf` to enforce LF.
+
 == Format Configuration
 
 === Line Width

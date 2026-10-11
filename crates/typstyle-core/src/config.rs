@@ -15,8 +15,50 @@ pub struct Config {
     pub collapse_markup_spaces: bool,
     /// When `true`, import items are sorted alphabetically.
     pub reorder_import_items: bool,
+    /// Policy for generated line breaks. Literal source text is preserved.
+    pub line_ending: LineEnding,
     /// Text wrapping mode for markup.
     pub wrap_mode: WrapMode,
+}
+
+/// Line-ending policy for generated layout, including partial formatting.
+///
+/// Literal text stays verbatim; raw-block boundary breaks follow the layout policy.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
+pub enum LineEnding {
+    /// A single line feed.
+    Lf,
+    /// A carriage return followed by a line feed.
+    Crlf,
+    /// Generate CRLF only if the entire source contains CRLF and no bare LF or CR.
+    /// Sources without ASCII newlines or with mixed endings generate LF.
+    #[default]
+    Preserve,
+}
+
+impl LineEnding {
+    /// Resolve source-dependent policy against the whole original document.
+    pub(crate) fn resolve(self, content: &str) -> Self {
+        if self != Self::Preserve {
+            return self;
+        }
+        let bytes = content.as_bytes();
+        let mut saw_crlf = false;
+        let mut index = 0;
+        while index < bytes.len() {
+            match bytes[index] {
+                b'\r' if bytes.get(index + 1) == Some(&b'\n') => {
+                    saw_crlf = true;
+                    index += 2;
+                }
+                b'\r' | b'\n' => return Self::Lf,
+                _ => index += 1,
+            }
+        }
+        if saw_crlf { Self::Crlf } else { Self::Lf }
+    }
 }
 
 /// Text wrapping mode for markup.
@@ -43,6 +85,7 @@ impl Default for Config {
             blank_lines_upper_bound: 1,
             reorder_import_items: true,
             collapse_markup_spaces: false,
+            line_ending: LineEnding::Preserve,
             wrap_mode: WrapMode::None,
         }
     }
@@ -73,6 +116,22 @@ impl Config {
     pub fn chain_width(&self) -> usize {
         const CHAIN_WIDTH_RATIO: f32 = 0.6;
         (self.max_width as f32 * CHAIN_WIDTH_RATIO) as usize
+    }
+
+    /// Sets the terminator for generated layout ([`Config::line_ending`]).
+    pub fn with_line_ending(mut self, line_ending: LineEnding) -> Self {
+        self.line_ending = line_ending;
+        self
+    }
+
+    /// Resolves source-dependent options against the entire original document.
+    ///
+    /// Low-level [`crate::pretty::PrettyPrinter`] callers should use this before
+    /// constructing a printer. [`crate::Typstyle`] resolves policies automatically,
+    /// including when formatting a range within a document.
+    pub fn for_source(mut self, source: &str) -> Self {
+        self.line_ending = self.line_ending.resolve(source);
+        self
     }
 
     /// Sets whether markup text is wrapped: `true` selects [`WrapMode::Fill`],

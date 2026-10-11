@@ -14,7 +14,7 @@ mod config;
 mod utils;
 
 pub use attr::AttrStore;
-pub use config::{Config, WrapMode};
+pub use config::{Config, LineEnding, WrapMode};
 use pretty::{PrettyPrinter, prelude::*};
 use thiserror::Error;
 use typst_syntax::{Source, SyntaxNode};
@@ -53,7 +53,7 @@ impl Typstyle {
 
     /// Prepares a source for formatting.
     pub fn format_source(&self, source: Source) -> Formatter<'_> {
-        Formatter::new(self.config.clone(), source)
+        Formatter::new(self.config.clone().for_source(source.text()), source)
     }
 }
 
@@ -85,6 +85,7 @@ impl<'a> Formatter<'a> {
     /// format-disabled source. Generated indentation and flow spacing avoid
     /// trailing layout padding; comment whitespace follows comment formatting
     /// rules. The document layout supplies the final newline.
+    /// Generated breaks use [`Config::line_ending`].
     pub fn render(&'a self) -> Result<String, Error> {
         let doc = self.build_doc()?;
         let mut buf = String::new();

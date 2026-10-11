@@ -47,6 +47,9 @@ pub struct PrettyPrinter<'a> {
 
 impl<'a> PrettyPrinter<'a> {
     /// Creates a new printer with the given style configuration and node attributes.
+    ///
+    /// This low-level constructor has no source to inspect. Resolve source-dependent
+    /// policies with [`Config::for_source`] first; unresolved preservation uses LF.
     pub fn new(config: Config, attr_store: AttrStore) -> Self {
         Self {
             config,
@@ -66,6 +69,10 @@ impl<'a> PrettyPrinter<'a> {
     /// lazily (deferred) so that blank lines and trailing breaks carry no trailing spaces.
     pub(crate) fn render_options(&self) -> RenderOptions {
         RenderOptions::new(self.config.max_width)
+            .with_line_ending(match self.config.line_ending {
+                crate::LineEnding::Lf | crate::LineEnding::Preserve => prettyless::LineEnding::Lf,
+                crate::LineEnding::Crlf => prettyless::LineEnding::Crlf,
+            })
             .with_indentation_policy(IndentationPolicy::Deferred)
     }
 

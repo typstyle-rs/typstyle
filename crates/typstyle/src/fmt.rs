@@ -12,12 +12,12 @@ use anyhow::{Context, Result, bail};
 use itertools::Itertools;
 use log::{debug, error, info, warn};
 use typst_syntax::Source;
-use typstyle_core::{Config, Typstyle, format_ast};
+use typstyle_core::{Config, LineEnding, Typstyle, WrapMode, format_ast};
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{
     ExitStatus,
-    cli::{CliArguments, DebugArgs, StyleArgs},
+    cli::{CliArguments, DebugArgs, LineEndingMode, StyleArgs, WrapTextMode},
     diff::SourceDiff,
     fs,
 };
@@ -49,13 +49,14 @@ impl FormatMode {
 impl StyleArgs {
     /// Converts the style options into the formatter's [`Config`].
     pub fn to_config(&self) -> Config {
-        use typstyle_core::WrapMode;
-
-        use crate::cli::WrapTextMode;
-
         Config {
             max_width: self.line_width,
             tab_spaces: self.indent_width,
+            line_ending: match self.line_ending {
+                LineEndingMode::Lf => LineEnding::Lf,
+                LineEndingMode::Crlf => LineEnding::Crlf,
+                LineEndingMode::Preserve => LineEnding::Preserve,
+            },
             reorder_import_items: !self.no_reorder_import_items,
             wrap_mode: match self.wrap_text {
                 WrapTextMode::None => WrapMode::None,
