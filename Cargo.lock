@@ -4549,7 +4549,7 @@ dependencies = [
  "js-sys",
  "serde",
  "serde-wasm-bindgen",
- "syn 2.0.119",
+ "syn 3.0.7",
  "typst-syntax",
  "typstyle-core",
  "wasm-bindgen",

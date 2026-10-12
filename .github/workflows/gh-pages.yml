@@ -44,6 +44,8 @@ jobs:
           paths_filter: |
             docs:
               paths:
+                - Cargo.toml
+                - Cargo.lock
                 - 'docs/**'
                 - 'crates/typstyle-core/**'
                 - 'crates/typstyle-typlugin/**'
@@ -51,6 +53,8 @@ jobs:
                 - 'CHANGELOG.md'
             playground:
               paths:
+                - Cargo.toml
+                - Cargo.lock
                 - 'playground/**'
                 - 'crates/typstyle-core/**'
                 - 'crates/typstyle-wasm/**'
