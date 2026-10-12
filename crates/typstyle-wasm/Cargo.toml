@@ -28,7 +28,7 @@ serde-wasm-bindgen.workspace = true
 wasm-bindgen.workspace = true
 
 [build-dependencies]
-syn.workspace = true
+syn = { workspace = true, features = ["full"] }
 
 [lints]
 workspace = true
