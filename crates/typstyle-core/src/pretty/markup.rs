@@ -1,10 +1,12 @@
 //! Converts markup constructs: content blocks, strong and emph, raw blocks, references,
 //! headings, and list, enum, and term items.
 
+mod segmentation;
 mod wrapping;
 
 use Option::None;
 use prettyless::Doc;
+use segmentation::MarkupSegmentation;
 use smallvec::SmallVec;
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
@@ -224,6 +226,18 @@ impl<'a> PrettyPrinter<'a> {
         markup: Markup<'a>,
         scope: MarkupScope,
     ) -> ArenaDoc<'a> {
+        self.convert_markup_with_segmentation(ctx, markup, scope, None)
+    }
+
+    /// Transparent markup uses the enclosing sentence plan so a wrapper's end
+    /// does not become an artificial sentence boundary.
+    fn convert_markup_with_segmentation(
+        &'a self,
+        ctx: Context,
+        markup: Markup<'a>,
+        scope: MarkupScope,
+        inherited: Option<&MarkupSegmentation>,
+    ) -> ArenaDoc<'a> {
         let ctx = ctx.with_mode(Mode::Markup);
 
         // If the markup only contains one space, simply convert it.
@@ -231,6 +245,9 @@ impl<'a> PrettyPrinter<'a> {
         if children.len() == 1
             && let Some(space) = children[0].cast::<Space>()
         {
+            if !ctx.break_suppressed && inherited.is_some_and(|plan| plan.at_space(&children[0])) {
+                return self.arena.hard_line();
+            }
             return self.convert_space(ctx, space);
         }
 
@@ -239,18 +256,26 @@ impl<'a> PrettyPrinter<'a> {
             // In document scope, we should insert a trailing linebreak if not present.
             repr.end_bound = Boundary::Break;
         }
+        let owned_segmentation = (inherited.is_none()
+            && scope != MarkupScope::InlineItem
+            && matches!(
+                self.config.wrap_mode,
+                WrapMode::Sentence | WrapMode::FillSentence
+            ))
+        .then(|| MarkupSegmentation::new(markup, &self.attr_store));
+        let segmentation = inherited.or(owned_segmentation.as_ref());
         let body = if scope == MarkupScope::InlineItem {
             self.convert_markup_body(ctx, &repr)
         } else {
             match self.config.wrap_mode {
                 WrapMode::None => self.convert_markup_body(ctx, &repr),
-                mode => self.convert_markup_body_reflow(ctx, &repr, mode),
+                mode => self.convert_markup_body_reflow(ctx, &repr, mode, segmentation),
             }
         };
 
         // Add line or space (if any) to both sides.
         // Only turn space into, not the other way around.
-        let get_delim = |bound: Boundary| {
+        let get_delim = |bound: Boundary, edge: Option<&SyntaxNode>| {
             if scope == MarkupScope::Fragment
                 && matches!(
                     bound,
@@ -268,6 +293,12 @@ impl<'a> PrettyPrinter<'a> {
                 } else {
                     self.arena.nil()
                 };
+            }
+            if matches!(bound, Boundary::Space(_))
+                && !ctx.break_suppressed
+                && edge.is_some_and(|node| segmentation.is_some_and(|plan| plan.at_space(node)))
+            {
+                return self.arena.hard_line();
             }
             match bound {
                 Boundary::Nil => self.arena.nil(),
@@ -303,8 +334,8 @@ impl<'a> PrettyPrinter<'a> {
             }
         };
 
-        let open = get_delim(repr.start_bound);
-        let close = get_delim(repr.end_bound);
+        let open = get_delim(repr.start_bound, children.first());
+        let close = get_delim(repr.end_bound, children.last());
         // Do not indent (compact), if the opening will not break.
         let needs_indent = matches!(scope, MarkupScope::ContentBlock)
             && !(matches!(*open, Doc::Nil | Doc::Text(_))
@@ -329,6 +360,7 @@ impl<'a> PrettyPrinter<'a> {
             ref nodes,
             breaks,
             mixed_text,
+            ..
         } in repr.lines.iter()
         {
             for node in nodes.iter() {
@@ -365,6 +397,9 @@ struct MarkupLine<'a> {
     nodes: SmallVec<[&'a SyntaxNode; 4]>,
     /// The number of line breaks that follow this line.
     breaks: usize,
+    /// The source separator, retained for contextual sentence decisions across
+    /// soft line breaks.
+    separator: Option<&'a SyntaxNode>,
     /// Whether the line contains text alongside other markup, so breaks within it are
     /// suppressed.
     mixed_text: bool,
@@ -440,6 +475,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
         let break_line = match node.kind() {
             SyntaxKind::Parbreak => {
                 current_line.breaks = node.leaf_text().count_linebreaks(); // This is >= 2
+                current_line.separator = Some(node);
                 true
             }
             SyntaxKind::Space if current_line.nodes.is_empty() => {
@@ -450,6 +486,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
             }
             SyntaxKind::Space if node.leaf_text().has_linebreak() => {
                 current_line.breaks = 1; // Must only one
+                current_line.separator = Some(node);
                 true
             }
             _ => {

@@ -12,6 +12,7 @@ pub mod pretty;
 
 mod config;
 mod kind;
+mod segmenter;
 mod utils;
 
 pub use attr::AttrStore;
