@@ -12,13 +12,6 @@ impl<'a> PrettyPrinter<'a> {
         self.convert_literal(text.get())
     }
 
-    /// Converts a text token in a wrapping mode, breaking between words as needed.
-    pub(super) fn convert_text_wrapped(&'a self, text: Text<'a>) -> ArenaDoc<'a> {
-        // For sentence-per-line mode, we need to handle it at the markup level,
-        // not at individual text nodes. So just use regular wrapping here.
-        wrap_text(&self.arena, text.get())
-    }
-
     /// Converts a space, collapsing it according to the current [`super::Mode`].
     pub(super) fn convert_space(&'a self, ctx: Context, space: Space<'a>) -> ArenaDoc<'a> {
         self.convert_space_untyped(ctx, space.to_untyped())
@@ -92,6 +85,14 @@ pub(super) fn is_enum_marker(token: &str) -> bool {
         return stripped.parse::<u64>().is_ok();
     }
     false
+}
+
+/// Returns whether `text` would start a list item, term, or heading if it began a line:
+/// `+`, `-`, `/`, a run of `=`, or an enum marker such as `1.`.
+pub(super) fn is_line_sensitive_markup_marker(text: &str) -> bool {
+    matches!(text, "+" | "-" | "/")
+        || !text.is_empty() && text.chars().all(|c| c == '=')
+        || is_enum_marker(text)
 }
 
 #[cfg(test)]

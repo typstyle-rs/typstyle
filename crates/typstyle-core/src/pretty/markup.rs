@@ -1,10 +1,12 @@
 //! Converts markup constructs: content blocks, strong and emph, raw blocks, references,
 //! headings, and list, enum, and term items.
 
+pub(super) mod segmentation;
 mod wrapping;
 
 use Option::None;
 use prettyless::Doc;
+use segmentation::MarkupSegmentation;
 use smallvec::SmallVec;
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
@@ -21,8 +23,8 @@ pub(crate) enum MarkupScope {
     Fragment,
     /// Markup enclosed by `[]`.
     ContentBlock,
-    /// Strong or Emph.
-    Strong,
+    /// Strong or Emph wrappers, whose delimiters belong to the surrounding sentence.
+    InlineWrapper,
     /// ListItem, EnumItem, desc of TermItem. Spaces without linebreaks can be stripped.
     Item,
     /// Heading, term of TermItem. Like `Item`, but linebreaks are not allowed.
@@ -54,15 +56,41 @@ impl<'a> PrettyPrinter<'a> {
     }
 
     /// Converts strong emphasis `*...*`.
-    pub(super) fn convert_strong(&'a self, ctx: Context, strong: Strong<'a>) -> ArenaDoc<'a> {
-        let body = self.convert_markup_with_scope(ctx, strong.body(), MarkupScope::Strong);
-        body.enclose("*", "*")
+    ///
+    /// For a transparent inline wrapper, `segmentation` is the enclosing sentence plan, so
+    /// the wrapper's end does not become an artificial sentence boundary.
+    pub(super) fn convert_strong(
+        &'a self,
+        ctx: Context,
+        strong: Strong<'a>,
+        segmentation: Option<&MarkupSegmentation>,
+    ) -> ArenaDoc<'a> {
+        self.convert_markup_with_segmentation(
+            ctx,
+            strong.body(),
+            MarkupScope::InlineWrapper,
+            segmentation,
+        )
+        .enclose("*", "*")
     }
 
     /// Converts emphasis `_..._`.
-    pub(super) fn convert_emph(&'a self, ctx: Context, emph: Emph<'a>) -> ArenaDoc<'a> {
-        let body = self.convert_markup_with_scope(ctx, emph.body(), MarkupScope::Strong);
-        body.enclose("_", "_")
+    ///
+    /// For a transparent inline wrapper, `segmentation` is the enclosing sentence plan, so
+    /// the wrapper's end does not become an artificial sentence boundary.
+    pub(super) fn convert_emph(
+        &'a self,
+        ctx: Context,
+        emph: Emph<'a>,
+        segmentation: Option<&MarkupSegmentation>,
+    ) -> ArenaDoc<'a> {
+        self.convert_markup_with_segmentation(
+            ctx,
+            emph.body(),
+            MarkupScope::InlineWrapper,
+            segmentation,
+        )
+        .enclose("_", "_")
     }
 
     /// Converts a raw block or inline raw span.
@@ -224,6 +252,18 @@ impl<'a> PrettyPrinter<'a> {
         markup: Markup<'a>,
         scope: MarkupScope,
     ) -> ArenaDoc<'a> {
+        self.convert_markup_with_segmentation(ctx, markup, scope, None)
+    }
+
+    /// Transparent markup uses the enclosing sentence plan so a wrapper's end
+    /// does not become an artificial sentence boundary.
+    fn convert_markup_with_segmentation(
+        &'a self,
+        ctx: Context,
+        markup: Markup<'a>,
+        scope: MarkupScope,
+        inherited: Option<&MarkupSegmentation>,
+    ) -> ArenaDoc<'a> {
         let ctx = ctx.with_mode(Mode::Markup);
 
         // If the markup only contains one space, simply convert it.
@@ -231,6 +271,9 @@ impl<'a> PrettyPrinter<'a> {
         if children.len() == 1
             && let Some(space) = children[0].cast::<Space>()
         {
+            if !ctx.break_suppressed && inherited.is_some_and(|plan| plan.at_space(&children[0])) {
+                return self.arena.hard_line();
+            }
             return self.convert_space(ctx, space);
         }
 
@@ -239,18 +282,26 @@ impl<'a> PrettyPrinter<'a> {
             // In document scope, we should insert a trailing linebreak if not present.
             repr.end_bound = Boundary::Break;
         }
+        let owned_segmentation = (inherited.is_none()
+            && scope != MarkupScope::InlineItem
+            && matches!(
+                self.config.wrap_mode,
+                WrapMode::Sentence | WrapMode::FillSentence
+            ))
+        .then(|| MarkupSegmentation::new(markup, &self.attr_store));
+        let segmentation = inherited.or(owned_segmentation.as_ref());
         let body = if scope == MarkupScope::InlineItem {
             self.convert_markup_body(ctx, &repr)
         } else {
             match self.config.wrap_mode {
                 WrapMode::None => self.convert_markup_body(ctx, &repr),
-                mode => self.convert_markup_body_reflow(ctx, &repr, mode),
+                mode => self.convert_markup_body_reflow(ctx, &repr, mode, segmentation),
             }
         };
 
         // Add line or space (if any) to both sides.
         // Only turn space into, not the other way around.
-        let get_delim = |bound: Boundary| {
+        let get_delim = |bound: Boundary, edge: Option<&SyntaxNode>| {
             if scope == MarkupScope::Fragment
                 && matches!(
                     bound,
@@ -268,6 +319,12 @@ impl<'a> PrettyPrinter<'a> {
                 } else {
                     self.arena.nil()
                 };
+            }
+            if matches!(bound, Boundary::Space(_))
+                && !ctx.break_suppressed
+                && edge.is_some_and(|node| segmentation.is_some_and(|plan| plan.at_space(node)))
+            {
+                return self.arena.hard_line();
             }
             match bound {
                 Boundary::Nil => self.arena.nil(),
@@ -303,8 +360,8 @@ impl<'a> PrettyPrinter<'a> {
             }
         };
 
-        let open = get_delim(repr.start_bound);
-        let close = get_delim(repr.end_bound);
+        let open = get_delim(repr.start_bound, children.first());
+        let close = get_delim(repr.end_bound, children.last());
         // Do not indent (compact), if the opening will not break.
         let needs_indent = matches!(scope, MarkupScope::ContentBlock)
             && !(matches!(*open, Doc::Nil | Doc::Text(_))
@@ -329,6 +386,7 @@ impl<'a> PrettyPrinter<'a> {
             ref nodes,
             breaks,
             mixed_text,
+            ..
         } in repr.lines.iter()
         {
             for node in nodes.iter() {
@@ -365,6 +423,9 @@ struct MarkupLine<'a> {
     nodes: SmallVec<[&'a SyntaxNode; 4]>,
     /// The number of line breaks that follow this line.
     breaks: usize,
+    /// The source separator, retained for contextual sentence decisions across
+    /// soft line breaks.
+    separator: Option<&'a SyntaxNode>,
     /// Whether the line contains text alongside other markup, so breaks within it are
     /// suppressed.
     mixed_text: bool,
@@ -450,6 +511,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
             }
             SyntaxKind::Space if node.leaf_text().has_linebreak() => {
                 current_line.breaks = 1; // Must only one
+                current_line.separator = Some(node);
                 true
             }
             _ => {

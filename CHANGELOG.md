@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fix: With `--wrap-text=sentence` or `--wrap-text=fill-sentence`, detect sentence boundaries from the surrounding prose instead of each text node in isolation. Breaks no longer land inside a sentence that continues across emphasis, quotes, or raw text, or after known abbreviations, and closing delimiters, labels, and a trailing `\` stay with the sentence they end. Adjacent CJK sentences can now start on new lines without a source space.
+  ([#501](https://github.com/typstyle-rs/typstyle/issues/501))
+
 ## v0.15.3 - [2026-11-15]
 
 - Feature(CLI): Add `--lines FIRST:LAST` to format only the selected 1-based, inclusive line ranges. The complete document is printed with only the selected ranges reformatted, so the option can be used as `jj fix`'s `line-range-args`.

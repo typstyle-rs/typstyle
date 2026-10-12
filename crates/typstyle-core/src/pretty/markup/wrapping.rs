@@ -1,136 +1,106 @@
-//! Implements the markup body layout for the text-wrapping modes: re-flowing prose
-//! across lines and laying out one sentence per line.
+//! Markup layout for reflow and sentence wrapping. Sentence decisions come from
+//! the contextual plan in the sibling segmentation adapter.
 
-use icu_segmenter::{SentenceSegmenter, SentenceSegmenterBorrowed};
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
-use super::{MarkupLine, MarkupRepr};
+use super::{MarkupLine, MarkupRepr, segmentation::MarkupSegmentation};
 use crate::{
     WrapMode,
     kind::SyntaxKindExt,
     pretty::{
         Context, PrettyPrinter,
         prelude::*,
-        text::{is_enum_marker, wrap_text},
+        text::{is_line_sensitive_markup_marker, wrap_text},
     },
 };
 
 impl<'a> PrettyPrinter<'a> {
     /// Lays out a markup body in a reflowing mode.
     ///
-    /// Spaces may turn to linebreaks and source linebreaks may turn to spaces, when safe. With
-    /// sentence breaks, each sentence starts on its own line; when filling, long sentences still
-    /// wrap to the line width.
-    ///
-    /// A sentence boundary detected inside a node (for example at the end of a text leaf) is
-    /// carried in `pending_sentence_break` until the next break point, where it becomes a hard
-    /// line. This lets a trailing quote or an attached `\` stay with the sentence first.
+    /// Sentence boundaries come from the contextual segmentation plan, and `fill` adds
+    /// width-dependent reflow inside a sentence. A break replaces source whitespace or starts
+    /// the next node on a new line after an unspaced CJK sentence ending. Closing quotes,
+    /// labels, and attached `\` stay with their sentence.
     pub(super) fn convert_markup_body_reflow(
         &'a self,
         ctx: Context,
         repr: &MarkupRepr<'a>,
         mode: WrapMode,
+        segmentation: Option<&MarkupSegmentation>,
     ) -> ArenaDoc<'a> {
         let fill = matches!(mode, WrapMode::Fill | WrapMode::FillSentence);
-        let sentence_breaks = matches!(mode, WrapMode::Sentence | WrapMode::FillSentence);
-        let segmenter = sentence_breaks.then(|| SentenceSegmenter::new(Default::default()));
 
         let mut doc = self.arena.nil();
-        // Carries a sentence boundary to the next break point instead of breaking immediately.
-        let mut pending_sentence_break = false;
         for (i, line) in repr.lines.iter().enumerate() {
             let &MarkupLine {
                 ref nodes, breaks, ..
             } = line;
             for (j, node) in nodes.iter().enumerate() {
+                if !ctx.break_suppressed && segmentation.is_some_and(|plan| plan.before(node)) {
+                    doc += self.arena.hard_line();
+                }
                 if node.kind() == SyntaxKind::Space {
                     let next = nodes.get(j + 1);
-                    let prev = j.checked_sub(1).and_then(|k| nodes.get(k));
-                    doc += if next.is_some_and(|node| cannot_break_before_markup(node)) {
+                    let prev = j.checked_sub(1).and_then(|index| nodes.get(index));
+                    doc += if next.is_some_and(|next| cannot_break_before_markup(next)) {
                         // Breaking here would turn the next token into a markup marker or
                         // separate a label from the text it annotates.
-                        pending_sentence_break = false;
                         self.arena.space()
-                    } else if pending_sentence_break
-                        && prev.is_none_or(|node| node.kind() != SyntaxKind::Linebreak)
-                        && next.is_some_and(|node| node.kind() == SyntaxKind::Linebreak)
+                    } else if !ctx.break_suppressed
+                        && next.is_some_and(|next| {
+                            next.kind() == SyntaxKind::Linebreak
+                                && segmentation.is_some_and(|plan| plan.at_linebreak(next))
+                        })
                     {
-                        // The `\` that follows attaches to the previous sentence, so let it
-                        // supply the separator and keep the pending break unresolved.
+                        // The `\` attaches to the sentence before it, so this source space is
+                        // replaced by the one the layout adds before `\`.
                         self.arena.nil()
-                    } else if pending_sentence_break {
-                        // The previous sentence ended: start the next one on a new line.
-                        pending_sentence_break = false;
+                    } else if !ctx.break_suppressed
+                        && segmentation.is_some_and(|plan| plan.at_space(node))
+                        || fill
+                            && (next.is_some_and(|next| reflow_prefers_exclusive(next))
+                                || prev.is_some_and(|previous| reflow_prefers_exclusive(previous)))
+                    {
+                        // A sentence boundary starts a new line; block equations and raw blocks
+                        // stay on a line of their own.
                         self.arena.hard_line()
-                    } else if !fill {
+                    } else if fill {
+                        self.arena.softline()
+                    } else {
                         // Sentence mode never reflows spaces within a line.
                         self.arena.space()
-                    } else if next.is_some_and(|node| reflow_prefers_exclusive(node))
-                        || prev.is_some_and(|node| reflow_prefers_exclusive(node))
-                    {
-                        // Keep block equations and raw blocks on a line of their own.
-                        self.arena.hard_line()
-                    } else {
-                        self.arena.softline()
                     };
                     continue;
                 }
 
-                // A closing quote stays glued to the sentence it terminates, so the pending break
-                // survives until the following whitespace.
-                let defer_break = sentence_breaks && is_sentence_closer(node);
-                // A linebreak that follows a sentence stays on that sentence's line. The break
-                // itself is emitted by the following space or source line break.
-                let attach_linebreak = sentence_breaks
-                    && node.kind() == SyntaxKind::Linebreak
-                    && pending_sentence_break;
-                // Both cases postpone resolving the pending break until after this node.
-                let keep_pending = attach_linebreak || defer_break;
-                let leading_break = if attach_linebreak {
-                    // Glue the `\` to the sentence with a space instead of breaking first.
-                    self.arena.space()
-                } else if pending_sentence_break && !defer_break {
-                    self.arena.hard_line()
-                } else {
-                    self.arena.nil()
-                };
-
-                let node_doc = if let Some(text) = node.cast::<Text>() {
-                    if let Some(segmenter) = &segmenter {
-                        // Split the leaf so each sentence can break independently.
-                        let (text_doc, ended_sentence) =
-                            convert_text_sentence_split(&self.arena, segmenter, text, fill);
-                        pending_sentence_break = ended_sentence;
-                        text_doc
-                    } else {
-                        self.convert_text_wrapped(text)
-                    }
+                doc += if self.attr_store.is_format_disabled(node) {
+                    self.convert_verbatim_untyped(node)
+                } else if let Some(text) = node.cast::<Text>() {
+                    // Split the leaf so each sentence can break independently.
+                    convert_text(&self.arena, ctx, text, fill, segmentation)
+                } else if !ctx.break_suppressed
+                    && segmentation.is_some_and(|plan| plan.at_linebreak(node))
+                {
+                    // A forced linebreak that ends a sentence stays on that sentence's line;
+                    // the following editable whitespace emits the sentence break. This is
+                    // checked before the `Expr` branch because `Linebreak` casts to `Expr`.
+                    self.arena.space() + self.convert_trivia_untyped(node)
                 } else if let Some(expr) = node.cast::<Expr>() {
-                    // Only inline wrappers contribute their terminal punctuation to the
-                    // sentence; other expressions are treated as prose content.
-                    if !keep_pending {
-                        pending_sentence_break =
-                            sentence_breaks && inline_node_ends_with_sentence(node);
-                    }
-                    self.convert_expr(ctx, expr)
+                    self.convert_wrapped_expr(ctx, expr, segmentation)
                 } else if node.kind().is_comment() {
-                    // A comment interrupts the surrounding sentence.
-                    pending_sentence_break = false;
                     self.convert_comment(ctx, node)
                 } else {
-                    // Can be Hash, Semicolon, Shebang.
-                    pending_sentence_break =
-                        sentence_breaks && inline_node_ends_with_sentence(node);
+                    // Can be Hash, Semicolon, Shebang, Linebreak.
                     self.convert_trivia_untyped(node)
                 };
-
-                doc += leading_break + node_doc;
             }
             // Should not eat trailing parbreaks.
             if breaks == 1
                 && fill
-                && !pending_sentence_break
                 && i + 1 != repr.lines.len()
+                && !line.separator.is_some_and(|separator| {
+                    segmentation.is_some_and(|plan| plan.at_space(separator))
+                })
                 && !nodes
                     .last()
                     .is_some_and(|last| reflow_keeps_break_after(last))
@@ -143,74 +113,63 @@ impl<'a> PrettyPrinter<'a> {
             } else if breaks > 0 {
                 // Keep paragraph breaks and any mandatory linebreaks.
                 doc += self.arena.hard_line().repeat(breaks);
-                pending_sentence_break = false;
             }
         }
         doc
     }
+
+    /// Converts a markup expression, sharing the sentence plan with transparent inline
+    /// wrappers so a wrapper's end does not become an artificial sentence boundary.
+    fn convert_wrapped_expr(
+        &'a self,
+        ctx: Context,
+        expr: Expr<'a>,
+        segmentation: Option<&MarkupSegmentation>,
+    ) -> ArenaDoc<'a> {
+        let Some(plan) = segmentation else {
+            return self.convert_expr(ctx, expr);
+        };
+        match expr {
+            Expr::Strong(strong) => self.convert_strong(ctx, strong, Some(plan)),
+            Expr::Emph(emph) => self.convert_emph(ctx, emph, Some(plan)),
+            _ => self.convert_expr(ctx, expr),
+        }
+    }
 }
 
-// Text conversion helper.
-
-/// Splits `text` at sentence boundaries. With `fill`, each sentence additionally soft-wraps
-/// between words. Returns the doc and whether the text ends a sentence.
-fn convert_text_sentence_split<'a>(
+/// Splits a text leaf at the sentence boundaries recorded in the plan. With `fill`, each
+/// segment additionally soft-wraps between words.
+fn convert_text<'a>(
     arena: &'a Arena<'a>,
-    segmenter: &SentenceSegmenterBorrowed,
+    ctx: Context,
     text: Text<'a>,
     fill: bool,
-) -> (ArenaDoc<'a>, bool) {
-    let text = text.get();
-    let mut boundaries = segmenter.segment_str(text);
-    let Some(mut start) = boundaries.next() else {
-        return (arena.nil(), false);
-    };
+    segmentation: Option<&MarkupSegmentation>,
+) -> ArenaDoc<'a> {
     let mut doc = arena.nil();
-    let mut first = true;
-    let mut ended_sentence = false;
-    // Whether the previous segment ended with a common abbreviation (e.g. `etc.`), in which
-    // case its dot does not end the sentence.
-    let mut previous_was_abbreviation = false;
-
-    for end in boundaries {
-        let sentence = text[start..end].trim();
-        if !sentence.is_empty() {
-            if !first {
-                doc += if cannot_break_before_text(sentence) {
-                    // Splitting here would turn the sentence into markup, so keep it inline.
-                    arena.space()
-                } else if previous_was_abbreviation {
-                    // The previous segment ended in an abbreviation, not a sentence boundary.
-                    soft_or_space(arena, fill)
-                } else {
-                    arena.hard_line()
-                };
-            }
-            doc += if fill {
-                wrap_text(arena, sentence)
-            } else {
-                arena.text(sentence)
-            };
-            // Preserve a trailing space at the end of the leaf.
-            if end == text.len() && text.ends_with(' ') {
-                doc += soft_or_space(arena, fill);
-            }
-            first = false;
-            previous_was_abbreviation = is_common_abbreviation(sentence);
-            ended_sentence = source_ends_with_sentence(sentence);
+    let source = text.get().as_str();
+    let mut start = 0;
+    let boundaries = segmentation.map_or(&[][..], |plan| plan.in_text(text.to_untyped()));
+    for &end in boundaries {
+        let segment = &source[start..end];
+        let sentence = segment.trim_ascii_end();
+        doc += if fill {
+            wrap_text(arena, sentence)
+        } else {
+            arena.text(sentence)
+        };
+        if !ctx.break_suppressed {
+            doc += arena.hard_line();
+        } else if sentence.len() != segment.len() {
+            doc += arena.space();
         }
         start = end;
     }
-
-    (doc, ended_sentence)
-}
-
-/// A soft line when filling text, a plain space otherwise.
-fn soft_or_space<'a>(arena: &'a Arena<'a>, fill: bool) -> ArenaDoc<'a> {
-    if fill {
-        arena.softline()
+    let tail = &source[start..];
+    doc + if fill {
+        wrap_text(arena, tail)
     } else {
-        arena.space()
+        arena.text(tail)
     }
 }
 
@@ -288,128 +247,20 @@ fn reflow_keeps_break_after(node: &SyntaxNode) -> bool {
 }
 
 /// Returns whether the node is an equation in block (display) style.
-fn is_block_equation(it: &SyntaxNode) -> bool {
-    it.cast::<Equation>()
+fn is_block_equation(node: &SyntaxNode) -> bool {
+    node.cast::<Equation>()
         .is_some_and(|equation| equation.block())
 }
 
 /// Returns whether the node is a raw block fenced with multiple backticks.
-fn is_block_raw(it: &SyntaxNode) -> bool {
-    it.cast::<Raw>().is_some_and(|raw| raw.block())
-}
-
-/// A closing smart quote belongs to the preceding sentence. Keep a pending break until its
-/// following whitespace so the quote remains on the same line as its sentence.
-fn is_sentence_closer(node: &SyntaxNode) -> bool {
-    node.kind() == SyntaxKind::SmartQuote
+fn is_block_raw(node: &SyntaxNode) -> bool {
+    node.cast::<Raw>().is_some_and(|raw| raw.block())
 }
 
 /// Do not introduce a line break before tokens that gain a special meaning at the start of a line.
 /// Labels are kept on the same line as the preceding text as well.
 fn cannot_break_before_markup(node: &SyntaxNode) -> bool {
-    let text = node.leaf_text();
-    is_line_sensitive_markup_marker(text)
-        || matches!(node.kind(), SyntaxKind::Label)
-        || is_enum_marker(text)
-}
-
-/// Only inline markup wrappers contribute their terminal punctuation to the surrounding
-/// sentence. Arbitrary expressions and content blocks can end with punctuation while still being
-/// followed by prose in the same sentence.
-fn inline_node_ends_with_sentence(node: &SyntaxNode) -> bool {
-    (node.is::<Strong>() || node.is::<Emph>() || node.is::<Raw>() || node.is::<Equation>())
-        && source_ends_with_sentence(&node.full_text())
-}
-
-/// Do not introduce a line break before text that becomes a markup marker at the start of a line.
-fn cannot_break_before_text(text: &str) -> bool {
-    let Some(first) = text.split_ascii_whitespace().next() else {
-        return false;
-    };
-    is_line_sensitive_markup_marker(first) || is_enum_marker(first)
-}
-
-/// Returns whether the text would start a list item, term, or heading if it began a
-/// line: `+`, `-`, `/`, or a run of `=`.
-fn is_line_sensitive_markup_marker(text: &str) -> bool {
-    matches!(text, "+" | "-" | "/") || !text.is_empty() && text.chars().all(|c| c == '=')
-}
-
-/// Returns whether the source text ends a sentence: it ends with sentence punctuation
-/// that is not part of a common abbreviation.
-fn source_ends_with_sentence(text: &str) -> bool {
-    sentence_ends_with_punctuation(text) && !ends_with_common_abbreviation(text)
-}
-
-/// Returns whether the text ends with sentence punctuation, ignoring trailing
-/// whitespace and closing brackets, quotes, and markup delimiters.
-fn sentence_ends_with_punctuation(text: &str) -> bool {
-    trim_sentence_closers(text).ends_with(['.', '!', '?', '。', '！', '？'])
-}
-
-/// Strips trailing whitespace and closing brackets, quotes, and markup delimiters that
-/// may sit between the last word and the sentence-ending punctuation.
-fn trim_sentence_closers(text: &str) -> &str {
-    text.trim_end_matches(|c: char| {
-        c.is_whitespace()
-            || matches!(
-                c,
-                ')' | ']'
-                    | '}'
-                    | '）'
-                    | '】'
-                    | '』'
-                    | '」'
-                    | '〉'
-                    | '》'
-                    | '"'
-                    | '\''
-                    | '”'
-                    | '’'
-                    | '»'
-                    | '›'
-                    | '*'
-                    | '_'
-                    | '`'
-                    | '$'
-            )
-    })
-}
-
-/// Returns whether the last word of the text is a common abbreviation (e.g., `etc.`),
-/// so its trailing dot does not end a sentence.
-fn ends_with_common_abbreviation(text: &str) -> bool {
-    trim_sentence_closers(text)
-        .split_ascii_whitespace()
-        .next_back()
-        .is_some_and(is_common_abbreviation)
-}
-
-/// Returns whether the word is a common abbreviation whose dot does not terminate a
-/// sentence.
-fn is_common_abbreviation(text: &str) -> bool {
-    matches!(
-        text.to_ascii_lowercase().as_str(),
-        "dr."
-            | "mr."
-            | "mrs."
-            | "ms."
-            | "prof."
-            | "sr."
-            | "jr."
-            | "st."
-            | "vs."
-            | "etc."
-            | "e.g."
-            | "i.e."
-            | "al."
-            | "vol."
-            | "ed."
-            | "pp."
-            | "fig."
-            | "sec."
-            | "approx."
-    )
+    node.kind() == SyntaxKind::Label || is_line_sensitive_markup_marker(node.leaf_text())
 }
 
 #[cfg(test)]
@@ -538,8 +389,9 @@ mod tests {
     }
 
     #[test]
-    fn sentence_mode_carries_breaks_across_non_text_nodes() {
-        assert_eq!(format_sentences("A.#foo Next."), "A.\n#foo Next.\n");
+    fn sentence_mode_requires_source_whitespace_before_non_text_nodes() {
+        assert_eq!(format_sentences("A.#foo Next."), "A.#foo Next.\n");
+        assert_eq!(format_sentences("A. #foo Next."), "A.\n#foo Next.\n");
     }
 
     #[test]
@@ -569,6 +421,16 @@ mod tests {
         assert_eq!(
             format_sentences("Hello\\ World. Next."),
             "Hello\\ World.\nNext.\n"
+        );
+    }
+
+    #[test]
+    fn sentence_mode_keeps_pending_break_out_of_sibling_blocks() {
+        // A trailing `\` and a following content block end the prose run; the deferred
+        // break must not suppress the linebreak before the block.
+        assert_eq!(
+            format_sentences("Sentence. \\\n#block[content]"),
+            "Sentence. \\\n#block[content]\n"
         );
     }
 
