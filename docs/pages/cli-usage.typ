@@ -32,6 +32,47 @@ typstyle file1.typ file2.typ
 typstyle src/ docs/
 ```
 
+== File Selection
+
+Directory inputs are discovered recursively. The standard ignore files are
+respected by default:
+
+```bash
+# Respect `.ignore`, `.gitignore`, local excludes, and global Git ignores
+typstyle -i .
+
+# Discover ignored files too (hidden entries are still skipped)
+typstyle -i . --no-respect-gitignore
+
+# Same selection in check mode
+typstyle --check src/
+```
+
+Explicitly named files are always formatted, even when they are ignored, hidden,
+or use another extension, and explicitly named directories are entered even when
+they are ignored:
+
+```bash
+# Explicit file overrides ignores
+typstyle -i generated/example.typ
+```
+
+Entries whose name starts with a dot are always skipped during discovery, even
+when an ignore-file negation would whitelist them. `--no-respect-gitignore`
+turns off ignore-file filtering only: extension filtering, hidden-entry
+handling, and symlink traversal are unchanged. Ignore matching follows the
+ignore patterns without consulting Git's tracked-file index, so a tracked file
+matching an ignore pattern is still skipped. Git-specific rules require a
+repository.
+
+Errors the walker reports during discovery abort the run with exit code `2`
+before any file is written; failures it suppresses internally, such as an
+unreadable ignore file or an invalid global exclude configuration, leave the
+affected rules unapplied without a diagnostic.
+
+Note that shell-expanded globs become explicit arguments, which override ignore
+rules: `typstyle *.typ` and `typstyle '*.typ'` are not interchangeable.
+
 = Main Options
 
 == Format Control

@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- Feature(CLI): Directory discovery now respects `.ignore`, `.gitignore`, Git's
+  local excludes, and the global Git ignore configuration. Add
+  `--no-respect-gitignore` to disable ignore-file filtering during discovery;
+  hidden entries are still skipped, and explicitly named files remain eligible
+  for formatting. Errors reported by the walker during discovery, including
+  malformed ignore rules, now exit with code `2` before any file is written.
+
 ## v0.15.2 - [2026-10-11]
 
 - Feature(CLI): Add `--line-ending=lf|crlf|preserve` with `preserve` as the default.

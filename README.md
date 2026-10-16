@@ -57,6 +57,10 @@ Options:
   -h, --help     Print help
   -V, --version  Print version
 
+File Selection:
+      --respect-gitignore     Respect `.gitignore` and other standard ignore files during directory discovery (default). Use --no-respect-gitignore to disable
+      --no-respect-gitignore  Disable ignore-file filtering during directory discovery. Hidden entries are still skipped
+
 Format Configuration:
   -l, --line-width <LINE_WIDTH>      Maximum width of each line [default: 80] [aliases: column] [short aliases: c]
   -t, --indent-width <INDENT_WIDTH>  Number of spaces per indentation level [default: 2] [aliases: tab-width]
@@ -88,6 +92,28 @@ source. Raw-block boundary breaks follow the layout policy. Range formatting
 detects against the entire original document. To enforce LF in CI, use
 `typstyle --check --line-ending=lf` explicitly.
 
+Directory inputs are discovered recursively and honor the standard ignore files
+(`.ignore`, `.gitignore`, Git's local excludes, and the global Git ignore
+configuration) by default. Ignore matching follows the ignore patterns without
+consulting Git's tracked-file index, so a tracked file matching an ignore
+pattern is still skipped. Git-specific rules require a repository. Entries whose
+name starts with a dot are always skipped, even when an ignore-file negation
+would whitelist them. `--no-respect-gitignore` turns off ignore-file filtering
+only: extension filtering, hidden-entry handling, and symlink traversal are
+unchanged. Explicitly named files are always formatted, even when ignored,
+hidden, or using another extension, and explicitly named directories are
+entered even when ignored.
+
+Errors the walker reports during discovery abort the run with exit code `2`
+before any file is written; failures it suppresses internally, such as an
+unreadable ignore file or an invalid global exclude configuration, leave the
+affected rules unapplied without a diagnostic.
+
+Note that shell-expanded globs become explicit arguments: the shell turns
+`typstyle *.typ` into a list of named files, which override ignore rules,
+whereas the quoted `typstyle '*.typ'` reaches typstyle unexpanded. The two
+invocations are not interchangeable.
+
 #### Examples
 
 - Format a file in place:
@@ -112,6 +138,24 @@ detects against the entire original document. To enforce LF in CI, use
 
   ```sh
   typstyle -i dir
+  ```
+
+- Respect ignore files while formatting a whole project (the default):
+
+  ```sh
+  typstyle -i .
+  ```
+
+- Format files that ignore files exclude as well:
+
+  ```sh
+  typstyle -i . --no-respect-gitignore
+  ```
+
+- Format an explicitly named file even when it is ignored:
+
+  ```sh
+  typstyle -i generated/example.typ
   ```
 
 - Read from stdin and print the result to stdout:

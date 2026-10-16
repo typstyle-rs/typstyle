@@ -35,6 +35,10 @@ pub struct CliArguments {
     #[arg(long, default_value_t = false, global = true, conflicts_with = "check")]
     pub diff: bool,
 
+    /// Options controlling how input files are discovered.
+    #[command(flatten, next_help_heading = "File Selection")]
+    pub file_selection: FileSelectionArgs,
+
     /// Options configuring the formatting style.
     #[command(flatten, next_help_heading = "Format Configuration")]
     pub style: StyleArgs,
@@ -73,6 +77,31 @@ pub enum Command {
         #[arg(value_enum)]
         shell: clap_complete::Shell,
     },
+}
+
+/// Options controlling how input files are discovered.
+#[derive(Args)]
+pub struct FileSelectionArgs {
+    /// Respect `.gitignore` and other standard ignore files
+    /// during directory discovery (default).
+    /// Use --no-respect-gitignore to disable.
+    #[arg(long, default_value_t = false, overrides_with = "no_respect_gitignore")]
+    pub respect_gitignore: bool,
+
+    /// Disable ignore-file filtering during directory discovery.
+    /// Hidden entries are still skipped.
+    #[arg(long, default_value_t = false, overrides_with = "respect_gitignore")]
+    pub no_respect_gitignore: bool,
+}
+
+impl FileSelectionArgs {
+    /// Returns whether directory discovery respects the standard ignore files.
+    ///
+    /// Both switches default to false; the opt-out is the only one that changes
+    /// the default behavior, and the last occurrence of the two wins.
+    pub fn respect_ignore_files(&self) -> bool {
+        !self.no_respect_gitignore
+    }
 }
 
 /// Style options that map to the formatter's [`typstyle_core::Config`].
