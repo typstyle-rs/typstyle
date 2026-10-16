@@ -4,6 +4,7 @@
 //! stdin or the given files in place, in check mode, or as a unified diff.
 
 mod cli;
+mod config_file;
 mod diff;
 mod fmt;
 mod fs;

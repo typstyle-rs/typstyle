@@ -12,12 +12,13 @@ use anyhow::{Context, Result, bail};
 use itertools::Itertools;
 use log::{debug, error, info, warn};
 use typst_syntax::Source;
-use typstyle_core::{Config, LineEnding, Typstyle, WrapMode, format_ast};
+use typstyle_core::{Typstyle, format_ast};
 use walkdir::{DirEntry, WalkDir};
 
 use crate::{
     ExitStatus,
-    cli::{CliArguments, DebugArgs, LineEndingMode, StyleArgs, WrapTextMode},
+    cli::{CliArguments, DebugArgs},
+    config_file::{ConfigOverrides, ConfigResolver},
     diff::SourceDiff,
     fs,
 };
@@ -46,27 +47,16 @@ impl FormatMode {
     }
 }
 
-impl StyleArgs {
-    /// Converts the style options into the formatter's [`Config`].
-    pub fn to_config(&self) -> Config {
-        Config {
-            max_width: self.line_width,
-            tab_spaces: self.indent_width,
-            line_ending: match self.line_ending {
-                LineEndingMode::Lf => LineEnding::Lf,
-                LineEndingMode::Crlf => LineEnding::Crlf,
-                LineEndingMode::Preserve => LineEnding::Preserve,
-            },
-            reorder_import_items: !self.no_reorder_import_items,
-            wrap_mode: match self.wrap_text {
-                WrapTextMode::None => WrapMode::None,
-                WrapTextMode::Fill => WrapMode::Fill,
-                WrapTextMode::Sentence => WrapMode::Sentence,
-                WrapTextMode::FillSentence => WrapMode::FillSentence,
-            },
-            ..Default::default()
-        }
-    }
+/// Builds the formatter for one input: the selected configuration file, with
+/// the explicitly given command-line options applied on top of it.
+fn make_typstyle(
+    args: &CliArguments,
+    resolver: &mut ConfigResolver,
+    input: Option<&Path>,
+) -> Result<Typstyle> {
+    let mut config = resolver.config_for(input)?;
+    ConfigOverrides::from(&args.style).apply_to(&mut config);
+    Ok(Typstyle::new(config))
 }
 
 /// Formats the input from stdin, returning the resulting exit status.
@@ -74,7 +64,8 @@ impl StyleArgs {
 /// In check or diff mode, returns [`ExitStatus::Failure`] if the input would
 /// be reformatted.
 pub fn format_stdin(args: &CliArguments) -> Result<ExitStatus> {
-    let typstyle = Typstyle::new(args.style.to_config());
+    let mut resolver = ConfigResolver::new(&args.config)?;
+    let typstyle = make_typstyle(args, &mut resolver, None)?;
 
     format_one(None, &typstyle, args).map(|res| match res {
         FormatResult::Formatted(_) if args.check || args.diff => ExitStatus::Failure,
@@ -96,16 +87,20 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
     let mut summary = Summary::default();
 
     let mode = FormatMode::from_cli(args);
+
+    // Validate the explicitly selected configuration before any early return,
+    // so an unusable `--config` file never passes silently.
+    let mut resolver = ConfigResolver::new(&args.config)?;
+
     let paths = resolve_typst_files(&args.input);
     if paths.is_empty() {
         warn!("No Typst files found under the given path(s).");
         return Ok(ExitStatus::Success);
     }
 
-    let typstyle = Typstyle::new(args.style.to_config());
-
     let start_time = Instant::now();
     for file in paths {
+        let typstyle = make_typstyle(args, &mut resolver, Some(&file))?;
         let res = format_one(Some(&file), &typstyle, args).unwrap_or_else(|e| {
             error!("{e}");
             summary.error_count += 1;

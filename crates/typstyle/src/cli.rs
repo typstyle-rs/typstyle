@@ -4,7 +4,8 @@
 
 use std::{path::PathBuf, sync::LazyLock};
 
-use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum, error::ErrorKind};
+use clap::{Args, CommandFactory, Parser, Subcommand, error::ErrorKind};
+use typstyle_core::{LineEnding, WrapMode};
 
 /// Arguments of the `typstyle` CLI.
 #[derive(Parser)]
@@ -38,6 +39,10 @@ pub struct CliArguments {
     /// Options configuring the formatting style.
     #[command(flatten, next_help_heading = "Format Configuration")]
     pub style: StyleArgs,
+
+    /// Options selecting which configuration file applies.
+    #[command(flatten, next_help_heading = "Configuration File")]
+    pub config: ConfigArgs,
 
     /// Options for printing debug output of the formatter.
     #[command(flatten, next_help_heading = "Debug Options")]
@@ -76,74 +81,68 @@ pub enum Command {
 }
 
 /// Style options that map to the formatter's [`typstyle_core::Config`].
+///
+/// Every option is optional, so that options omitted on the command line leave
+/// the value selected by the configuration file in place.
 #[derive(Args)]
 pub struct StyleArgs {
-    /// Maximum width of each line.
+    /// Maximum width of each line [default: 80]
     #[arg(
         short = 'l',
         long,
         visible_short_alias = 'c',
         visible_alias = "column",
-        default_value_t = 80,
         global = true
     )]
-    pub line_width: usize,
+    pub line_width: Option<usize>,
 
-    /// Number of spaces per indentation level.
-    #[arg(
-        short = 't',
-        long,
-        visible_alias = "tab-width",
-        default_value_t = 2,
-        global = true
-    )]
-    pub indent_width: usize,
+    /// Number of spaces per indentation level [default: 2]
+    #[arg(short = 't', long, visible_alias = "tab-width", global = true)]
+    pub indent_width: Option<usize>,
 
-    /// Line-ending policy for formatted source output.
-    #[arg(long, value_enum, default_value_t = LineEndingMode::Preserve, global = true)]
-    pub line_ending: LineEndingMode,
+    /// Line-ending policy for formatted source output [default: preserve]
+    #[arg(long, value_enum, global = true)]
+    pub line_ending: Option<LineEnding>,
 
     /// Disable alphabetical reordering of import items.
-    #[arg(long, default_value_t = false, global = true)]
-    pub no_reorder_import_items: bool,
+    #[arg(
+        long,
+        value_name = "BOOL",
+        num_args = 0..=1,
+        default_missing_value = "true",
+        require_equals = true,
+        hide_possible_values = true,
+        global = true
+    )]
+    pub no_reorder_import_items: Option<bool>,
 
-    /// Text wrapping mode: none (default), fill (wrap to line width), sentence (one per line), or fill-sentence (both).
+    /// Text wrapping mode: none, fill (wrap to line width), sentence (one per line), or fill-sentence (both) [default: none]
     #[arg(
         long,
         value_enum,
-        default_value_t = WrapTextMode::None,
         default_missing_value = "fill",
         num_args = 0..=1,
         require_equals = true,
         global = true
     )]
-    pub wrap_text: WrapTextMode,
+    pub wrap_text: Option<WrapMode>,
 }
 
-/// CLI policy for selecting the generated line terminator for each input.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, ValueEnum)]
-pub enum LineEndingMode {
-    /// Generate LF breaks, preserving literal source text.
-    Lf,
-    /// Generate CRLF breaks, preserving literal source text.
-    Crlf,
-    /// Generate CRLF only when the input contains CRLF and no bare LF or CR.
-    #[default]
-    Preserve,
-}
+/// Options selecting which `typstyle.toml` configuration applies.
+#[derive(Args)]
+pub struct ConfigArgs {
+    /// Path to a `typstyle.toml` file to use for every input
+    #[arg(long, value_name = "PATH", global = true, conflicts_with = "isolated")]
+    pub config: Option<PathBuf>,
 
-/// Text wrapping mode for CLI
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, ValueEnum)]
-pub enum WrapTextMode {
-    /// Do not wrap text (default)
-    #[default]
-    None,
-    /// Wrap text to fit within line width
-    Fill,
-    /// Place each sentence on its own line
-    Sentence,
-    /// Place each sentence on its own line, wrapping long sentences to the line width
-    FillSentence,
+    /// Ignore `typstyle.toml` files and use the default configuration
+    #[arg(long, default_value_t = false, global = true)]
+    pub isolated: bool,
+
+    /// Name of the file being formatted, used to discover the configuration
+    /// when reading from stdin
+    #[arg(long, value_name = "PATH", global = true)]
+    pub stdin_filename: Option<PathBuf>,
 }
 
 /// Debug options for printing intermediate artifacts of the formatter.

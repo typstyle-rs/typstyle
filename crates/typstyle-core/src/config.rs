@@ -23,17 +23,20 @@ pub struct Config {
 
 /// Line-ending policy for generated layout, including partial formatting.
 ///
-/// Literal text stays verbatim; raw-block boundary breaks follow the layout policy.
+/// Literal text stays verbatim; raw-block boundary breaks follow the layout
+/// policy. `Preserve` resolves against the whole original document: it generates
+/// CRLF only if the source contains CRLF and no bare LF or CR, and LF otherwise,
+/// including for sources without ASCII newlines.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum LineEnding {
-    /// A single line feed.
+    /// Generate LF breaks, preserving literal source text.
     Lf,
-    /// A carriage return followed by a line feed.
+    /// Generate CRLF breaks, preserving literal source text.
     Crlf,
-    /// Generate CRLF only if the entire source contains CRLF and no bare LF or CR.
-    /// Sources without ASCII newlines or with mixed endings generate LF.
+    /// Generate CRLF only when the input contains CRLF and no bare LF or CR.
     #[default]
     Preserve,
 }
@@ -65,6 +68,7 @@ impl LineEnding {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "kebab-case"))]
+#[cfg_attr(feature = "clap", derive(clap::ValueEnum))]
 pub enum WrapMode {
     /// Do not wrap text.
     #[default]

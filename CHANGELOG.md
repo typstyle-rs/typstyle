@@ -1,5 +1,20 @@
 # Changelog
 
+## Unreleased
+
+- Feature(CLI): Read formatting options from a `typstyle.toml` file. The
+  nearest file in the input's directory or one of its ancestors applies to that
+  input and fully replaces parent configurations; for stdin, discovery starts
+  from `--stdin-filename` when given. Keys are the formatter's option names in
+  kebab case (`line-width`, `indent-width`, `blank-lines-upper-bound`,
+  `collapse-markup-spaces`, `reorder-import-items`, `line-ending`,
+  `wrap-mode`), are all optional, and reject unknown names or wrong value types
+  instead of silently falling back to defaults. Two keys differ from their
+  flags: `wrap-mode` belongs to `--wrap-text`, and `reorder-import-items` is
+  the positive form of `--no-reorder-import-items`. Command-line options
+  override the selected file and options that are omitted keep the configured
+  value. Add `--config`, `--isolated`, and `--stdin-filename`.
+
 ## v0.15.2 - [2026-10-11]
 
 - Feature(CLI): Add `--line-ending=lf|crlf|preserve` with `preserve` as the default.
