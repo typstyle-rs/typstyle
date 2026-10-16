@@ -47,8 +47,10 @@ wasm-bindgen = "0.2.100"
 
 # Used in CLI
 anyhow = "1"
+bstr = "1"
 clap = { version = "4.5", features = ["derive", "env"] }
 clap_complete = { version = "4.5" }
+gix-ignore = "0.24"
 path-absolutize = "4.0"
 walkdir = { version = "2" }
 

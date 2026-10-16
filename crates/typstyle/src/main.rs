@@ -5,6 +5,7 @@
 
 mod cli;
 mod diff;
+mod discover;
 mod fmt;
 mod fs;
 mod logging;
