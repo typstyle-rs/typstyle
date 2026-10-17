@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Fix: Recognize enum markers with numbers up to `u64::MAX` on 32-bit targets, matching the Typst lexer, so text wrapping no longer breaks before them.
+  ([#506](https://github.com/typstyle-rs/typstyle/issues/506))
+
 ## v0.15.2 - [2026-10-11]
 
 - Feature(CLI): Add `--line-ending=lf|crlf|preserve` with `preserve` as the default.
