@@ -49,6 +49,7 @@ wasm-bindgen = "0.2.100"
 anyhow = "1"
 clap = { version = "4.5", features = ["derive", "env"] }
 clap_complete = { version = "4.5" }
+ignore = "0.4"
 path-absolutize = "4.0"
 walkdir = { version = "2" }
 

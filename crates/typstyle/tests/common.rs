@@ -17,6 +17,7 @@ use tempfile::TempDir;
 ///
 /// They normalize nondeterministic content such as durations, temporary paths,
 /// path separators, and the `.exe` suffix.
+#[allow(dead_code)]
 pub const INSTA_FILTERS: &[(&str, &str)] = &[
     (r"(?m)^(.+) in [\w.]+$", "$1 in [DURATION]"),
     (
@@ -64,9 +65,32 @@ impl Workspace {
         rv
     }
 
-    /// Creates a [`Command`] running the built `typstyle` binary in the project directory.
+    /// Creates a [`Command`] running the built `typstyle` binary in the project
+    /// directory, with the Git environment isolated from the developer's
+    /// configuration.
+    ///
+    /// `HOME`, `XDG_CONFIG_HOME`, `GIT_CONFIG_GLOBAL`, and `GIT_CONFIG_SYSTEM`
+    /// point inside the project directory, so tests can opt into global ignore
+    /// rules by writing `gitconfig-global` in the project.
     pub fn cli(&self) -> Command {
-        self.cmd(get_cargo_bin("typstyle"))
+        let mut cmd = self.cmd(get_cargo_bin("typstyle"));
+        cmd.env("HOME", self.project_path().join("home"))
+            .env("XDG_CONFIG_HOME", self.project_path().join("xdg"))
+            .env(
+                "GIT_CONFIG_GLOBAL",
+                self.project_path().join("gitconfig-global"),
+            )
+            .env(
+                "GIT_CONFIG_SYSTEM",
+                self.project_path().join("gitconfig-system"),
+            )
+            .env("GIT_CONFIG_NOSYSTEM", "1");
+        cmd
+    }
+
+    /// Marks the project as Git repository root.
+    pub fn git_init(&self) {
+        self.write(".git/HEAD", "ref: refs/heads/main\n");
     }
 
     /// Writes the contents to the project-relative path, creating parent directories.

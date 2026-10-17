@@ -9,15 +9,15 @@ use std::{
 };
 
 use anyhow::{Context, Result, bail};
+use ignore::WalkBuilder;
 use itertools::Itertools;
 use log::{debug, error, info, warn};
 use typst_syntax::Source;
 use typstyle_core::{Config, LineEnding, Typstyle, WrapMode, format_ast};
-use walkdir::{DirEntry, WalkDir};
 
 use crate::{
     ExitStatus,
-    cli::{CliArguments, DebugArgs, LineEndingMode, StyleArgs, WrapTextMode},
+    cli::{CliArguments, DebugArgs, FileSelectionArgs, LineEndingMode, StyleArgs, WrapTextMode},
     diff::SourceDiff,
     fs,
 };
@@ -96,7 +96,10 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
     let mut summary = Summary::default();
 
     let mode = FormatMode::from_cli(args);
-    let paths = resolve_typst_files(&args.input);
+    // Discovery runs to completion before any file is formatted, so the errors
+    // reported by the walker surface before any write instead of producing a
+    // partial run. The walker suppresses some ignore-file errors internally.
+    let paths = resolve_typst_files(&args.input, &args.file_selection)?;
     if paths.is_empty() {
         warn!("No Typst files found under the given path(s).");
         return Ok(ExitStatus::Success);
@@ -284,39 +287,68 @@ fn write_back(path: &Path, content: &str) -> Result<()> {
 
 /// Resolves the input paths to the files to format.
 ///
-/// Directories are searched recursively for `.typ` files, skipping hidden
-/// entries. Duplicates are removed, and the results are sorted if any
-/// directory was expanded.
-fn resolve_typst_files(input: &[PathBuf]) -> Vec<PathBuf> {
-    fn is_hidden(entry: &DirEntry) -> bool {
-        entry
-            .file_name()
-            .to_str()
-            .is_some_and(|s| s.starts_with('.'))
+/// Directories are searched recursively for `.typ` files. Entries whose name
+/// starts with a dot are skipped, and the standard ignore files are consulted
+/// unless the selection options opt out. Explicitly named files are always
+/// kept, even when they are hidden, ignored, or use another extension.
+/// Duplicates are removed, and the results are sorted if any directory was
+/// expanded.
+///
+/// Ignore matching follows the ignore patterns of the repository; it never
+/// consults Git's tracked-file index, so a tracked file matching an ignore
+/// pattern is skipped during recursive discovery.
+fn resolve_typst_files(input: &[PathBuf], selection: &FileSelectionArgs) -> Result<Vec<PathBuf>> {
+    fn is_hidden(path: &Path) -> bool {
+        path.file_name()
+            .and_then(|name| name.to_str())
+            .is_some_and(|name| name.starts_with('.'))
     }
 
+    let mut roots = Vec::new();
     let mut files = Vec::new();
-    let mut has_dir = false;
     for path in input.iter().map(fs::normalize_path).unique() {
         if path.is_dir() {
-            has_dir = true;
-            let entries = WalkDir::new(path)
-                .into_iter()
-                .filter_entry(|e| !is_hidden(e))
-                .filter_map(Result::ok);
-            for entry in entries {
-                if entry.file_type().is_file() && entry.path().extension() == Some("typ".as_ref()) {
-                    files.push(entry.into_path());
-                }
-            }
+            roots.push(path);
         } else {
-            files.push(path.clone());
+            files.push(path);
+        }
+    }
+
+    let has_dir = !roots.is_empty();
+    if has_dir {
+        let mut builder = WalkBuilder::from_iter(roots);
+        builder
+            // Hidden entries are handled by the predicate below so that they
+            // stay skipped regardless of ignore-file negations or the opt-out.
+            .hidden(false)
+            .filter_entry(|entry| entry.depth() == 0 || !is_hidden(entry.path()));
+        let respect = selection.respect_ignore_files();
+        builder
+            .ignore(respect)
+            .git_ignore(respect)
+            .git_global(respect)
+            .git_exclude(respect);
+        for entry in builder.build() {
+            let entry = entry
+                .with_context(|| "failed to discover files, check paths and their permissions")?;
+            // Errors the walker reports carry the path of the entry they were
+            // found in; surface them instead of skipping the entry silently.
+            if let Some(err) = entry.error() {
+                return Err(anyhow::anyhow!(err.to_string())).with_context(|| {
+                    format!("failed to read ignore files for {}", entry.path().display())
+                });
+            }
+            if entry.file_type().is_some_and(|t| t.is_file())
+                && entry.path().extension() == Some("typ".as_ref())
+            {
+                files.push(entry.into_path());
+            }
         }
     }
     if has_dir {
         files.sort_unstable();
     }
-    files
+    Ok(files.into_iter().unique().collect())
 }
 
 /// Prints the unified diff of the changes made to the given path.

@@ -10,8 +10,12 @@ pub struct SimpleLogger;
 
 impl log::Log for SimpleLogger {
     /// Returns whether records at the given level are currently logged.
+    ///
+    /// Records from dependencies are dropped: verbose mode enables debug-level
+    /// logging for typstyle itself, and the traversal dependencies log their
+    /// internals at the same level, which would pollute the CLI's output.
     fn enabled(&self, metadata: &Metadata) -> bool {
-        metadata.level() <= log::max_level()
+        metadata.target().starts_with("typstyle") && metadata.level() <= log::max_level()
     }
 
     /// Prints the record, colorizing error and warning levels.
