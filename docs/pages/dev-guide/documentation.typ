@@ -52,6 +52,8 @@ cargo run -p typstyle -- --help > docs/assets/generated/cli-help.txt
 
 This is used for #cross-link("/cli-usage.typ")[cli-usage].
 
+The short help (`typstyle -h`) is embedded in `README.md`. Sync that block with `just sync-readme-cli-help`; the script requires #link("https://www.nushell.sh")[Nushell] (`cargo install nu`). Use `just check-cli-help` to verify that the block is current without rewriting it.
+
 = Documentation Structure
 
 The documentation is organized as follows:

@@ -30,8 +30,14 @@ jobs:
         with:
           tool: just
 
+      - name: Setup Nushell
+        uses: hustcer/setup-nu@v3
+
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
+
+      - name: Check CLI usage in README
+        run: just check-cli-help
 
       - name: Download & install shiroa
         run: |
