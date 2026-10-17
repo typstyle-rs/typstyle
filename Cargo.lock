@@ -4469,8 +4469,10 @@ dependencies = [
  "itertools 0.15.0",
  "log",
  "path-absolutize",
+ "serde",
  "similar 3.2.0",
  "tempfile",
+ "toml",
  "typst-syntax",
  "typstyle-core",
  "vergen",
@@ -4501,6 +4503,7 @@ dependencies = [
 name = "typstyle-core"
 version = "0.15.2"
 dependencies = [
+ "clap",
  "criterion",
  "icu_segmenter",
  "insta",

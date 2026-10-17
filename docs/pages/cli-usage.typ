@@ -113,6 +113,57 @@ typstyle --wrap-text=sentence file.typ
 typstyle --wrap-text=fill-sentence file.typ
 ```
 
+= Configuration File
+
+Typstyle reads formatting options from a `typstyle.toml` file. For each input,
+it uses the nearest file found in the input's directory or one of its
+ancestors; for stdin, discovery starts from the directory of
+`--stdin-filename`, or from the current directory when it is not given.
+
+```toml
+line-width = 100
+indent-width = 4
+blank-lines-upper-bound = 1
+collapse-markup-spaces = false
+reorder-import-items = true
+line-ending = "preserve"
+wrap-mode = "none"
+```
+
+Keys are the formatter's option names in kebab case, and every key is optional:
+keys that are absent keep the formatter defaults. Two keys differ from their
+command-line flags: `wrap-mode` belongs to `--wrap-text`, and
+`reorder-import-items` is the positive form of `--no-reorder-import-items`.
+Unknown keys and values of the wrong type are errors, so a typo cannot be
+silently ignored.
+
+The nearest file replaces any configuration in parent directories; options are
+not inherited or merged. Missing keys therefore fall back to the formatter
+defaults rather than to a parent configuration:
+
+```text
+project/
+├── typstyle.toml        # line-width = 100
+├── main.typ             # uses line-width = 100
+└── examples/
+    ├── typstyle.toml    # indent-width = 4
+    └── demo.typ         # line-width = 80, indent-width = 4
+```
+
+Command-line options override the configuration file, and options that are not
+given on the command line keep the configured value.
+
+```bash
+# Use a specific configuration file for every input
+typstyle --config config/typstyle.toml -i src/
+
+# Ignore configuration files entirely
+typstyle --isolated -i src/
+
+# Discover the configuration from the edited file's directory
+cat file.typ | typstyle --stdin-filename file.typ
+```
+
 = Debug Options
 
 == AST Output

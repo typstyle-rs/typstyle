@@ -53,15 +53,25 @@ Options:
   -i, --inplace  Format the file in place
       --check    Run in 'check' mode. Exits with 0 if input is formatted correctly. Exits with a non-zero status code if formatting is required
       --diff     Run in 'diff' mode. Shows unified diff of what formatting changes would be made. Exits with 0 if input is formatted correctly. Exits with a non-zero status code if formatting is required
-      --line-ending <LINE_ENDING>  Line-ending policy for formatted source output [default: preserve] [possible values: lf, crlf, preserve]
-  -h, --help     Print help
+  -h, --help     Print help (see more with '--help')
   -V, --version  Print version
 
 Format Configuration:
-  -l, --line-width <LINE_WIDTH>      Maximum width of each line [default: 80] [aliases: column] [short aliases: c]
-  -t, --indent-width <INDENT_WIDTH>  Number of spaces per indentation level [default: 2] [aliases: tab-width]
-      --no-reorder-import-items      Disable alphabetical reordering of import items
-      --wrap-text[=<WRAP_TEXT>]      Text wrapping mode: none (default), fill (wrap to line width), sentence (one per line), or fill-sentence (both) [default: none] [possible values: none, fill, sentence, fill-sentence]
+  -l, --line-width <LINE_WIDTH>
+          Maximum width of each line [default: 80] [aliases: -c, --column]
+  -t, --indent-width <INDENT_WIDTH>
+          Number of spaces per indentation level [default: 2] [alias: --tab-width]
+      --line-ending <LINE_ENDING>
+          Line-ending policy for formatted source output [default: preserve] [possible values: lf, crlf, preserve]
+      --no-reorder-import-items[=<BOOL>]
+          Disable alphabetical reordering of import items
+      --wrap-text[=<WRAP_TEXT>]
+          Text wrapping mode: none, fill (wrap to line width), sentence (one per line), or fill-sentence (both) [default: none] [possible values: none, fill, sentence, fill-sentence]
+
+Configuration File:
+      --config <PATH>          Path to a `typstyle.toml` file to use for every input
+      --isolated               Ignore `typstyle.toml` files and use the default configuration
+      --stdin-filename <PATH>  Name of the file being formatted, used to discover the configuration when reading from stdin
 
 Debug Options:
   -a, --ast         Print the AST of the input file
@@ -87,6 +97,30 @@ All policies preserve newlines in strings, verbatim raw spans, and format-disabl
 source. Raw-block boundary breaks follow the layout policy. Range formatting
 detects against the entire original document. To enforce LF in CI, use
 `typstyle --check --line-ending=lf` explicitly.
+
+#### Configuration File
+
+Formatting options can be stored in a `typstyle.toml` file. The nearest file in
+the input's directory or one of its ancestors applies to that input; for stdin,
+`--stdin-filename` selects the directory to search from.
+
+```toml
+line-width = 100
+indent-width = 4
+blank-lines-upper-bound = 1
+line-ending = "preserve"
+wrap-mode = "fill"
+```
+
+The nearest file replaces any configuration in parent directories: options are
+not inherited, and absent keys keep the formatter defaults. Keys are the
+formatter's option names in kebab case; the wrap mode is `wrap-mode` even
+though its flag is `--wrap-text`, and import sorting is the positive
+`reorder-import-items` rather than `--no-reorder-import-items`. Unknown keys
+and values of the wrong type are errors. Command-line options override the
+selected file, and options that are omitted keep the file's value. Use
+`--config PATH` to select one file for every input, or `--isolated` to ignore
+configuration files entirely.
 
 #### Examples
 

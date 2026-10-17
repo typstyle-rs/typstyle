@@ -18,7 +18,8 @@ Formatter options cross crate and application boundaries. Changing only core `Co
 
 == CLI
 
-+ Add the argument/value enum in `crates/typstyle/src/cli.rs` and map it to core `Config` in `crates/typstyle/src/fmt.rs`.
++ Add the argument in `crates/typstyle/src/cli.rs`, reusing the value enum from `typstyle-core` (behind its `clap` feature) instead of defining a CLI-specific copy.
++ Map it in `ConfigOverrides` in `crates/typstyle/src/config_file.rs`, which carries both the command-line overrides and the `typstyle.toml` schema; `make_typstyle` in `crates/typstyle/src/fmt.rs` applies the command line on top of the selected file.
 + Preserve existing invocations when extending a boolean flag into an optional value. Require `=` for values so paths are not consumed: `--wrap-text=sentence`, while `--wrap-text file.typ` remains valid.
 + Test positional paths and invalid values in `crates/typstyle/tests/test_style_args.rs`.
 + Run `just generate-cli-help` and update copied help text in `README.md`.
