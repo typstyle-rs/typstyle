@@ -21,7 +21,7 @@ Formatter options cross crate and application boundaries. Changing only core `Co
 + Add the argument/value enum in `crates/typstyle/src/cli.rs` and map it to core `Config` in `crates/typstyle/src/fmt.rs`.
 + Preserve existing invocations when extending a boolean flag into an optional value. Require `=` for values so paths are not consumed: `--wrap-text=sentence`, while `--wrap-text file.typ` remains valid.
 + Test positional paths and invalid values in `crates/typstyle/tests/test_style_args.rs`.
-+ Run `just generate-cli-help` and update copied help text in `README.md`.
++ Run `just generate-cli-help` for the docs help text and `just sync-readme-cli-help` for the `README.md` block; `just check-cli-help` verifies that the block is current.
 
 == Tests and Rust Consumers
 

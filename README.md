@@ -41,6 +41,7 @@ You can install `typstyle` using any of the following methods:
 
 #### CLI Usage
 
+<!-- The CLI usage below is synced from `typstyle -h` by `just sync-readme-cli-help`. -->
 ```txt
 Beautiful and reliable typst code formatter
 
@@ -53,13 +54,16 @@ Options:
   -i, --inplace  Format the file in place
       --check    Run in 'check' mode. Exits with 0 if input is formatted correctly. Exits with a non-zero status code if formatting is required
       --diff     Run in 'diff' mode. Shows unified diff of what formatting changes would be made. Exits with 0 if input is formatted correctly. Exits with a non-zero status code if formatting is required
-      --line-ending <LINE_ENDING>  Line-ending policy for formatted source output [default: preserve] [possible values: lf, crlf, preserve]
-  -h, --help     Print help
+  -h, --help     Print help (see more with '--help')
   -V, --version  Print version
 
+Range Selection:
+      --lines <FIRST:LAST>  Format only the given line ranges, using 1-based inclusive line numbers. Repeat the option to select multiple ranges
+
 Format Configuration:
-  -l, --line-width <LINE_WIDTH>      Maximum width of each line [default: 80] [aliases: column] [short aliases: c]
-  -t, --indent-width <INDENT_WIDTH>  Number of spaces per indentation level [default: 2] [aliases: tab-width]
+  -l, --line-width <LINE_WIDTH>      Maximum width of each line [default: 80] [aliases: -c, --column]
+  -t, --indent-width <INDENT_WIDTH>  Number of spaces per indentation level [default: 2] [alias: --tab-width]
+      --line-ending <LINE_ENDING>    Line-ending policy for formatted source output [default: preserve] [possible values: lf, crlf, preserve]
       --no-reorder-import-items      Disable alphabetical reordering of import items
       --wrap-text[=<WRAP_TEXT>]      Text wrapping mode: none (default), fill (wrap to line width), sentence (one per line), or fill-sentence (both) [default: none] [possible values: none, fill, sentence, fill-sentence]
 

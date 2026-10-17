@@ -7,9 +7,15 @@ on:
     paths:
       - "playground/**"
       - "docs/**"
+      - "README.md"
+      - "justfile"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "crates/typstyle/**"
       - "crates/typstyle-core/**"
       - "crates/typstyle-wasm/**"
       - "crates/typstyle-typlugin/**"
+      - "scripts/sync-readme-cli-help.nu"
       - ".github/workflows/gh-pages.yml"
       - ".github/workflows/build-docs.yml"
       - ".github/workflows/build-playground.yml"
@@ -46,9 +52,13 @@ jobs:
               paths:
                 - Cargo.toml
                 - Cargo.lock
+                - 'README.md'
+                - 'justfile'
                 - 'docs/**'
+                - 'crates/typstyle/**'
                 - 'crates/typstyle-core/**'
                 - 'crates/typstyle-typlugin/**'
+                - 'scripts/sync-readme-cli-help.nu'
                 - '.github/workflows/build-docs.yml'
                 - 'CHANGELOG.md'
             playground:

@@ -21,6 +21,14 @@ generate-cli-help:
       | sed '1,/^$/d; s/typstyle\.exe/typstyle/g' \
       > "docs/assets/generated/cli-help.txt"
 
+# Sync the short CLI usage block in README.md from `typstyle -h`.
+sync-readme-cli-help:
+    ./scripts/sync-readme-cli-help.nu
+
+# Verify that the CLI usage block in README.md matches the CLI.
+check-cli-help:
+    ./scripts/sync-readme-cli-help.nu --check
+
 prepare-release version='':
     ./scripts/prepare-release '{{version}}'
 
