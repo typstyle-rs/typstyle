@@ -82,13 +82,14 @@ pub(super) fn wrap_text<'a>(arena: &'a Arena<'a>, text: &'a str) -> ArenaDoc<'a>
     doc
 }
 
-/// Returns `true` if `token` is one or more ASCII digits that parse as a `usize`, followed by a dot.
+/// Returns `true` if `token` is one or more ASCII digits that parse as a `u64`, followed by a dot.
 /// Examples: "1.", "42.",
 pub(super) fn is_enum_marker(token: &str) -> bool {
     // Check and strip trailing dot
     if let Some(stripped) = token.strip_suffix('.') {
-        // Attempt to parse the digits as a `usize`
-        return stripped.parse::<usize>().is_ok();
+        // Attempt to parse the digits as a `u64`, like the Typst lexer does.
+        // `usize` would reject large markers on 32-bit targets.
+        return stripped.parse::<u64>().is_ok();
     }
     false
 }
