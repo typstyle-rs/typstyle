@@ -184,11 +184,11 @@ impl<'a> PrettyPrinter<'a> {
             }
             _ => FlowItem::none(),
         });
-        self.indent(body)
+        self.indent_item(body)
     }
 
     /// Converts the body shared by list, enum, and term items: the marker followed by
-    /// the content in [`MarkupScope::Item`] scope, indented one level.
+    /// the content in [`MarkupScope::Item`] scope, indented as an item body.
     fn convert_list_item_like(&'a self, ctx: Context, item: &'a SyntaxNode) -> ArenaDoc<'a> {
         let body = self.convert_flow_like(ctx, item, |ctx, child, _| match child.kind() {
             SyntaxKind::ListMarker | SyntaxKind::EnumMarker | SyntaxKind::TermMarker => {
@@ -212,7 +212,16 @@ impl<'a> PrettyPrinter<'a> {
             }
             _ => FlowItem::none(),
         });
-        self.indent(body)
+        self.indent_item(body)
+    }
+
+    /// Indents the body of a list/enum/term item.
+    ///
+    /// Item bodies use a fixed hanging indent of two spaces (the width of `- `),
+    /// independent of the configured `tab_spaces`, which only applies to code.
+    fn indent_item(&'a self, body: ArenaDoc<'a>) -> ArenaDoc<'a> {
+        const ITEM_INDENT: isize = 2;
+        body.nest(ITEM_INDENT)
     }
 
     /// Converts a markup node, honoring the given [`MarkupScope`].
