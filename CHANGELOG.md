@@ -4,6 +4,13 @@
 
 - Fix: Recognize enum markers with numbers up to `u64::MAX` on 32-bit targets, matching the Typst lexer, so text wrapping no longer breaks before them.
   ([#506](https://github.com/typstyle-rs/typstyle/issues/506))
+- Fix: list, enum and term items no longer use the configured `tab_spaces` (`--tab-width`) as the hanging indent of their wrapped lines and nested content. Item bodies are now always indented by two spaces, so the output with `--tab-width=4` looks like:
+  ```typst
+  - this is a wrapped list item
+    with a tab-width of 4
+    - nested item
+  ```
+  ([#478](https://github.com/typstyle-rs/typstyle/issues/478))
 
 ## v0.15.2 - [2026-10-11]
 
