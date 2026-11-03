@@ -167,7 +167,7 @@ impl<'a> PrettyPrinter<'a> {
         } else {
             self.arena.nil()
         };
-        let body = self.convert_flow_like_iter(ctx, inner_nodes.iter(), |ctx, node| {
+        let body = self.convert_flow_like_iter(ctx, inner_nodes, |ctx, node| {
             if let Some(math) = node.cast::<Math>() {
                 let ctx = ctx.aligned(if has_open_linebreak && has_close_space {
                     AlignMode::Inner

@@ -328,8 +328,18 @@ impl<'a> PrettyPrinter<'a> {
     pub(super) fn convert_flow_like_iter(
         &'a self,
         ctx: Context,
-        children: impl Iterator<Item = &'a SyntaxNode>,
+        children: impl IntoIterator<Item = &'a SyntaxNode>,
         mut producer: impl FnMut(Context, &'a SyntaxNode) -> FlowItem<'a>,
+    ) -> ArenaDoc<'a> {
+        self.convert_flow_like_iter_impl(ctx, children.into_iter(), &mut producer)
+    }
+
+    // Using dyn trait object for producer to avoid monomorphization bloat.
+    fn convert_flow_like_iter_impl(
+        &'a self,
+        ctx: Context,
+        children: impl Iterator<Item = &'a SyntaxNode>,
+        producer: &mut dyn FnMut(Context, &'a SyntaxNode) -> FlowItem<'a>,
     ) -> ArenaDoc<'a> {
         let mut flow = FlowStylist::new(self);
         let mut children = children.peekable();

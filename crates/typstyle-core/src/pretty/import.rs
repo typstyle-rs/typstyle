@@ -42,7 +42,7 @@ impl<'a> PrettyPrinter<'a> {
             };
 
         // Convert the prefix section.
-        let prefix_doc = self.convert_flow_like_iter(ctx, prefix_part.iter(), |ctx, child| {
+        let prefix_doc = self.convert_flow_like_iter(ctx, prefix_part, |ctx, child| {
             match child.kind() {
                 SyntaxKind::Colon => FlowItem::tight_spaced(self.arena.text(":")),
                 SyntaxKind::Star => FlowItem::spaced(self.arena.text("*")), // wildcard import
