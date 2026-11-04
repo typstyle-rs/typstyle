@@ -4,6 +4,7 @@
 
 - Fix: Recognize enum markers with numbers up to `u64::MAX` on 32-bit targets, matching the Typst lexer, so text wrapping no longer breaks before them.
   ([#506](https://github.com/typstyle-rs/typstyle/issues/506))
+- Fix: Keep a semicolon written right after `#`-prefixed code in math arguments attached to it. That semicolon ends the code, so `$mat(#n;; #k)$` (one row separator) was formatted to `$mat(#n ;; #k)$` (two), which added an empty row to the matrix.
 
 ## v0.15.2 - [2026-10-11]
 

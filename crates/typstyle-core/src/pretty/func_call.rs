@@ -203,23 +203,16 @@ impl<'a> PrettyPrinter<'a> {
             }
         };
 
-        let mut peek_hash = false;
         let mut peek_arg = false;
         let mut peek_hashed_arg = false;
-        let inner = self.convert_flow_like_iter(ctx, children, |ctx, child, state| {
-            let at_hash = state.at_hash || peek_hash;
-            let at_arg = peek_arg;
-            let at_hashed_arg = peek_hashed_arg;
-            let at_linebreak = peek_linebreak;
-            peek_hash = false;
-            peek_arg = false;
-            peek_hashed_arg = false;
-            peek_linebreak = false;
+        let inner = self.convert_flow_like_iter(ctx, children, |ctx, child| {
+            let at_arg = std::mem::take(&mut peek_arg);
+            let at_hashed_arg = std::mem::take(&mut peek_hashed_arg);
+            let at_linebreak = std::mem::take(&mut peek_linebreak);
             match child.kind() {
                 SyntaxKind::Comma => FlowItem::tight_spaced(self.arena.text(",")),
                 SyntaxKind::Semicolon => FlowItem::new(self.arena.text(";"), at_hashed_arg, true),
                 SyntaxKind::Space => {
-                    peek_hash = at_hash;
                     peek_hashed_arg = at_hashed_arg || at_arg;
                     if child.leaf_text().has_linebreak() {
                         peek_linebreak = true;
@@ -228,16 +221,11 @@ impl<'a> PrettyPrinter<'a> {
                         FlowItem::none()
                     }
                 }
-                SyntaxKind::Hash => {
-                    peek_hash = true;
-                    FlowItem::none()
-                }
                 _ => {
                     if let Some(arg) = child.cast::<Arg>() {
                         peek_arg = !arg.to_untyped().leaf_text().is_empty();
-                        if at_hash || is_ends_with_hashed_expr(arg.to_untyped().children()) {
-                            peek_hashed_arg = true;
-                        }
+                        peek_hashed_arg = ctx.mode.is_code()
+                            || is_ends_with_hashed_expr(arg.to_untyped().children());
                         let ctx = ctx.aligned(
                             if at_linebreak || arg.to_untyped().kind() == SyntaxKind::MathDelimited
                             {
@@ -262,11 +250,8 @@ impl<'a> PrettyPrinter<'a> {
 }
 
 /// Returns whether the children end with a `#expr` sequence.
-fn is_ends_with_hashed_expr(mut children: std::slice::Iter<'_, SyntaxNode>) -> bool {
-    children.next_back().is_some_and(|it| it.is::<Expr>())
-        && children
-            .next_back()
-            .is_some_and(|it| it.kind() == SyntaxKind::Hash)
+fn is_ends_with_hashed_expr(children: std::slice::Iter<'_, SyntaxNode>) -> bool {
+    matches!(children.as_slice(), [.., hash, expr] if hash.kind() == SyntaxKind::Hash && expr.is::<Expr>())
 }
 
 /// Suggests a folding style (`FoldStyle`) for parenthesized function-call arguments

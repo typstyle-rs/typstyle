@@ -104,7 +104,7 @@ impl<'a> PrettyPrinter<'a> {
     /// Converts a heading, emitting its marker followed by the title as an inline item
     /// ([`MarkupScope::InlineItem`]).
     pub(super) fn convert_heading(&'a self, ctx: Context, heading: Heading<'a>) -> ArenaDoc<'a> {
-        self.convert_flow_like(ctx, heading.to_untyped(), |ctx, child, _| {
+        self.convert_flow_like(ctx, heading.to_untyped(), |ctx, child| {
             if child.kind() == SyntaxKind::HeadingMarker {
                 FlowItem::spaced(self.arena.text(child.leaf_text().as_str()))
             } else if let Some(markup) = child.cast::<Markup>() {
@@ -152,7 +152,7 @@ impl<'a> PrettyPrinter<'a> {
     ) -> ArenaDoc<'a> {
         let node = term_item.to_untyped();
         let mut seen_term = false;
-        let body = self.convert_flow_like(ctx, node, |ctx, child, _| match child.kind() {
+        let body = self.convert_flow_like(ctx, node, |ctx, child| match child.kind() {
             SyntaxKind::TermMarker => FlowItem::spaced(self.arena.text(child.leaf_text().as_str())),
             SyntaxKind::Colon => {
                 seen_term = true;
@@ -190,7 +190,7 @@ impl<'a> PrettyPrinter<'a> {
     /// Converts the body shared by list, enum, and term items: the marker followed by
     /// the content in [`MarkupScope::Item`] scope, indented one level.
     fn convert_list_item_like(&'a self, ctx: Context, item: &'a SyntaxNode) -> ArenaDoc<'a> {
-        let body = self.convert_flow_like(ctx, item, |ctx, child, _| match child.kind() {
+        let body = self.convert_flow_like(ctx, item, |ctx, child| match child.kind() {
             SyntaxKind::ListMarker | SyntaxKind::EnumMarker | SyntaxKind::TermMarker => {
                 FlowItem::spaced(self.arena.text(child.leaf_text().as_str()))
             }
