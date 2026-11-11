@@ -107,7 +107,6 @@ It has another sentence with #value.
 Text after a comment.
 Another sentence after the comment.
 
-Line one ends here.
-\
+Line one ends here. \
 Forced linebreak starts a new visual line.
 Final sentence.

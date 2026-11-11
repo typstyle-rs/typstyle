@@ -24,7 +24,7 @@ impl<'a> PrettyPrinter<'a> {
     ///
     /// A sentence boundary detected inside a node (for example at the end of a text leaf) is
     /// carried in `pending_sentence_break` until the next break point, where it becomes a hard
-    /// line. This lets a trailing quote stay with the sentence first.
+    /// line. This lets a trailing quote or an attached `\` stay with the sentence first.
     pub(super) fn convert_markup_body_reflow(
         &'a self,
         ctx: Context,
@@ -51,6 +51,13 @@ impl<'a> PrettyPrinter<'a> {
                         // separate a label from the text it annotates.
                         pending_sentence_break = false;
                         self.arena.space()
+                    } else if pending_sentence_break
+                        && prev.is_none_or(|node| node.kind() != SyntaxKind::Linebreak)
+                        && next.is_some_and(|node| node.kind() == SyntaxKind::Linebreak)
+                    {
+                        // The `\` that follows attaches to the previous sentence, so let it
+                        // supply the separator and keep the pending break unresolved.
+                        self.arena.nil()
                     } else if pending_sentence_break {
                         // The previous sentence ended: start the next one on a new line.
                         pending_sentence_break = false;
@@ -72,7 +79,17 @@ impl<'a> PrettyPrinter<'a> {
                 // A closing quote stays glued to the sentence it terminates, so the pending break
                 // survives until the following whitespace.
                 let defer_break = sentence_breaks && is_sentence_closer(node);
-                let leading_break = if pending_sentence_break && !defer_break {
+                // A linebreak that follows a sentence stays on that sentence's line. The break
+                // itself is emitted by the following space or source line break.
+                let attach_linebreak = sentence_breaks
+                    && node.kind() == SyntaxKind::Linebreak
+                    && pending_sentence_break;
+                // Both cases postpone resolving the pending break until after this node.
+                let keep_pending = attach_linebreak || defer_break;
+                let leading_break = if attach_linebreak {
+                    // Glue the `\` to the sentence with a space instead of breaking first.
+                    self.arena.space()
+                } else if pending_sentence_break && !defer_break {
                     self.arena.hard_line()
                 } else {
                     self.arena.nil()
@@ -91,7 +108,7 @@ impl<'a> PrettyPrinter<'a> {
                 } else if let Some(expr) = node.cast::<Expr>() {
                     // Only inline wrappers contribute their terminal punctuation to the
                     // sentence; other expressions are treated as prose content.
-                    if !defer_break {
+                    if !keep_pending {
                         pending_sentence_break =
                             sentence_breaks && inline_node_ends_with_sentence(node);
                     }
@@ -454,6 +471,57 @@ mod tests {
     #[test]
     fn sentence_mode_carries_breaks_across_non_text_nodes() {
         assert_eq!(format_sentences("A.#foo Next."), "A.\n#foo Next.\n");
+    }
+
+    #[test]
+    fn sentence_mode_keeps_linebreak_with_preceding_sentence() {
+        assert_eq!(
+            format_sentences("Sentence 1.\\ Sentence 2."),
+            "Sentence 1. \\\nSentence 2.\n"
+        );
+        assert_eq!(
+            format_sentences("Sentence 3. \\ Sentence 4."),
+            "Sentence 3. \\\nSentence 4.\n"
+        );
+        assert_eq!(
+            format_sentences("Sentence 5. \\\nSentence 6."),
+            "Sentence 5. \\\nSentence 6.\n"
+        );
+        assert_eq!(
+            format_sentences("\"Hello.\" \\ World."),
+            "\"Hello.\" \\\nWorld.\n"
+        );
+        assert_eq!(format_sentences("A. \\ \\ B."), "A. \\\n\\ B.\n");
+    }
+
+    #[test]
+    fn sentence_mode_leaves_leading_and_mid_sentence_linebreaks() {
+        assert_eq!(format_sentences("\\ Sentence 2."), "\\ Sentence 2.\n");
+        assert_eq!(
+            format_sentences("Hello\\ World. Next."),
+            "Hello\\ World.\nNext.\n"
+        );
+    }
+
+    #[test]
+    fn fill_sentence_mode_keeps_linebreak_with_preceding_sentence() {
+        assert_eq!(
+            format_fill_sentences("Sentence 1.\\ Sentence 2.", 80),
+            "Sentence 1. \\\nSentence 2.\n"
+        );
+        assert_eq!(
+            format_fill_sentences("Sentence 3. \\ Sentence 4.", 80),
+            "Sentence 3. \\\nSentence 4.\n"
+        );
+        assert_eq!(
+            format_fill_sentences("Sentence 5. \\\nSentence 6.", 80),
+            "Sentence 5. \\\nSentence 6.\n"
+        );
+        assert_eq!(
+            format_fill_sentences("\"Hello.\" \\ World.", 80),
+            "\"Hello.\" \\\nWorld.\n"
+        );
+        assert_eq!(format_fill_sentences("A. \\ \\ B.", 80), "A. \\\n\\ B.\n");
     }
 
     #[test]
