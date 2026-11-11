@@ -17,7 +17,7 @@
     - #chapter("changelog.typ")[Changelog]
     = Usage
     - #chapter("cli-usage.typ")[Command Line Interface]
-    - #chapter(none)[Editor Integration]
+    - #chapter("integrations.typ")[Integrations]
     = Features
     - #chapter("features.typ")[Formatting Features]
       - #chapter("features/markup.typ")[Markup]
