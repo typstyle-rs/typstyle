@@ -154,6 +154,18 @@ Add this to your `.pre-commit-config.yaml`:
       - id: typstyle
 ```
 
+### Use with [Jujutsu](https://github.com/jj-vcs/jj)
+
+Configure typstyle as a [`jj fix`](https://docs.jj-vcs.dev/latest/config/#code-formatting-and-other-file-content-transformations) tool:
+
+```toml
+[fix.tools.typstyle]
+command = ["typstyle"]
+patterns = ["glob:'**/*.typ'"]
+```
+
+`jj fix` passes each file's content on stdin and reads the formatted content from stdout, so use the plain `typstyle` command without `-i` or a path argument.
+
 ## Features & Design
 
 ### Design Goals
