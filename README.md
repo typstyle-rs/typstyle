@@ -162,9 +162,11 @@ Configure typstyle as a [`jj fix`](https://docs.jj-vcs.dev/latest/config/#code-f
 [fix.tools.typstyle]
 command = ["typstyle"]
 patterns = ["glob:'**/*.typ'"]
+# Optional: format only the lines changed by each commit
+line-range-args = ["--lines=$first:$last"]
 ```
 
-`jj fix` passes each file's content on stdin and reads the formatted content from stdout, so use the plain `typstyle` command without `-i` or a path argument.
+`jj fix` passes each file's content on stdin and reads the formatted content from stdout, so use the plain `typstyle` command without `-i` or a path argument. `--lines FIRST:LAST` formats only the selected 1-based, inclusive line ranges and prints the complete file.
 
 ## Features & Design
 

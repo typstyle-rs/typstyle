@@ -55,6 +55,13 @@ A file that cannot be parsed is echoed unchanged with a successful exit code, so
 Because `jj fix` selects files by #link("https://docs.jj-vcs.dev/latest/filesets/")[fileset], its selection is independent of typstyle's directory walking: tracked Typst files under dot-directories are formatted as well.
 When you run typstyle directly in a Jujutsu workspace, recursive directory walks skip entries whose names start with a dot, so `.jj` and the `.git` directory of a colocated repository are never touched.
 
-#callout.note[
-  `line-range-args` is not supported because the typstyle CLI has no line-range option. `jj fix` therefore formats whole files.
-]
+To format only the lines changed by each commit, pass the modified line range through `line-range-args`:
+
+```toml
+[fix.tools.typstyle]
+command = ["typstyle"]
+patterns = ["glob:'**/*.typ'"]
+line-range-args = ["--lines=$first:$last"]
+```
+
+`jj fix` passes the 1-based line numbers of each changed range, and typstyle outputs the full file with only those ranges reformatted.
