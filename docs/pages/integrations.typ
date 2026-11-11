@@ -33,3 +33,28 @@ Add this to your `.pre-commit-config.yaml`:
     hooks:
       - id: typstyle
 ```
+
+= Working with Jujutsu
+
+Typstyle works with #link("https://github.com/jj-vcs/jj")[Jujutsu] through its `jj fix` command.
+`jj fix` does not run formatters on paths in the working copy: it writes the content of each selected file to stdin and reads the formatted content from stdout.
+Use the plain `typstyle` command as the fix tool:
+
+```toml
+[fix.tools.typstyle]
+command = ["typstyle"]
+patterns = ["glob:'**/*.typ'"]
+```
+
+Style options can be passed the same way, for example `command = ["typstyle", "--line-width=100"]`.
+
+Do not add `-i` to the command: in-place mode requires file arguments and is rejected when typstyle reads from stdin.
+Do not pass `$path` either, since a path argument makes typstyle read the working-copy file and ignore stdin.
+A file that cannot be parsed is echoed unchanged with a successful exit code, so `jj fix` leaves it intact.
+
+Because `jj fix` selects files by #link("https://docs.jj-vcs.dev/latest/filesets/")[fileset], its selection is independent of typstyle's directory walking: tracked Typst files under dot-directories are formatted as well.
+When you run typstyle directly in a Jujutsu workspace, recursive directory walks skip entries whose names start with a dot, so `.jj` and the `.git` directory of a colocated repository are never touched.
+
+#callout.note[
+  `line-range-args` is not supported because the typstyle CLI has no line-range option. `jj fix` therefore formats whole files.
+]
