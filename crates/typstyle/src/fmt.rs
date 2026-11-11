@@ -2,6 +2,8 @@
 /// their formatting via standard input/output.
 ///
 /// Adapted from: https://github.com/astral-sh/ruff/blob/main/crates/ruff_linter/src/fs.rs
+mod range;
+
 use std::{
     io::Read,
     path::{Path, PathBuf},
@@ -15,9 +17,10 @@ use typst_syntax::Source;
 use typstyle_core::{Config, LineEnding, Typstyle, WrapMode, format_ast};
 use walkdir::{DirEntry, WalkDir};
 
+pub use self::range::LineRange;
 use crate::{
     ExitStatus,
-    cli::{CliArguments, DebugArgs, LineEndingMode, StyleArgs, WrapTextMode},
+    cli::{CliArguments, LineEndingMode, StyleArgs, WrapTextMode},
     diff::SourceDiff,
     fs,
 };
@@ -175,7 +178,7 @@ fn format_one(
     let use_stdout = !args.inplace && !args.check && !args.diff;
     let unformatted = get_input(input)?;
 
-    let res = format_debug(&unformatted, typstyle, &args.debug);
+    let res = format_debug(&unformatted, typstyle, args)?;
     match &res {
         FormatResult::Formatted(res) => {
             if args.inplace {
@@ -230,35 +233,45 @@ enum FormatResult {
 ///
 /// Prints the AST, the pretty IR, and the elapsed time if requested, and
 /// reports [`FormatResult::Erroneous`] if the source cannot be rendered.
-fn format_debug(content: &str, typstyle: &Typstyle, args: &DebugArgs) -> FormatResult {
+/// Selecting line ranges reformats only those ranges, but the returned content
+/// is always the complete source so it can be fed back to the caller.
+fn format_debug(content: &str, typstyle: &Typstyle, args: &CliArguments) -> Result<FormatResult> {
     let source = Source::detached(content);
     let root = source.root();
-    if args.ast {
+    if args.debug.ast {
         println!("{}", format_ast(root));
     }
 
     let start_time = Instant::now();
-    let f = typstyle.format_source(source);
-    if args.pretty_doc {
-        match f.render_ir() {
-            Ok(ir) => println!("{ir}"),
-            Err(e) => error!("Failed to render IR: {e}"),
+    let res = if args.lines.is_empty() {
+        let f = typstyle.format_source(source);
+        if args.debug.pretty_doc {
+            match f.render_ir() {
+                Ok(ir) => println!("{ir}"),
+                Err(e) => error!("Failed to render IR: {e}"),
+            }
         }
-    }
-    let Ok(res) = f.render() else {
-        return FormatResult::Erroneous;
+        let Ok(res) = f.render() else {
+            return Ok(FormatResult::Erroneous);
+        };
+        res
+    } else {
+        let Some(out) = range::format(&source, typstyle, &args.lines)? else {
+            return Ok(FormatResult::Erroneous);
+        };
+        out
     };
 
-    if args.timing {
+    if args.debug.timing {
         println!("Formatting completed in {:?}", start_time.elapsed());
     }
 
     // Compare `res` with `content` to perform CI checks
-    if res != content {
+    Ok(if res != content {
         FormatResult::Formatted(res)
     } else {
         FormatResult::Unchanged
-    }
+    })
 }
 
 /// Reads the input from the given file, or from stdin if no path is given.

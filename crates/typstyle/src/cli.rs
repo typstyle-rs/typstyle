@@ -6,6 +6,8 @@ use std::{path::PathBuf, sync::LazyLock};
 
 use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum, error::ErrorKind};
 
+use crate::fmt::LineRange;
+
 /// Arguments of the `typstyle` CLI.
 #[derive(Parser)]
 #[command(
@@ -20,6 +22,17 @@ pub struct CliArguments {
 
     /// List of files or directories to format [default: stdin]
     pub input: Vec<PathBuf>,
+
+    /// Format only the given line ranges, using 1-based inclusive line numbers.
+    /// Repeat the option to select multiple ranges.
+    #[arg(
+        long,
+        value_name = "FIRST:LAST",
+        num_args = 1,
+        help_heading = "Range Selection",
+        conflicts_with = "pretty_doc"
+    )]
+    pub lines: Vec<LineRange>,
 
     /// Format the file in place
     #[arg(short, long, default_value_t = false, conflicts_with_all = ["check", "diff"])]
@@ -49,15 +62,36 @@ pub struct CliArguments {
 }
 
 impl CliArguments {
-    /// Exits with an error if in-place formatting is requested without any input files.
+    /// Exits with an error if the selected options cannot be combined.
     pub fn validate_input(&self) {
-        if self.command.is_none() && self.inplace && self.input.is_empty() {
-            let mut cmd = Self::command();
-            cmd.error(
-                ErrorKind::ValueValidation,
-                "cannot perform in-place formatting without at least one file being presented",
-            )
-            .exit();
+        if self.command.is_some() {
+            return;
+        }
+        if self.inplace && self.input.is_empty() {
+            Self::command()
+                .error(
+                    ErrorKind::ValueValidation,
+                    "cannot perform in-place formatting without at least one file being presented",
+                )
+                .exit();
+        }
+        if !self.lines.is_empty() {
+            if self.input.len() > 1 {
+                Self::command()
+                    .error(
+                        ErrorKind::ValueValidation,
+                        "`--lines` can only be used with stdin or a single input",
+                    )
+                    .exit();
+            }
+            if self.input.first().is_some_and(|path| path.is_dir()) {
+                Self::command()
+                    .error(
+                        ErrorKind::ValueValidation,
+                        "`--lines` cannot be used with a directory input",
+                    )
+                    .exit();
+            }
         }
     }
 }

@@ -113,6 +113,23 @@ typstyle --wrap-text=sentence file.typ
 typstyle --wrap-text=fill-sentence file.typ
 ```
 
+= Line Ranges
+
+Use `--lines FIRST:LAST` to format only the selected lines, using 1-based inclusive line numbers.
+Repeat the option to select multiple ranges:
+
+```bash
+# Format only lines 3 to 5 and line 10
+typstyle --lines=3:5 --lines=10 file.typ
+
+# Line ranges also work when reading from stdin
+cat file.typ | typstyle --lines=3:5
+```
+
+The output is always the complete document; only the selected ranges are reformatted.
+A range may expand to the smallest enclosing syntax node when the selected lines are part of a multi-line expression, so the result stays valid.
+The option can be combined with `--check`, `--diff`, and `--inplace`, and accepts stdin or a single input file.
+
 = Debug Options
 
 == AST Output

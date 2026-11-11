@@ -17,6 +17,7 @@ use tempfile::TempDir;
 ///
 /// They normalize nondeterministic content such as durations, temporary paths,
 /// path separators, and the `.exe` suffix.
+#[allow(dead_code)]
 pub const INSTA_FILTERS: &[(&str, &str)] = &[
     (r"(?m)^(.+) in [\w.]+$", "$1 in [DURATION]"),
     (
