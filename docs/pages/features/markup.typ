@@ -72,6 +72,7 @@ Typstyle applies specific wrapping logic based on node types:
 - *Cannot break before*: Markup markers (`=`, `+`, `-`, `/`) and labels to prevent misinterpretation
 - *Force hard breaks*: Around block equations to keep them on exclusive lines
 - *Preserve breaks after*: Block elements, line comments, and structural nodes (code blocks, conditionals, loops)
+- *Sentence-ending linebreaks*: In `sentence` and `fill-sentence` modes, a `\` that follows a sentence stays at the end of that sentence's line
 - *Exclusive lines*: Single non-text nodes or hash-prefixed expressions (e.g., `#figure()`)
 - *Soft breaks*: Regular spaces become flexible break points unless restricted by above rules
 
