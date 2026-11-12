@@ -3,12 +3,15 @@
 ## Unreleased
 
 - Feature(CLI): Directory discovery now respects `.ignore`, `.gitignore`, Git's
-  local excludes, and the global Git ignore configuration. Add
+  local excludes, and the global Git exclude file. Add
   `--no-respect-gitignore` to disable ignore-file filtering during discovery;
   hidden entries are still skipped, and explicitly named files remain eligible
-  for formatting. Errors reported by the walker during discovery now exit with
-  code `2` before any file is written; unreadable ignore files leave their rules
-  unapplied without a diagnostic.
+  for formatting. Discovery errors, including a dangling escape in an ignore
+  rule, exit with code `2` before any file is written; unreadable ignore files
+  leave their rules unapplied without a diagnostic. Git configuration handling
+  follows the `ignore` crate: only a simple global `core.excludesFile` value is
+  read; repository-local config, includes, continued or concatenated values,
+  and `core.ignoreCase` are not consulted.
 - Fix: Recognize enum markers with numbers up to `u64::MAX` on 32-bit targets, matching the Typst lexer, so text wrapping no longer breaks before them.
   ([#506](https://github.com/typstyle-rs/typstyle/issues/506))
 - Fix: Keep a semicolon written right after `#`-prefixed code in math arguments attached to it. That semicolon ends the code, so `$mat(#n;; #k)$` (one row separator) was formatted to `$mat(#n ;; #k)$` (two), which added an empty row to the matrix.

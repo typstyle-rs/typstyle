@@ -38,6 +38,30 @@ fn selected_in(space: &Workspace, dir: &Path, args: &[&str]) -> Vec<String> {
         .collect()
 }
 
+/// Like [`selected`], but with the given environment variable removed.
+fn selected_env_removed(space: &Workspace, var: &str) -> Vec<String> {
+    let out = space
+        .cli()
+        .env_remove(var)
+        .arg("--check")
+        .arg(".")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8(out.stdout).unwrap();
+    let mut paths = stdout
+        .lines()
+        .filter_map(|line| line.strip_prefix("Would reformat: "))
+        .map(|path| path.replace('\\', "/"))
+        .collect::<Vec<_>>();
+    paths.sort();
+    paths
+}
+
+/// Like [`selected`], but with `XDG_CONFIG_HOME` unset so the home fallback is used.
+fn selected_without_xdg(space: &Workspace) -> Vec<String> {
+    selected_env_removed(space, "XDG_CONFIG_HOME")
+}
+
 /// Returns a command that runs the CLI in the project directory with the
 /// given arguments.
 fn cli(space: &Workspace, args: &[&str]) -> Command {
@@ -105,15 +129,99 @@ fn test_global_gitignore() {
     );
     space.write("global-ignore", "global.typ\n");
     space.write("global.typ", UNFORMATTED);
+    space.write("included.typ", UNFORMATTED);
 
     // The global rules also require a repository.
-    assert_eq!(selected(&space, &["."]), ["global.typ"]);
+    assert_eq!(selected(&space, &["."]), ["global.typ", "included.typ"]);
 
     space.git_init();
-    assert!(selected(&space, &["."]).is_empty());
+    assert_eq!(selected(&space, &["."]), ["included.typ"]);
     assert_eq!(
         selected(&space, &[".", "--no-respect-gitignore"]),
-        ["global.typ"]
+        ["global.typ", "included.typ"]
+    );
+}
+
+#[test]
+fn test_global_excludes_file_quoted() {
+    let space = Workspace::new();
+    space.write(
+        "gitconfig-global",
+        "[core]\n\texcludesFile = \"global-ignore\"\n",
+    );
+    space.write("global-ignore", "global.typ\n");
+    space.write("global.typ", UNFORMATTED);
+    space.write("included.typ", UNFORMATTED);
+
+    space.git_init();
+    assert_eq!(selected(&space, &["."]), ["included.typ"]);
+}
+
+#[test]
+fn test_default_global_gitignore() {
+    let space = Workspace::new();
+    space.write("xdg/git/ignore", "global.typ\n");
+    space.write("global.typ", UNFORMATTED);
+    space.write("included.typ", UNFORMATTED);
+
+    assert_eq!(selected(&space, &["."]), ["global.typ", "included.typ"]);
+
+    space.git_init();
+    assert_eq!(selected(&space, &["."]), ["included.typ"]);
+}
+
+#[test]
+fn test_default_global_gitignore_home_fallback() {
+    let space = Workspace::new();
+    space.write("home/.config/git/ignore", "global.typ\n");
+    space.write("global.typ", UNFORMATTED);
+    space.write("included.typ", UNFORMATTED);
+
+    space.git_init();
+    assert_eq!(selected_without_xdg(&space), ["included.typ"]);
+}
+
+#[test]
+fn test_global_config_sources_are_merged() {
+    let space = Workspace::new();
+    space.write("home/.gitconfig", "[user]\n\tname = probe\n");
+    space.write("xdg/git/config", "[core]\n\texcludesFile = xdg-ignore\n");
+    space.write("xdg-ignore", "global.typ\n");
+    space.write("global.typ", UNFORMATTED);
+    space.write("included.typ", UNFORMATTED);
+
+    space.git_init();
+    assert_eq!(
+        selected_env_removed(&space, "GIT_CONFIG_GLOBAL"),
+        ["included.typ"]
+    );
+}
+
+#[test]
+fn test_bom_before_ignore_comment() {
+    let space = Workspace::new();
+    space.git_init();
+    space.write(".gitignore", "\u{feff}# comment\\\nignored.typ\n");
+    space.write("ignored.typ", UNFORMATTED);
+    space.write("included.typ", UNFORMATTED);
+
+    assert_eq!(selected(&space, &["."]), ["included.typ"]);
+}
+
+#[test]
+fn test_linked_worktree_local_excludes() {
+    let space = Workspace::new();
+    let gitdir = space.project_path().join("store/worktrees/wt");
+    space.write(".git", format!("gitdir: {}\n", gitdir.display()));
+    space.write("store/worktrees/wt/commondir", "../..\n");
+    space.write("store/info/exclude", "excluded.typ\n");
+    space.write("excluded.typ", UNFORMATTED);
+    space.write("included.typ", UNFORMATTED);
+
+    assert_eq!(selected(&space, &["."]), ["included.typ"]);
+    assert_eq!(
+        selected(&space, &[".", "--no-respect-gitignore"]),
+        ["excluded.typ", "included.typ"]
     );
 }
 
@@ -137,6 +245,84 @@ fn test_parent_rules_from_subdirectory() {
         opted_out,
         ["drop.typ", "generated/also-drop.typ", "keep.typ"]
     );
+}
+
+#[test]
+fn test_nested_repository_discovered() {
+    let space = Workspace::new();
+    space.write("outside.typ", UNFORMATTED);
+    space.write("repo/.git/HEAD", "ref: refs/heads/main\n");
+    space.write("repo/.gitignore", "drop.typ\n");
+    space.write("repo/drop.typ", UNFORMATTED);
+    space.write("repo/keep.typ", UNFORMATTED);
+
+    assert_eq!(selected(&space, &["."]), ["outside.typ", "repo/keep.typ"]);
+    assert_eq!(selected(&space, &["repo"]), ["repo/keep.typ"]);
+}
+
+#[test]
+fn test_nested_repository_restores_outer_rules() {
+    let space = Workspace::new();
+    space.git_init();
+    space.write(".gitignore", "*.typ\n");
+    space.write("a.typ", UNFORMATTED);
+    space.write("z.typ", UNFORMATTED);
+    space.write("nested/.git/HEAD", "ref: refs/heads/main\n");
+    space.write("nested/.gitignore", "drop.typ\n");
+    space.write("nested/drop.typ", UNFORMATTED);
+    space.write("nested/keep.typ", UNFORMATTED);
+
+    // The outer rules are suspended inside the nested repository and apply
+    // again after it, so only the nested file allowed by its own rules remains.
+    assert_eq!(selected(&space, &["."]), ["nested/keep.typ"]);
+}
+
+#[test]
+fn test_ignore_precedence_across_directories() {
+    let space = Workspace::new();
+    space.git_init();
+    space.write(".ignore", "sub/a.typ\n");
+    space.write("sub/.gitignore", "!a.typ\n");
+    space.write("sub/a.typ", UNFORMATTED);
+    space.write("sub/b.typ", UNFORMATTED);
+
+    assert_eq!(selected(&space, &["."]), ["sub/b.typ"]);
+    let sub = space.project_path().join("sub");
+    assert_eq!(selected_in(&space, &sub, &["."]), ["b.typ"]);
+}
+
+#[test]
+fn test_parent_ignore_outside_git() {
+    let space = Workspace::new();
+    space.write(".ignore", "sub/a.typ\n");
+    space.write("sub/a.typ", UNFORMATTED);
+    space.write("sub/b.typ", UNFORMATTED);
+
+    assert_eq!(selected(&space, &["."]), ["sub/b.typ"]);
+    let sub = space.project_path().join("sub");
+    assert_eq!(selected_in(&space, &sub, &["."]), ["b.typ"]);
+}
+
+#[test]
+fn test_jj_repository_marker() {
+    let space = Workspace::new();
+    space.write(".jj/working_copy", "");
+    space.write(".gitignore", "ignored.typ\n");
+    space.write("ignored.typ", UNFORMATTED);
+    space.write("included.typ", UNFORMATTED);
+
+    assert_eq!(selected(&space, &["."]), ["included.typ"]);
+}
+
+#[test]
+fn test_case_matching_is_sensitive() {
+    let space = Workspace::new();
+    space.git_init();
+    space.write(".gitignore", "private.typ\n");
+    space.write("PRIVATE.typ", UNFORMATTED);
+    space.write("included.typ", UNFORMATTED);
+
+    assert_eq!(selected(&space, &["."]), ["PRIVATE.typ", "included.typ"]);
 }
 
 #[test]
@@ -394,6 +580,20 @@ fn test_everything_ignored_warns_and_succeeds() {
         stderr.contains("No Typst files found under the given path(s)."),
         "stderr: {stderr}"
     );
+    assert_eq!(space.read_string("a.typ"), UNFORMATTED);
+}
+
+#[test]
+fn test_malformed_ignore_rule_fails_before_formatting() {
+    let space = Workspace::new();
+    // A dangling escape is rejected by the glob parser.
+    space.write(".ignore", "a\\\n");
+    space.write("a.typ", UNFORMATTED);
+
+    let out = cli(&space, &["-i", "."]).output().unwrap();
+    assert_eq!(out.status.code(), Some(2));
+    let stderr = String::from_utf8(out.stderr).unwrap();
+    assert!(stderr.contains(".ignore"), "stderr: {stderr}");
     assert_eq!(space.read_string("a.typ"), UNFORMATTED);
 }
 

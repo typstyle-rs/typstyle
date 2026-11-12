@@ -8,6 +8,7 @@ mod diff;
 mod discover;
 mod fmt;
 mod fs;
+mod gitignore;
 mod logging;
 
 use std::{io::Write, process::ExitCode};

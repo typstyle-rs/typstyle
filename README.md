@@ -93,8 +93,8 @@ detects against the entire original document. To enforce LF in CI, use
 `typstyle --check --line-ending=lf` explicitly.
 
 Directory inputs are discovered recursively and honor the standard ignore files
-(`.ignore`, `.gitignore`, Git's local excludes, and the global Git ignore
-configuration) by default. Ignore matching follows the ignore patterns without
+(`.ignore`, `.gitignore`, Git's local excludes, and the global Git exclude
+file) by default. Ignore matching follows the ignore patterns without
 consulting Git's tracked-file index, so a tracked file matching an ignore
 pattern is still skipped. Git-specific rules require a repository. Entries whose
 name starts with a dot are always skipped, even when an ignore-file negation
@@ -104,15 +104,41 @@ unchanged. Explicitly named files are always formatted, even when ignored,
 hidden, or using another extension, and explicitly named directories are
 entered even when ignored.
 
-Errors the walker reports during discovery abort the run with exit code `2`
-before any file is written; failures it suppresses internally, such as an
-unreadable ignore file or an invalid global exclude configuration, leave the
-affected rules unapplied without a diagnostic.
+Discovery errors, including a dangling escape in an ignore rule, abort the run
+with exit code `2` before any file is written; failures it suppresses
+internally, such as an unreadable ignore file or an invalid global exclude
+configuration, leave the affected rules unapplied without a diagnostic.
 
 Note that shell-expanded globs become explicit arguments: the shell turns
 `typstyle *.typ` into a list of named files, which override ignore rules,
 whereas the quoted `typstyle '*.typ'` reaches typstyle unexpanded. The two
 invocations are not interchangeable.
+
+##### Ignore Semantics
+
+File discovery follows the [`ignore`](https://docs.rs/ignore) crate, which
+ripgrep also uses. In particular:
+
+- `.ignore` files apply without a repository and take precedence over all Git
+  sources.
+- `.gitignore` and `.git/info/exclude` apply inside a repository. A `.git`
+  entry (directory or worktree pointer file) or a `.jj` directory marks a
+  repository; linked-worktree excludes are resolved through the common Git
+  directory.
+- The global excludes file is taken from `GIT_CONFIG_GLOBAL`, then
+  `~/.gitconfig`, then the XDG Git config, then the system Git config, and
+  finally the default `$XDG_CONFIG_HOME/git/ignore` or
+  `~/.config/git/ignore`.
+- Only a simple `core.excludesfile` line is read. Repository-local config,
+  `[include]`, continued values, concatenated quoted values, and
+  `core.ignoreCase` are not consulted. Matching is case-sensitive.
+- A relative `core.excludesfile` path is resolved from the current working
+  directory, not the repository root.
+- If the selected global config has no `core.excludesfile`, the next global
+  source is tried, as `ignore` does.
+- `GIT_CONFIG_NOSYSTEM` is not honored; the system config is still read.
+
+These are deliberate `ignore` semantics, not exact `git check-ignore` parity.
 
 #### Examples
 

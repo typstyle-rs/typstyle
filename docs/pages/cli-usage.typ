@@ -65,13 +65,36 @@ ignore patterns without consulting Git's tracked-file index, so a tracked file
 matching an ignore pattern is still skipped. Git-specific rules require a
 repository.
 
-Errors the walker reports during discovery abort the run with exit code `2`
-before any file is written; failures it suppresses internally, such as an
-unreadable ignore file or an invalid global exclude configuration, leave the
-affected rules unapplied without a diagnostic.
+Discovery errors, including a dangling escape in an ignore rule, abort the run
+with exit code `2` before any file is written; failures it suppresses
+internally, such as an unreadable ignore file or an invalid global exclude
+configuration, leave the affected rules unapplied without a diagnostic.
 
 Note that shell-expanded globs become explicit arguments, which override ignore
 rules: `typstyle *.typ` and `typstyle '*.typ'` are not interchangeable.
+
+=== Ignore Semantics
+
+File discovery follows the `ignore` crate (also used by ripgrep):
+
+- `.ignore` files apply without a repository and take precedence over Git
+  sources.
+- `.gitignore` and `.git/info/exclude` apply inside a repository. A `.git`
+  entry or a `.jj` directory marks a repository; linked-worktree excludes are
+  resolved through the common Git directory.
+- The global excludes file comes from `GIT_CONFIG_GLOBAL`, then
+  `~/.gitconfig`, then the XDG config, then the system config, and finally the
+  default `$XDG_CONFIG_HOME/git/ignore` or `~/.config/git/ignore`.
+- Only a simple `core.excludesfile` line is read. Repository-local config,
+  includes, continued or concatenated values, and `core.ignoreCase` are not
+  consulted; matching is case-sensitive.
+- Relative `core.excludesfile` paths resolve from the current working
+  directory, not the repository root.
+- If the selected global config lacks `core.excludesfile`, the next global
+  source is tried.
+- `GIT_CONFIG_NOSYSTEM` is not honored; the system config is still read.
+
+This follows `ignore`, not exact `git check-ignore` behavior.
 
 = Main Options
 
