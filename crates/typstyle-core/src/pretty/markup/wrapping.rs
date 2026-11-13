@@ -5,27 +5,38 @@ use icu_segmenter::{SentenceSegmenter, SentenceSegmenterBorrowed};
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use super::{MarkupLine, MarkupRepr};
-use crate::pretty::{
-    Context, PrettyPrinter,
-    prelude::*,
-    text::{is_enum_marker, wrap_text},
-    util::is_comment_node,
+use crate::{
+    WrapMode,
+    pretty::{
+        Context, PrettyPrinter,
+        prelude::*,
+        text::{is_enum_marker, wrap_text},
+        util::is_comment_node,
+    },
 };
 
 impl<'a> PrettyPrinter<'a> {
-    /// With text-wrapping enabled, spaces may turn to linebreaks, and linebreaks may turn to spaces, if safe.
+    /// Lays out a markup body in a reflowing mode.
     ///
-    /// When `sentence_breaks` is set, sentence boundaries additionally become hardlines, so each
-    /// sentence starts on its own line while long sentences still wrap to the line width.
-    pub(super) fn convert_markup_body_wrapped(
+    /// Spaces may turn to linebreaks and source linebreaks may turn to spaces, when safe. With
+    /// sentence breaks, each sentence starts on its own line; when filling, long sentences still
+    /// wrap to the line width.
+    ///
+    /// A sentence boundary detected inside a node (for example at the end of a text leaf) is
+    /// carried in `pending_sentence_break` until the next break point, where it becomes a hard
+    /// line. This lets a trailing quote stay with the sentence first.
+    pub(super) fn convert_markup_body_reflow(
         &'a self,
         ctx: Context,
         repr: &MarkupRepr<'a>,
-        sentence_breaks: bool,
+        mode: WrapMode,
     ) -> ArenaDoc<'a> {
+        let fill = matches!(mode, WrapMode::Fill | WrapMode::FillSentence);
+        let sentence_breaks = matches!(mode, WrapMode::Sentence | WrapMode::FillSentence);
         let segmenter = sentence_breaks.then(|| SentenceSegmenter::new(Default::default()));
 
         let mut doc = self.arena.nil();
+        // Carries a sentence boundary to the next break point instead of breaking immediately.
         let mut pending_sentence_break = false;
         for (i, line) in repr.lines.iter().enumerate() {
             let &MarkupLine {
@@ -33,22 +44,24 @@ impl<'a> PrettyPrinter<'a> {
             } = line;
             for (j, node) in nodes.iter().enumerate() {
                 if node.kind() == SyntaxKind::Space {
-                    doc += if nodes
-                        .get(j + 1)
-                        .is_some_and(|node| cannot_break_before_markup(node))
-                    {
+                    let next = nodes.get(j + 1);
+                    let prev = j.checked_sub(1).and_then(|k| nodes.get(k));
+                    doc += if next.is_some_and(|node| cannot_break_before_markup(node)) {
+                        // Breaking here would turn the next token into a markup marker or
+                        // separate a label from the text it annotates.
                         pending_sentence_break = false;
                         self.arena.space()
                     } else if pending_sentence_break {
+                        // The previous sentence ended: start the next one on a new line.
                         pending_sentence_break = false;
                         self.arena.hard_line()
-                    } else if nodes
-                        .get(j + 1)
-                        .is_some_and(|node| reflow_prefers_exclusive(node))
-                        || nodes
-                            .get(j - 1)
-                            .is_some_and(|node| reflow_prefers_exclusive(node))
+                    } else if !fill {
+                        // Sentence mode never reflows spaces within a line.
+                        self.arena.space()
+                    } else if next.is_some_and(|node| reflow_prefers_exclusive(node))
+                        || prev.is_some_and(|node| reflow_prefers_exclusive(node))
                     {
+                        // Keep block equations and raw blocks on a line of their own.
                         self.arena.hard_line()
                     } else {
                         self.arena.softline()
@@ -67,24 +80,28 @@ impl<'a> PrettyPrinter<'a> {
 
                 let node_doc = if let Some(text) = node.cast::<Text>() {
                     if let Some(segmenter) = &segmenter {
+                        // Split the leaf so each sentence can break independently.
                         let (text_doc, ended_sentence) =
-                            convert_text_sentence_split(&self.arena, segmenter, text, true);
+                            convert_text_sentence_split(&self.arena, segmenter, text, fill);
                         pending_sentence_break = ended_sentence;
                         text_doc
                     } else {
                         self.convert_text_wrapped(text)
                     }
                 } else if let Some(expr) = node.cast::<Expr>() {
+                    // Only inline wrappers contribute their terminal punctuation to the
+                    // sentence; other expressions are treated as prose content.
                     if !defer_break {
                         pending_sentence_break =
                             sentence_breaks && inline_node_ends_with_sentence(node);
                     }
                     self.convert_expr(ctx, expr)
                 } else if is_comment_node(node) {
+                    // A comment interrupts the surrounding sentence.
                     pending_sentence_break = false;
                     self.convert_comment(ctx, node)
                 } else {
-                    // can be Hash, Semicolon, Shebang
+                    // Can be Hash, Semicolon, Shebang.
                     pending_sentence_break =
                         sentence_breaks && inline_node_ends_with_sentence(node);
                     self.convert_trivia_untyped(node)
@@ -94,89 +111,24 @@ impl<'a> PrettyPrinter<'a> {
             }
             // Should not eat trailing parbreaks.
             if breaks == 1
+                && fill
                 && !pending_sentence_break
                 && i + 1 != repr.lines.len()
-                && !nodes.last().is_some_and(|last| {
-                    reflow_should_break_after(last) || reflow_preserve_break_after(last)
-                })
+                && !nodes
+                    .last()
+                    .is_some_and(|last| reflow_keeps_break_after(last))
                 && !reflow_preserve_exclusive(line)
                 && !reflow_preserve_exclusive(&repr.lines[i + 1])
             {
+                // A lone source linebreak may reflow into a space, unless a sentence
+                // boundary, a structural node, or an exclusive line requires a hardline.
                 doc += self.arena.softline();
             } else if breaks > 0 {
+                // Keep paragraph breaks and any mandatory linebreaks.
                 doc += self.arena.hard_line().repeat(breaks);
                 pending_sentence_break = false;
             }
         }
-        doc
-    }
-
-    /// With sentence-per-line mode, split sentence boundaries inside text leaves.
-    pub(super) fn convert_markup_body_sentence_per_line(
-        &'a self,
-        ctx: Context,
-        repr: &MarkupRepr<'a>,
-    ) -> ArenaDoc<'a> {
-        let segmenter = SentenceSegmenter::new(Default::default());
-
-        let mut doc = self.arena.nil();
-        let mut pending_sentence_break = false;
-        for line in repr.lines.iter() {
-            for (index, node) in line.nodes.iter().enumerate() {
-                doc += if node.kind() == SyntaxKind::Space {
-                    if pending_sentence_break {
-                        pending_sentence_break = false;
-                        if line
-                            .nodes
-                            .get(index + 1)
-                            .is_some_and(|node| cannot_break_before_markup(node))
-                        {
-                            self.arena.space()
-                        } else {
-                            self.arena.hard_line()
-                        }
-                    } else {
-                        self.arena.space()
-                    }
-                } else if let Some(text) = node.cast::<Text>() {
-                    let (text_doc, ended_sentence) =
-                        convert_text_sentence_split(&self.arena, &segmenter, text, false);
-                    let leading_break = if pending_sentence_break {
-                        self.arena.hard_line()
-                    } else {
-                        self.arena.nil()
-                    };
-                    pending_sentence_break = ended_sentence;
-                    leading_break + text_doc
-                } else if is_sentence_closer(node) {
-                    self.convert_trivia_untyped(node)
-                } else if let Some(expr) = node.cast::<Expr>() {
-                    let leading_break = if pending_sentence_break {
-                        self.arena.hard_line()
-                    } else {
-                        self.arena.nil()
-                    };
-                    pending_sentence_break = inline_node_ends_with_sentence(node);
-                    leading_break + self.convert_expr(ctx, expr)
-                } else if is_comment_node(node) {
-                    pending_sentence_break = false;
-                    self.convert_comment(ctx, node)
-                } else {
-                    let leading_break = if pending_sentence_break {
-                        self.arena.hard_line()
-                    } else {
-                        self.arena.nil()
-                    };
-                    pending_sentence_break = inline_node_ends_with_sentence(node);
-                    leading_break + self.convert_trivia_untyped(node)
-                };
-            }
-            if line.breaks > 0 {
-                doc += self.arena.hard_line().repeat(line.breaks);
-                pending_sentence_break = false;
-            }
-        }
-
         doc
     }
 }
@@ -199,6 +151,8 @@ fn convert_text_sentence_split<'a>(
     let mut doc = arena.nil();
     let mut first = true;
     let mut ended_sentence = false;
+    // Whether the previous segment ended with a common abbreviation (e.g. `etc.`), in which
+    // case its dot does not end the sentence.
     let mut previous_was_abbreviation = false;
 
     for end in boundaries {
@@ -206,13 +160,11 @@ fn convert_text_sentence_split<'a>(
         if !sentence.is_empty() {
             if !first {
                 doc += if cannot_break_before_text(sentence) {
+                    // Splitting here would turn the sentence into markup, so keep it inline.
                     arena.space()
                 } else if previous_was_abbreviation {
-                    if fill {
-                        arena.softline()
-                    } else {
-                        arena.space()
-                    }
+                    // The previous segment ended in an abbreviation, not a sentence boundary.
+                    soft_or_space(arena, fill)
                 } else {
                     arena.hard_line()
                 };
@@ -222,12 +174,9 @@ fn convert_text_sentence_split<'a>(
             } else {
                 arena.text(sentence)
             };
+            // Preserve a trailing space at the end of the leaf.
             if end == text.len() && text.ends_with(' ') {
-                doc += if fill {
-                    arena.softline()
-                } else {
-                    arena.space()
-                };
+                doc += soft_or_space(arena, fill);
             }
             first = false;
             previous_was_abbreviation = is_common_abbreviation(sentence);
@@ -237,6 +186,15 @@ fn convert_text_sentence_split<'a>(
     }
 
     (doc, ended_sentence)
+}
+
+/// A soft line when filling text, a plain space otherwise.
+fn soft_or_space<'a>(arena: &'a Arena<'a>, fill: bool) -> ArenaDoc<'a> {
+    if fill {
+        arena.softline()
+    } else {
+        arena.space()
+    }
 }
 
 /// For hard-line -> soft-line, keep a line exclusive (prevent soft breaks) when:
@@ -255,8 +213,9 @@ fn reflow_prefers_exclusive(node: &SyntaxNode) -> bool {
     is_block_equation(node) || is_block_raw(node)
 }
 
-/// For hard-line -> soft-line, always break after block elements or line comments.
-fn reflow_should_break_after(node: &SyntaxNode) -> bool {
+/// For hard-line -> soft-line, keep a break after nodes where breaking is visually better:
+/// block elements, line comments, and structural nodes.
+fn reflow_keeps_break_after(node: &SyntaxNode) -> bool {
     matches!(
         node.kind(),
         SyntaxKind::Heading
@@ -264,14 +223,7 @@ fn reflow_should_break_after(node: &SyntaxNode) -> bool {
             | SyntaxKind::EnumItem
             | SyntaxKind::TermItem
             | SyntaxKind::LineComment
-    )
-}
-
-/// For hard-line -> soft-line, preserve breaks after nodes where breaking is visually better.
-fn reflow_preserve_break_after(node: &SyntaxNode) -> bool {
-    matches!(
-        node.kind(),
-        SyntaxKind::BlockComment
+            | SyntaxKind::BlockComment
             | SyntaxKind::Linebreak
             | SyntaxKind::Label
             | SyntaxKind::CodeBlock
