@@ -8,6 +8,7 @@
 - Fix: Keep a semicolon written right after `#`-prefixed code in math arguments attached to it. That semicolon ends the code, so `$mat(#n;; #k)$` (one row separator) was formatted to `$mat(#n ;; #k)$` (two), which added an empty row to the matrix.
 - Fix: With `--wrap-text=sentence` or `--wrap-text=fill-sentence`, keep a `\` linebreak that ends a sentence at the end of that sentence's line instead of moving it to the start of the next line.
   ([#524](https://github.com/typstyle-rs/typstyle/issues/524))
+- Fix: With text wrapping enabled, keep a heading, list item, enum item, or term item that has a comment written beside its marker on its own line. The comment hid the marker from the reflow check, so joining the line silently turned the block element into plain text.
 
 ## v0.15.2 - [2026-10-11]
 
