@@ -22,8 +22,10 @@ typstyle-core.workspace = true
 typst-syntax.workspace = true
 
 anyhow.workspace = true
+bstr.workspace = true
 clap.workspace = true
 clap_complete = { workspace = true, optional = true }
+gix-ignore.workspace = true
 itertools.workspace = true
 path-absolutize.workspace = true
 similar.workspace = true

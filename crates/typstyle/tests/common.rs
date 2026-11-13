@@ -17,6 +17,7 @@ use tempfile::TempDir;
 ///
 /// They normalize nondeterministic content such as durations, temporary paths,
 /// path separators, and the `.exe` suffix.
+#[allow(dead_code)]
 pub const INSTA_FILTERS: &[(&str, &str)] = &[
     (r"(?m)^(.+) in [\w.]+$", "$1 in [DURATION]"),
     (
@@ -64,9 +65,15 @@ impl Workspace {
         rv
     }
 
-    /// Creates a [`Command`] running the built `typstyle` binary in the project directory.
+    /// Creates a [`Command`] running the built `typstyle` binary in the project
+    /// directory.
     pub fn cli(&self) -> Command {
         self.cmd(get_cargo_bin("typstyle"))
+    }
+
+    /// Marks the project as Git repository root.
+    pub fn git_init(&self) {
+        self.write(".git/HEAD", "ref: refs/heads/main\n");
     }
 
     /// Writes the contents to the project-relative path, creating parent directories.

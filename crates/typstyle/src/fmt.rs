@@ -2,18 +2,12 @@
 /// their formatting via standard input/output.
 ///
 /// Adapted from: https://github.com/astral-sh/ruff/blob/main/crates/ruff_linter/src/fs.rs
-use std::{
-    io::Read,
-    path::{Path, PathBuf},
-    time::Instant,
-};
+use std::{io::Read, path::Path, time::Instant};
 
 use anyhow::{Context, Result, bail};
-use itertools::Itertools;
 use log::{debug, error, info, warn};
 use typst_syntax::Source;
 use typstyle_core::{Config, LineEnding, Typstyle, WrapMode, format_ast};
-use walkdir::{DirEntry, WalkDir};
 
 use crate::{
     ExitStatus,
@@ -96,7 +90,10 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
     let mut summary = Summary::default();
 
     let mode = FormatMode::from_cli(args);
-    let paths = resolve_typst_files(&args.input);
+    // Discovery runs to completion before any file is formatted, so the errors
+    // reported by the walker surface before any write instead of producing a
+    // partial run. The walker suppresses some ignore-file errors internally.
+    let paths = crate::discover::resolve_typst_files(&args.input, &args.file_selection)?;
     if paths.is_empty() {
         warn!("No Typst files found under the given path(s).");
         return Ok(ExitStatus::Success);
@@ -280,43 +277,6 @@ fn get_input(input: Option<&Path>) -> Result<String> {
 fn write_back(path: &Path, content: &str) -> Result<()> {
     std::fs::write(path, content)
         .with_context(|| format!("failed to write to the file {}", path.display()))
-}
-
-/// Resolves the input paths to the files to format.
-///
-/// Directories are searched recursively for `.typ` files, skipping hidden
-/// entries. Duplicates are removed, and the results are sorted if any
-/// directory was expanded.
-fn resolve_typst_files(input: &[PathBuf]) -> Vec<PathBuf> {
-    fn is_hidden(entry: &DirEntry) -> bool {
-        entry
-            .file_name()
-            .to_str()
-            .is_some_and(|s| s.starts_with('.'))
-    }
-
-    let mut files = Vec::new();
-    let mut has_dir = false;
-    for path in input.iter().map(fs::normalize_path).unique() {
-        if path.is_dir() {
-            has_dir = true;
-            let entries = WalkDir::new(path)
-                .into_iter()
-                .filter_entry(|e| !is_hidden(e))
-                .filter_map(Result::ok);
-            for entry in entries {
-                if entry.file_type().is_file() && entry.path().extension() == Some("typ".as_ref()) {
-                    files.push(entry.into_path());
-                }
-            }
-        } else {
-            files.push(path.clone());
-        }
-    }
-    if has_dir {
-        files.sort_unstable();
-    }
-    files
 }
 
 /// Prints the unified diff of the changes made to the given path.
