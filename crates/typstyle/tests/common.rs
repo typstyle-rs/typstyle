@@ -66,26 +66,9 @@ impl Workspace {
     }
 
     /// Creates a [`Command`] running the built `typstyle` binary in the project
-    /// directory, with the Git environment isolated from the developer's
-    /// configuration.
-    ///
-    /// `HOME`, `XDG_CONFIG_HOME`, `GIT_CONFIG_GLOBAL`, and `GIT_CONFIG_SYSTEM`
-    /// point inside the project directory, so tests can opt into global ignore
-    /// rules by writing `gitconfig-global` in the project.
+    /// directory.
     pub fn cli(&self) -> Command {
-        let mut cmd = self.cmd(get_cargo_bin("typstyle"));
-        cmd.env("HOME", self.project_path().join("home"))
-            .env("XDG_CONFIG_HOME", self.project_path().join("xdg"))
-            .env(
-                "GIT_CONFIG_GLOBAL",
-                self.project_path().join("gitconfig-global"),
-            )
-            .env(
-                "GIT_CONFIG_SYSTEM",
-                self.project_path().join("gitconfig-system"),
-            )
-            .env("GIT_CONFIG_NOSYSTEM", "1");
-        cmd
+        self.cmd(get_cargo_bin("typstyle"))
     }
 
     /// Marks the project as Git repository root.

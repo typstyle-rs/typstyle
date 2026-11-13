@@ -82,16 +82,20 @@ pub enum Command {
 /// Options controlling how input files are discovered.
 #[derive(Args)]
 pub struct FileSelectionArgs {
-    /// Respect `.gitignore` and other standard ignore files
-    /// during directory discovery (default).
-    /// Use --no-respect-gitignore to disable.
-    #[arg(long, default_value_t = false, overrides_with = "no_respect_gitignore")]
-    pub respect_gitignore: bool,
+    /// Respect `.ignore`, `.gitignore`, and Git's local excludes during
+    /// directory discovery (default).
+    /// Use --no-respect-ignore-files to disable.
+    #[arg(
+        long,
+        default_value_t = false,
+        overrides_with = "no_respect_ignore_files"
+    )]
+    pub respect_ignore_files: bool,
 
     /// Disable ignore-file filtering during directory discovery.
     /// Hidden entries are still skipped.
-    #[arg(long, default_value_t = false, overrides_with = "respect_gitignore")]
-    pub no_respect_gitignore: bool,
+    #[arg(long, default_value_t = false, overrides_with = "respect_ignore_files")]
+    pub no_respect_ignore_files: bool,
 }
 
 impl FileSelectionArgs {
@@ -99,8 +103,8 @@ impl FileSelectionArgs {
     ///
     /// Both switches default to false; the opt-out is the only one that changes
     /// the default behavior, and the last occurrence of the two wins.
-    pub fn respect_ignore_files(&self) -> bool {
-        !self.no_respect_gitignore
+    pub fn should_respect_ignore_files(&self) -> bool {
+        !self.no_respect_ignore_files
     }
 }
 

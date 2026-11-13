@@ -10,19 +10,32 @@ use common::Workspace;
 /// An unformatted Typst source, so that selection is observable in every mode.
 const UNFORMATTED: &str = "#let a  =  0";
 
+/// The formatted form of [`UNFORMATTED`], so expected output is shared.
+const FORMATTED: &str = "#let a = 0\n";
+
+/// The ignore-file switches used by the selection tests.
+const RESPECT_FLAG: &str = "--respect-ignore-files";
+const NO_RESPECT_FLAG: &str = "--no-respect-ignore-files";
+
 /// Runs `typstyle --check` with the given selection arguments and returns the
 /// sorted, project-relative paths that were selected for formatting.
 fn selected(space: &Workspace, args: &[&str]) -> Vec<String> {
-    let mut paths = selected_in(space, space.project_path(), args);
-    paths.sort();
-    paths
+    selected_in(space, space.project_path(), args)
 }
 
 /// Like [`selected`], but runs the CLI from an arbitrary directory.
 ///
 /// Reported paths keep the platform's native separators; they are normalized
-/// to `/` so that assertions can compare the same relative paths everywhere.
+/// to `/` and sorted so that assertions can compare the same relative paths
+/// everywhere.
 fn selected_in(space: &Workspace, dir: &Path, args: &[&str]) -> Vec<String> {
+    let mut paths = selected_ordered_in(space, dir, args);
+    paths.sort();
+    paths
+}
+
+/// Like [`selected_in`], but preserves discovery order.
+fn selected_ordered_in(space: &Workspace, dir: &Path, args: &[&str]) -> Vec<String> {
     let out = space
         .cli()
         .current_dir(dir)
@@ -36,30 +49,6 @@ fn selected_in(space: &Workspace, dir: &Path, args: &[&str]) -> Vec<String> {
         .filter_map(|line| line.strip_prefix("Would reformat: "))
         .map(|path| path.replace('\\', "/"))
         .collect()
-}
-
-/// Like [`selected`], but with the given environment variable removed.
-fn selected_env_removed(space: &Workspace, var: &str) -> Vec<String> {
-    let out = space
-        .cli()
-        .env_remove(var)
-        .arg("--check")
-        .arg(".")
-        .output()
-        .unwrap();
-    let stdout = String::from_utf8(out.stdout).unwrap();
-    let mut paths = stdout
-        .lines()
-        .filter_map(|line| line.strip_prefix("Would reformat: "))
-        .map(|path| path.replace('\\', "/"))
-        .collect::<Vec<_>>();
-    paths.sort();
-    paths
-}
-
-/// Like [`selected`], but with `XDG_CONFIG_HOME` unset so the home fallback is used.
-fn selected_without_xdg(space: &Workspace) -> Vec<String> {
-    selected_env_removed(space, "XDG_CONFIG_HOME")
 }
 
 /// Returns a command that runs the CLI in the project directory with the
@@ -79,11 +68,7 @@ fn test_ignore_file_respected_by_default() {
 
     assert_eq!(selected(&space, &["."]), ["included.typ"]);
     assert_eq!(
-        selected(&space, &[".", "--respect-gitignore"]),
-        ["included.typ"]
-    );
-    assert_eq!(
-        selected(&space, &[".", "--no-respect-gitignore"]),
+        selected(&space, &[".", NO_RESPECT_FLAG]),
         ["ignored.typ", "included.typ"]
     );
 }
@@ -99,10 +84,7 @@ fn test_gitignore_requires_repository() {
 
     space.git_init();
     assert!(selected(&space, &["."]).is_empty());
-    assert_eq!(
-        selected(&space, &[".", "--no-respect-gitignore"]),
-        ["ignored.typ"]
-    );
+    assert_eq!(selected(&space, &[".", NO_RESPECT_FLAG]), ["ignored.typ"]);
 }
 
 #[test]
@@ -115,14 +97,15 @@ fn test_git_local_excludes() {
 
     assert_eq!(selected(&space, &["."]), ["included.typ"]);
     assert_eq!(
-        selected(&space, &[".", "--no-respect-gitignore"]),
+        selected(&space, &[".", NO_RESPECT_FLAG]),
         ["excluded.typ", "included.typ"]
     );
 }
 
 #[test]
-fn test_global_gitignore() {
+fn test_global_gitignore_not_read() {
     let space = Workspace::new();
+    space.git_init();
     space.write(
         "gitconfig-global",
         "[core]\n\texcludesFile = global-ignore\n",
@@ -131,70 +114,19 @@ fn test_global_gitignore() {
     space.write("global.typ", UNFORMATTED);
     space.write("included.typ", UNFORMATTED);
 
-    // The global rules also require a repository.
-    assert_eq!(selected(&space, &["."]), ["global.typ", "included.typ"]);
-
-    space.git_init();
-    assert_eq!(selected(&space, &["."]), ["included.typ"]);
-    assert_eq!(
-        selected(&space, &[".", "--no-respect-gitignore"]),
-        ["global.typ", "included.typ"]
-    );
-}
-
-#[test]
-fn test_global_excludes_file_quoted() {
-    let space = Workspace::new();
-    space.write(
-        "gitconfig-global",
-        "[core]\n\texcludesFile = \"global-ignore\"\n",
-    );
-    space.write("global-ignore", "global.typ\n");
-    space.write("global.typ", UNFORMATTED);
-    space.write("included.typ", UNFORMATTED);
-
-    space.git_init();
-    assert_eq!(selected(&space, &["."]), ["included.typ"]);
-}
-
-#[test]
-fn test_default_global_gitignore() {
-    let space = Workspace::new();
-    space.write("xdg/git/ignore", "global.typ\n");
-    space.write("global.typ", UNFORMATTED);
-    space.write("included.typ", UNFORMATTED);
-
-    assert_eq!(selected(&space, &["."]), ["global.typ", "included.typ"]);
-
-    space.git_init();
-    assert_eq!(selected(&space, &["."]), ["included.typ"]);
-}
-
-#[test]
-fn test_default_global_gitignore_home_fallback() {
-    let space = Workspace::new();
-    space.write("home/.config/git/ignore", "global.typ\n");
-    space.write("global.typ", UNFORMATTED);
-    space.write("included.typ", UNFORMATTED);
-
-    space.git_init();
-    assert_eq!(selected_without_xdg(&space), ["included.typ"]);
-}
-
-#[test]
-fn test_global_config_sources_are_merged() {
-    let space = Workspace::new();
-    space.write("home/.gitconfig", "[user]\n\tname = probe\n");
-    space.write("xdg/git/config", "[core]\n\texcludesFile = xdg-ignore\n");
-    space.write("xdg-ignore", "global.typ\n");
-    space.write("global.typ", UNFORMATTED);
-    space.write("included.typ", UNFORMATTED);
-
-    space.git_init();
-    assert_eq!(
-        selected_env_removed(&space, "GIT_CONFIG_GLOBAL"),
-        ["included.typ"]
-    );
+    let out = space
+        .cli()
+        .env(
+            "GIT_CONFIG_GLOBAL",
+            space.project_path().join("gitconfig-global"),
+        )
+        .arg("--check")
+        .arg(".")
+        .output()
+        .unwrap();
+    let stdout = String::from_utf8(out.stdout).unwrap();
+    assert!(stdout.contains("global.typ"), "stdout: {stdout}");
+    assert!(stdout.contains("included.typ"), "stdout: {stdout}");
 }
 
 #[test]
@@ -220,7 +152,7 @@ fn test_linked_worktree_local_excludes() {
 
     assert_eq!(selected(&space, &["."]), ["included.typ"]);
     assert_eq!(
-        selected(&space, &[".", "--no-respect-gitignore"]),
+        selected(&space, &[".", NO_RESPECT_FLAG]),
         ["excluded.typ", "included.typ"]
     );
 }
@@ -236,11 +168,9 @@ fn test_parent_rules_from_subdirectory() {
     space.write("sub/.gitignore", "generated/\n");
 
     let sub = space.project_path().join("sub");
-    let mut from_sub = selected_in(&space, &sub, &["."]);
-    from_sub.sort();
+    let from_sub = selected_in(&space, &sub, &["."]);
     assert_eq!(from_sub, ["keep.typ"]);
-    let mut opted_out = selected_in(&space, &sub, &[".", "--no-respect-gitignore"]);
-    opted_out.sort();
+    let opted_out = selected_in(&space, &sub, &[".", NO_RESPECT_FLAG]);
     assert_eq!(
         opted_out,
         ["drop.typ", "generated/also-drop.typ", "keep.typ"]
@@ -360,9 +290,9 @@ fn test_explicit_files_override_ignores() {
         .output()
         .unwrap();
     assert!(out.status.success());
-    assert_eq!(space.read_string("ignored.typ"), "#let a = 0\n");
-    assert_eq!(space.read_string(".hidden.typ"), "#let a = 0\n");
-    assert_eq!(space.read_string("note.txt"), "#let a = 0\n");
+    assert_eq!(space.read_string("ignored.typ"), FORMATTED);
+    assert_eq!(space.read_string(".hidden.typ"), FORMATTED);
+    assert_eq!(space.read_string("note.txt"), FORMATTED);
 }
 
 #[test]
@@ -375,8 +305,8 @@ fn test_hidden_entries_skipped_without_respect() {
 
     for args in [
         vec!["."],
-        vec![".", "--no-respect-gitignore"],
-        vec![".", "--respect-gitignore"],
+        vec![".", NO_RESPECT_FLAG],
+        vec![".", RESPECT_FLAG],
     ] {
         assert_eq!(selected(&space, &args), ["visible.typ"], "args: {args:?}");
     }
@@ -412,7 +342,7 @@ fn test_overlapping_inputs_and_ordering() {
 
     // Explicit-only inputs keep their argument order.
     assert_eq!(
-        selected_in(&space, space.project_path(), &["b.typ", "a.typ"]),
+        selected_ordered_in(&space, space.project_path(), &["b.typ", "a.typ"]),
         ["b.typ", "a.typ"]
     );
 }
@@ -427,10 +357,7 @@ fn test_extension_filtering() {
     // Only `.typ` files are discovered, and the extension is matched exactly.
     assert_eq!(selected(&space, &["."]), ["lower.typ"]);
     // The opt-out disables ignore-file filtering only.
-    assert_eq!(
-        selected(&space, &[".", "--no-respect-gitignore"]),
-        ["lower.typ"]
-    );
+    assert_eq!(selected(&space, &[".", NO_RESPECT_FLAG]), ["lower.typ"]);
 }
 
 #[test]
@@ -443,10 +370,7 @@ fn test_symlinks() {
 
     // Links found during discovery are not followed, in either mode.
     assert_eq!(selected(&space, &["."]), ["sub/real.typ"]);
-    assert_eq!(
-        selected(&space, &[".", "--no-respect-gitignore"]),
-        ["sub/real.typ"]
-    );
+    assert_eq!(selected(&space, &[".", NO_RESPECT_FLAG]), ["sub/real.typ"]);
 
     // Explicitly supplied links keep their direct-file handling.
     assert_eq!(selected(&space, &["link.typ"]), ["link.typ"]);
@@ -454,7 +378,7 @@ fn test_symlinks() {
 
     let out = cli(&space, &["-i", "link.typ"]).output().unwrap();
     assert!(out.status.success());
-    assert_eq!(space.read_string("sub/real.typ"), "#let a = 0\n");
+    assert_eq!(space.read_string("sub/real.typ"), FORMATTED);
 }
 
 #[test]
@@ -469,28 +393,23 @@ fn test_switch_forms_and_placement() {
     // `test_ignore_file_respected_by_default`; the last occurrence wins in
     // either order.
     assert_eq!(
-        selected(
-            &space,
-            &[".", "--respect-gitignore", "--no-respect-gitignore"]
-        ),
+        selected(&space, &[".", RESPECT_FLAG, NO_RESPECT_FLAG]),
         ["ignored.typ", "included.typ"]
     );
     assert_eq!(
-        selected(
-            &space,
-            &[".", "--no-respect-gitignore", "--respect-gitignore"]
-        ),
+        selected(&space, &[".", NO_RESPECT_FLAG, RESPECT_FLAG]),
         ["included.typ"]
     );
 
     // Switches may precede the positional inputs and do not consume them.
     assert_eq!(
-        selected(&space, &["--no-respect-gitignore", "."]),
+        selected(&space, &[NO_RESPECT_FLAG, "."]),
         ["ignored.typ", "included.typ"]
     );
 
     // A boolean value is rejected.
-    let out = cli(&space, &["--respect-gitignore=true", "."])
+    let respect_with_value = format!("{RESPECT_FLAG}=true");
+    let out = cli(&space, &[respect_with_value.as_str(), "."])
         .output()
         .unwrap();
     assert_eq!(out.status.code(), Some(2));
@@ -501,14 +420,14 @@ fn test_switch_forms_and_placement() {
 #[test]
 fn test_paths_after_double_dash() {
     let space = Workspace::new();
-    space.write("--no-respect-gitignore", UNFORMATTED);
+    space.write(NO_RESPECT_FLAG, UNFORMATTED);
 
     // After `--`, the switch name is a path, not an argument.
-    let out = cli(&space, &["-i", "--", "--no-respect-gitignore"])
+    let out = cli(&space, &["-i", "--", NO_RESPECT_FLAG])
         .output()
         .unwrap();
     assert!(out.status.success());
-    assert_eq!(space.read_string("--no-respect-gitignore"), "#let a = 0\n");
+    assert_eq!(space.read_string(NO_RESPECT_FLAG), FORMATTED);
 }
 
 #[test]
@@ -520,10 +439,7 @@ fn test_same_selection_in_every_mode() {
 
     let stdout_mode = cli(&space, &["."]).output().unwrap();
     assert!(stdout_mode.status.success());
-    assert_eq!(
-        String::from_utf8(stdout_mode.stdout).unwrap(),
-        "#let a = 0\n"
-    );
+    assert_eq!(String::from_utf8(stdout_mode.stdout).unwrap(), FORMATTED);
 
     let checked = cli(&space, &["--check", "."]).output().unwrap();
     assert_eq!(checked.status.code(), Some(1));
@@ -535,7 +451,7 @@ fn test_same_selection_in_every_mode() {
 
     let inplace = cli(&space, &["-i", "."]).output().unwrap();
     assert!(inplace.status.success());
-    assert_eq!(space.read_string("included.typ"), "#let a = 0\n");
+    assert_eq!(space.read_string("included.typ"), FORMATTED);
     assert_eq!(space.read_string("ignored.typ"), UNFORMATTED);
 }
 
@@ -545,7 +461,7 @@ fn test_stdin_accepts_switches_without_discovery() {
     space.write(".ignore", "*.typ\n");
     space.write("ignored.typ", UNFORMATTED);
 
-    for args in [vec!["--no-respect-gitignore"], vec!["--respect-gitignore"]] {
+    for args in [vec![NO_RESPECT_FLAG], vec![RESPECT_FLAG]] {
         let mut cmd = cli(&space, &args);
         let mut child = cmd
             .stdin(std::process::Stdio::piped())
@@ -561,7 +477,7 @@ fn test_stdin_accepts_switches_without_discovery() {
             .unwrap();
         let out = child.wait_with_output().unwrap();
         assert!(out.status.success(), "args: {args:?}");
-        assert_eq!(String::from_utf8(out.stdout).unwrap(), "#let a = 0\n");
+        assert_eq!(String::from_utf8(out.stdout).unwrap(), FORMATTED);
     }
     assert_eq!(space.read_string("ignored.typ"), UNFORMATTED);
 }
@@ -630,6 +546,6 @@ fn test_help_lists_both_switches() {
     let help = help.split_whitespace().collect::<Vec<_>>().join(" ");
 
     assert!(help.contains("File Selection:"), "help: {help}");
-    assert!(help.contains("--respect-gitignore"), "help: {help}");
-    assert!(help.contains("--no-respect-gitignore"), "help: {help}");
+    assert!(help.contains(RESPECT_FLAG), "help: {help}");
+    assert!(help.contains(NO_RESPECT_FLAG), "help: {help}");
 }

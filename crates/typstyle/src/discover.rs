@@ -38,7 +38,7 @@ pub(crate) fn resolve_typst_files(
     }
 
     let has_dir = !roots.is_empty();
-    let respect = selection.respect_ignore_files();
+    let respect = selection.should_respect_ignore_files();
     for root in &roots {
         collect_files(root, respect, &mut files)?;
     }

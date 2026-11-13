@@ -1,11 +1,10 @@
 //! Ignore rules for directory discovery.
 //!
-//! This module owns `.ignore`, `.gitignore`, Git's local excludes, and the
-//! global Git excludes file, including repository boundaries and the lifetime
-//! of per-directory rules.
+//! This module owns `.ignore`, `.gitignore`, and Git's local excludes,
+//! including repository boundaries and the lifetime of per-directory rules.
 
 use std::{
-    env, fs,
+    fs,
     path::{Path, PathBuf},
 };
 
@@ -113,9 +112,6 @@ impl RepoRules {
         let git_dir = resolve_git_dir(git_root);
         let common_dir = resolve_common_dir(&git_dir);
         let mut search = Search::default();
-        if let Some(excludes) = global_excludes_file() {
-            add_rule_file(&mut search, &excludes, None)?;
-        }
         add_rule_file(&mut search, &common_dir.join("info").join("exclude"), None)?;
         Ok(Self {
             root: git_root.to_path_buf(),
@@ -380,106 +376,5 @@ fn resolve_common_dir(git_dir: &Path) -> PathBuf {
         path
     } else {
         git_dir.join(path)
-    }
-}
-
-/// Returns the global excludes file, following `ignore`'s simple lookup.
-fn global_excludes_file() -> Option<PathBuf> {
-    gitconfig_global_contents()
-        .and_then(|contents| parse_excludes_file(&contents))
-        .or_else(|| gitconfig_home_contents().and_then(|contents| parse_excludes_file(&contents)))
-        .or_else(|| gitconfig_xdg_contents().and_then(|contents| parse_excludes_file(&contents)))
-        .or_else(|| gitconfig_system_contents().and_then(|contents| parse_excludes_file(&contents)))
-        .or_else(default_global_ignore_file)
-}
-
-/// Returns the `GIT_CONFIG_GLOBAL` file contents.
-fn gitconfig_global_contents() -> Option<Vec<u8>> {
-    let path = env::var_os("GIT_CONFIG_GLOBAL")
-        .filter(|value| !value.is_empty())
-        .map(PathBuf::from)?;
-    fs::read(path).ok()
-}
-
-/// Returns the `~/.gitconfig` contents.
-fn gitconfig_home_contents() -> Option<Vec<u8>> {
-    fs::read(home_dir()?.join(".gitconfig")).ok()
-}
-
-/// Returns the XDG Git config contents.
-fn gitconfig_xdg_contents() -> Option<Vec<u8>> {
-    let xdg = env::var_os("XDG_CONFIG_HOME")
-        .filter(|value| !value.is_empty())
-        .map(PathBuf::from)
-        .or_else(|| home_dir().map(|home| home.join(".config")))?;
-    fs::read(xdg.join("git").join("config")).ok()
-}
-
-/// Returns the system Git config contents.
-fn gitconfig_system_contents() -> Option<Vec<u8>> {
-    let path = env::var_os("GIT_CONFIG_SYSTEM")
-        .filter(|value| !value.is_empty())
-        .map(PathBuf::from)
-        .unwrap_or_else(|| PathBuf::from("/etc/gitconfig"));
-    fs::read(path).ok()
-}
-
-/// Extracts `core.excludesfile` the same way `ignore` does.
-fn parse_excludes_file(contents: &[u8]) -> Option<PathBuf> {
-    let text = String::from_utf8_lossy(contents);
-    for line in text.lines() {
-        let line = line.trim_start();
-        let bytes = line.as_bytes();
-        if bytes.len() < 12 || !bytes[..12].eq_ignore_ascii_case(b"excludesfile") {
-            continue;
-        }
-        let rest = line[12..].trim_start();
-        let Some(rest) = rest.strip_prefix('=') else {
-            continue;
-        };
-        let rest = rest.trim_start();
-        let (value, rest) = if let Some(quoted) = rest.strip_prefix('"') {
-            let end = quoted
-                .find(|ch: char| ch.is_whitespace() || ch == '"')
-                .unwrap_or(quoted.len());
-            (&quoted[..end], &quoted[end..])
-        } else {
-            let end = rest.find(char::is_whitespace).unwrap_or(rest.len());
-            if end == 0 {
-                continue;
-            }
-            (&rest[..end], &rest[end..])
-        };
-        let rest = rest.trim_start();
-        let rest = rest.strip_prefix('"').unwrap_or(rest);
-        if !rest.trim().is_empty() {
-            continue;
-        }
-        return Some(PathBuf::from(expand_tilde(value)));
-    }
-    None
-}
-
-/// Returns the default global ignore file.
-fn default_global_ignore_file() -> Option<PathBuf> {
-    let xdg = env::var_os("XDG_CONFIG_HOME")
-        .filter(|value| !value.is_empty())
-        .map(PathBuf::from)
-        .or_else(|| home_dir().map(|home| home.join(".config")))?;
-    Some(xdg.join("git").join("ignore"))
-}
-
-/// Returns the user's home directory.
-fn home_dir() -> Option<PathBuf> {
-    env::var_os("HOME")
-        .map(PathBuf::from)
-        .or_else(|| env::var_os("USERPROFILE").map(PathBuf::from))
-}
-
-/// Expands `~` in a configured path.
-fn expand_tilde(value: &str) -> String {
-    match home_dir() {
-        Some(home) => value.replace('~', &home.to_string_lossy()),
-        None => value.to_string(),
     }
 }
