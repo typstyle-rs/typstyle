@@ -215,14 +215,50 @@ fn soft_or_space<'a>(arena: &'a Arena<'a>, fill: bool) -> ArenaDoc<'a> {
 }
 
 /// For hard-line -> soft-line, keep a line exclusive (prevent soft breaks) when:
+/// - It contains a block element that would lose its structure, or
 /// - It contains only one non-text node, or
 /// - It contains exactly two nodes where the first is a Hash, such as `#figure()`.
+///
+/// Comments and spaces written beside those nodes do not count.
 fn reflow_preserve_exclusive(line: &MarkupLine) -> bool {
     let nodes = &line.nodes;
-    let len = nodes.len();
-    len == 1 && nodes[0].kind() != SyntaxKind::Text
-        || len == 2 && nodes[0].kind() == SyntaxKind::Hash
-        || len > 0 && reflow_prefers_exclusive(nodes[0])
+    match significant_nodes(nodes) {
+        // A line holding only comments keeps its own line: joining it onto the next one would
+        // turn that line into part of the comment.
+        [] => !nodes.is_empty(),
+        // Joining a block marker onto the previous line turns it into ordinary text, so its
+        // structure is judged without the comments and spaces written beside it.
+        [first, ..] if requires_own_line(first) => true,
+        // A hash with its callee, such as `#figure()`.
+        [first, _] if first.kind() == SyntaxKind::Hash => true,
+        // A lone non-text node keeps its own line, but a comment beside it must not change how
+        // the surrounding prose reflows.
+        _ => nodes.len() == 1 && nodes[0].kind() != SyntaxKind::Text,
+    }
+}
+
+/// Returns the nodes of a line without the spaces and comments around them.
+///
+/// `/* note */ = heading` is still a heading and `- item /* note */` is still a list item, so
+/// trivia must not hide the structure that requires a line of its own.
+fn significant_nodes<'a, 's>(nodes: &'s [&'a SyntaxNode]) -> &'s [&'a SyntaxNode] {
+    let Some(start) = nodes
+        .iter()
+        .position(|node| !node.kind().is_space_or_comment())
+    else {
+        return &[];
+    };
+    let end = nodes
+        .iter()
+        .rposition(|node| !node.kind().is_space_or_comment())
+        .unwrap_or(start);
+    &nodes[start..=end]
+}
+
+/// Returns whether the node must start its own line: block markup, and the block equations and
+/// raw blocks that lose their structure when they share a line.
+fn requires_own_line(node: &SyntaxNode) -> bool {
+    node.kind().is_block_markup() || reflow_prefers_exclusive(node)
 }
 
 /// For space -> hard-line, prefer block equations and raw blocks exclusive to a single line.
@@ -378,16 +414,29 @@ fn is_common_abbreviation(text: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use typst_syntax::Source;
+    use typst_syntax::{Source, SyntaxKind, SyntaxNode};
 
     use crate::{Config, Typstyle, WrapMode};
 
     fn format_markup(input: &str, config: Config) -> String {
         // These wrapping assertions expect a newline-terminated source document.
+        let input = if input.ends_with('\n') {
+            input.to_string()
+        } else {
+            format!("{input}\n")
+        };
         Typstyle::new(config)
-            .format_source(Source::detached(format!("{input}\n")))
+            .format_source(Source::detached(input))
             .render()
             .unwrap()
+    }
+
+    /// Formats a whole document in fill mode at width 80, keeping its trailing newline.
+    fn format_fill(input: &str) -> String {
+        format_markup(
+            input,
+            Config::new().with_width(80).with_wrap_mode(WrapMode::Fill),
+        )
     }
 
     fn format_sentences(input: &str) -> String {
@@ -401,6 +450,28 @@ mod tests {
                 .with_width(width)
                 .with_wrap_mode(WrapMode::FillSentence),
         )
+    }
+
+    /// The kinds of the block elements of `source`, including nested ones.
+    fn block_kinds(source: &str) -> Vec<SyntaxKind> {
+        fn collect(node: &SyntaxNode, kinds: &mut Vec<SyntaxKind>) {
+            if matches!(
+                node.kind(),
+                SyntaxKind::Heading
+                    | SyntaxKind::ListItem
+                    | SyntaxKind::EnumItem
+                    | SyntaxKind::TermItem
+            ) {
+                kinds.push(node.kind());
+            }
+            for child in node.children() {
+                collect(child, kinds);
+            }
+        }
+        let source = Source::detached(source);
+        let mut kinds = Vec::new();
+        collect(source.root(), &mut kinds);
+        kinds
     }
 
     #[test]
@@ -578,5 +649,78 @@ mod tests {
             format_fill_sentences("\"Hello.\" World.", 80),
             "\"Hello.\"\nWorld.\n"
         );
+    }
+
+    #[test]
+    fn fill_mode_keeps_nested_list_structure_next_to_comments() {
+        // The comment trails a nested item, which must not join the item above it.
+        let input = "- Testing\n  - Hello /* comment */\n  - World\n";
+        assert_eq!(format_fill(input), input);
+        assert_eq!(block_kinds(input).len(), 3);
+    }
+
+    #[test]
+    fn fill_mode_keeps_comment_prefixed_calls_on_their_own_line() {
+        // A call keeps its own line, and a leading comment must not merge it into the prose.
+        let input = "Testing\n/* note */ #figure[Example]\n";
+        assert_eq!(format_fill(input), input);
+    }
+
+    #[test]
+    fn fill_mode_still_joins_comment_prefixed_prose() {
+        // Comments around prose are not structural, so the surrounding text keeps reflowing.
+        assert_eq!(
+            format_fill("Testing\n/* note */ ordinary prose\n"),
+            "Testing /* note */ ordinary prose\n"
+        );
+        assert_eq!(
+            format_fill("Testing\n// note\nafter\n"),
+            "Testing\n// note\nafter\n"
+        );
+    }
+
+    /// The markers whose leading `-`, `+`, `/`, `=` or ordinal starts a block element.
+    const BLOCK_MARKERS: [&str; 5] = [
+        "= heading",
+        "- item",
+        "+ item",
+        "1. item",
+        "/ term: description",
+    ];
+
+    #[test]
+    fn fill_mode_keeps_block_markers_on_their_own_line() {
+        for marker in BLOCK_MARKERS {
+            for comments in [
+                // A leading comment must not let the marker join the preceding prose.
+                "/* note */ ",
+                "/* first */ /* second */ ",
+                "// note\n",
+            ] {
+                for trailing in ["", " /* note */", " // note"] {
+                    let input = format!("Testing\n{comments}{marker}{trailing}\n");
+                    assert_eq!(format_fill(&input), input, "{marker:?}");
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn fill_mode_preserves_block_structure_across_widths() {
+        for mode in [WrapMode::Fill, WrapMode::FillSentence] {
+            for width in [0, 20, 80] {
+                let formatter = Typstyle::new(Config::new().with_width(width).with_wrap_mode(mode));
+                for marker in BLOCK_MARKERS {
+                    let input = format!("Testing\n/* note */ {marker}\n");
+                    let output = formatter.format_text(&input).render().unwrap();
+                    assert_eq!(
+                        block_kinds(&output),
+                        block_kinds(&input),
+                        "{mode:?}, width={width}, {marker:?}: {output:?}"
+                    );
+                    assert_eq!(formatter.format_text(&output).render().unwrap(), output);
+                }
+            }
+        }
     }
 }

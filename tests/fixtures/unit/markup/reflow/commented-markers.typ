@@ -1,0 +1,29 @@
+/// typstyle: wrap_text
+
+Testing
+/* note */ = heading
+
+Testing
+/* first */ /* second */ - list item
+
+Testing
+/* note */ + enum item
+
+Testing
+/* note */ 1. numbered item
+
+Testing
+/* note */ / term: description
+
+Testing
+= heading /* trailing */
+
+Testing
+- list item /* trailing */
+
+Testing
+// note
+ordinary prose keeps its line after a comment-only line.
+
+Testing
+/* note */ ordinary prose still joins.
