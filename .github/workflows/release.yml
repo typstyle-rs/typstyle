@@ -102,6 +102,8 @@ jobs:
           path: artifacts
       - name: Display structure of downloaded files
         run: ls -R artifacts
+      - name: Setup Nushell
+        uses: hustcer/setup-nu@v3
       - name: Extract release notes
         env:
           VERSION: ${{ needs.plan.outputs.version }}
@@ -110,8 +112,10 @@ jobs:
           # Use base version for changelog lookup (e.g., v0.13.0-rc1 -> v0.13.0)
           CHANGELOG_VERSION="$BASE_VERSION"
 
-          # grab from "## v0.y.z[-suffix] – YYYY-MM-DD" until the next "## " and drop the header
-          if sed -En "/^## ${CHANGELOG_VERSION}[[:space:]]*-/,/^## /p" CHANGELOG.md | sed '1d;$d' > release_notes.md && [ -s release_notes.md ]; then
+          # grab the body of "## v0.y.z - YYYY-MM-DD" until the next "## " heading.
+          # Only the exact version heading starts the range, so the permanent
+          # "## Unreleased" section at the top is skipped rather than consumed.
+          if nu scripts/release-notes.nu "$CHANGELOG_VERSION" > release_notes.md; then
             echo "Found changelog entry for $CHANGELOG_VERSION"
           else
             echo "No changelog entry found for $CHANGELOG_VERSION, using fallback message"

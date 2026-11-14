@@ -4,3 +4,5 @@
 
 /github-pages
 .claude
+
+__pycache__
