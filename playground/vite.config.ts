@@ -5,11 +5,16 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import wasm from "vite-plugin-wasm";
 
 // https://vite.dev/config/
 export default defineConfig({
   base: "/typstyle/playground/",
+
+  // Vitest's jsdom suite uses the client environment but executes in Node.
+  // Let Vite read WASM from disk instead of fetching a browser asset URL.
+  environments: process.env.VITEST
+    ? { client: { consumer: "server" } }
+    : undefined,
 
   resolve: {
     alias: {
@@ -20,7 +25,6 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    wasm(),
     viteStaticCopy({
       targets: [
         {
