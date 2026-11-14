@@ -4,7 +4,7 @@
 use rustc_hash::FxHashMap;
 use typst_syntax::{Span, SyntaxKind, SyntaxNode, ast};
 
-use crate::ext::StrExt;
+use crate::{ext::StrExt, kind::SyntaxKindExt};
 
 /// Formatting attributes computed for a single syntax node.
 #[derive(Debug, Clone, Default)]
@@ -227,8 +227,7 @@ impl AttrStore {
         for child in node.children() {
             has_math_align_point |= self.compute_math_align_point_impl(child);
         }
-        if has_math_align_point && matches!(node_kind, SyntaxKind::Math | SyntaxKind::MathDelimited)
-        {
+        if has_math_align_point && node_kind.is_math_container() {
             self.attrs_mut_of(node).has_math_align_point = true;
             true
         } else {

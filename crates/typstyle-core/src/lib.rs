@@ -11,6 +11,7 @@ pub mod partial;
 pub mod pretty;
 
 mod config;
+mod kind;
 mod utils;
 
 pub use attr::AttrStore;

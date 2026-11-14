@@ -11,8 +11,8 @@ use super::{
         list::{ListStyle, ListStylist},
     },
     prelude::*,
-    util::is_comment_node,
 };
+use crate::kind::SyntaxKindExt;
 
 impl<'a> PrettyPrinter<'a> {
     /// Converts a module import, `#import "source": items`.
@@ -91,7 +91,9 @@ impl<'a> PrettyPrinter<'a> {
         // Sort import items if the configuration allows it.
         // The sorting is only applied if all nodes are not comments and if there are no duplicate names.
         if self.config.reorder_import_items
-            && import_items_nodes.iter().all(|node| !is_comment_node(node))
+            && import_items_nodes
+                .iter()
+                .all(|node| !node.kind().is_comment())
             && check_import_name_duplication(&import_items_nodes)
         {
             // Sort import items by their text representation.

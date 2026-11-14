@@ -10,7 +10,8 @@ use typst_syntax::{SyntaxKind, SyntaxNode};
 
 use crate::{
     ext::StrExt,
-    pretty::{Context, PrettyPrinter, prelude::*, util::is_comment_node},
+    kind::SyntaxKindExt,
+    pretty::{Context, PrettyPrinter, prelude::*},
 };
 
 /// Intermediate representation in chain formatting.
@@ -119,11 +120,13 @@ impl<'a> ChainStylist<'a> {
                         // Then linebreak is kept only if around comments.
                         if child.leaf_text().has_linebreak()
                             && (matches!(self.items.last(), Some(ChainItem::Comment(_)))
-                                || children.get(i + 1).is_some_and(is_comment_node))
+                                || children
+                                    .get(i + 1)
+                                    .is_some_and(|next| next.kind().is_comment()))
                         {
                             self.items.push(ChainItem::Linebreak);
                         }
-                    } else if is_comment_node(child) {
+                    } else if child.kind().is_comment() {
                         let doc = self.printer.convert_comment(ctx, child);
                         self.items.push(ChainItem::Comment(doc));
                         self.has_comment = true;

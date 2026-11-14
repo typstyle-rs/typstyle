@@ -8,10 +8,8 @@ use prettyless::Doc;
 use smallvec::SmallVec;
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
-use super::{
-    Context, Mode, PrettyPrinter, layout::flow::FlowItem, prelude::*, util::is_comment_node,
-};
-use crate::{WrapMode, ext::StrExt, pretty::util::is_only_one_and};
+use super::{Context, Mode, PrettyPrinter, layout::flow::FlowItem, prelude::*};
+use crate::{WrapMode, ext::StrExt, kind::SyntaxKindExt, pretty::util::is_only_one_and};
 
 /// Distinguishes how a markup body is laid out and how whitespace at its boundaries
 /// may be trimmed or turned into line breaks.
@@ -345,7 +343,7 @@ impl<'a> PrettyPrinter<'a> {
                         ctx
                     };
                     self.convert_expr(ctx, expr)
-                } else if is_comment_node(node) {
+                } else if node.kind().is_comment() {
                     self.convert_comment(ctx, node)
                 } else {
                     // can be Hash, Semicolon, Shebang
@@ -428,11 +426,8 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
     /// A subset of "blocky" elements that we cannot safely handle currently.
     /// By default show rule, these elements seem to have weak spaces on both sides.
     /// But this behavior can be changed by wrapping them in a box.
-    fn is_special_block_elem(it: &SyntaxNode) -> bool {
-        matches!(
-            it.kind(),
-            SyntaxKind::ListItem | SyntaxKind::EnumItem | SyntaxKind::TermItem
-        )
+    fn is_list_like_item(it: &SyntaxNode) -> bool {
+        it.kind().is_list_item_markup()
     }
 
     let mut repr = MarkupRepr {
@@ -464,7 +459,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
                 ) {
                     current_line.mixed_text = true;
                 }
-                if current_line.nodes.is_empty() && is_special_block_elem(node) {
+                if current_line.nodes.is_empty() && is_list_like_item(node) {
                     repr.start_bound = repr.start_bound.strip_space();
                 }
                 current_line.nodes.push(node);
@@ -491,7 +486,7 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
                 repr.end_bound = Boundary::from_space(last.leaf_text());
                 last_line.nodes.pop();
             } else {
-                if is_special_block_elem(last) {
+                if is_list_like_item(last) {
                     repr.end_bound = repr.end_bound.strip_space();
                 }
                 break;
@@ -503,8 +498,8 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
     if repr.start_bound == Boundary::Nil
         && let Some(first_line) = repr.lines.first()
     {
-        match first_line.nodes.iter().find(|it| !is_comment_node(it)) {
-            Some(it) if is_special_block_elem(it) => {
+        match first_line.nodes.iter().find(|it| !it.kind().is_comment()) {
+            Some(it) if is_list_like_item(it) => {
                 repr.start_bound = Boundary::NilOrBreak;
             }
             Some(it) if it.kind() == SyntaxKind::Space => {
@@ -517,8 +512,8 @@ fn collect_markup_repr(markup: Markup<'_>) -> MarkupRepr<'_> {
     if repr.end_bound == Boundary::Nil
         && let Some(last_line) = repr.lines.last()
     {
-        match last_line.nodes.iter().rfind(|it| !is_comment_node(it)) {
-            Some(it) if is_special_block_elem(it) => {
+        match last_line.nodes.iter().rfind(|it| !it.kind().is_comment()) {
+            Some(it) if is_list_like_item(it) => {
                 repr.end_bound = Boundary::NilOrBreak;
             }
             Some(it) if it.kind() == SyntaxKind::Space => {
