@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prepare a Typstyle release without committing, tagging, or publishing it."""
+"""Prepare and commit a Typstyle release without tagging or publishing it."""
 
 from __future__ import annotations
 
@@ -15,6 +15,10 @@ ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = ROOT / "Cargo.toml"
 LOCKFILE = ROOT / "Cargo.lock"
 CHANGELOG = ROOT / "CHANGELOG.md"
+RELEASE_NOTES = ROOT / "scripts" / "release-notes.nu"
+USE_JJ = (ROOT / ".jj").exists()
+WORKSPACE_VERSION = r'^\[workspace\.package\]\s*?^version\s*=\s*"([^"]+)"\s*$'
+CORE_DEPENDENCY = r'^typstyle-core\s*=\s*\{[^}\n]*\bversion\s*=\s*"([^"]+)"[^}\n]*\}\s*$'
 VERSION_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
 
@@ -33,9 +37,49 @@ def run(*args: str, capture: bool = False) -> subprocess.CompletedProcess[str]:
     )
 
 
+def commit_release(message: str) -> subprocess.CompletedProcess[str]:
+    """Commit the prepared files, preferring Jujutsu in a colocated checkout."""
+    paths = ("Cargo.toml", "Cargo.lock", "CHANGELOG.md")
+    if USE_JJ:
+        return run("jj", "commit", "-m", message, *paths, capture=True)
+    return run("git", "commit", "-m", message, "--", *paths, capture=True)
+
+
+def ensure_ref_available(ref: str) -> None:
+    """Fail before touching files when the release ref already exists."""
+    if USE_JJ:
+        result = run("jj", "bookmark", "list", ref, capture=True)
+        if result.returncode != 0:
+            raise ReleaseError(result.stderr.strip() or f"could not list bookmark {ref}")
+        exists = bool(result.stdout.strip())
+    else:
+        result = run(
+            "git", "show-ref", "--verify", "--quiet", f"refs/heads/{ref}", capture=True
+        )
+        if result.returncode not in (0, 1):
+            raise ReleaseError(result.stderr.strip() or f"could not check branch {ref}")
+        exists = result.returncode == 0
+    if exists:
+        raise ReleaseError(f"release ref {ref!r} already exists; delete it first")
+
+
+def switch_to_release_branch(ref: str) -> None:
+    """Create the Git branch before committing so the commit lands on it."""
+    result = run("git", "switch", "--create", ref, capture=True)
+    if result.returncode != 0:
+        raise ReleaseError(f"could not create branch {ref}: {result.stderr.strip()}")
+
+
+def create_release_bookmark(ref: str) -> None:
+    """Point a Jujutsu bookmark at the prepared commit."""
+    result = run("jj", "bookmark", "create", ref, "--revision", "@-", capture=True)
+    if result.returncode != 0:
+        raise ReleaseError(f"could not create bookmark {ref}: {result.stderr.strip()}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Bump versions, start the changelog entry, and verify the workspace."
+        description="Bump the version, update the changelog, verify, and commit."
     )
     parser.add_argument(
         "version",
@@ -45,23 +89,48 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def replace_once(text: str, pattern: str, replacement: str, description: str) -> str:
-    updated, count = re.subn(pattern, replacement, text, count=1, flags=re.MULTILINE | re.DOTALL)
-    if count != 1:
-        raise ReleaseError(f"could not uniquely locate {description} in Cargo.toml")
-    return updated
-
-
 def find_once(text: str, pattern: str, description: str) -> re.Match[str]:
-    matches = list(re.finditer(pattern, text, flags=re.MULTILINE | re.DOTALL))
+    matches = list(re.finditer(pattern, text, flags=re.MULTILINE))
     if len(matches) != 1:
         raise ReleaseError(f"could not uniquely locate {description} in Cargo.toml")
     return matches[0]
 
 
+def replace_groups(text: str, edits: list[tuple[re.Match[str], str]]) -> str:
+    """Replace each match's first group, later matches first to keep spans valid."""
+    for match, value in sorted(edits, key=lambda edit: edit[0].start(), reverse=True):
+        start, end = match.span(1)
+        text = text[:start] + value + text[end:]
+    return text
+
+
+def resolve_version(current: str, requested: str | None) -> str:
+    """Validate the current version and pick the requested or next patch one."""
+    current_match = VERSION_RE.fullmatch(current)
+    if not current_match:
+        raise ReleaseError(f"current workspace version {current!r} is not stable SemVer")
+    current_parts = tuple(map(int, current_match.groups()))
+
+    if requested is None:
+        major, minor, patch = current_parts
+        version = f"{major}.{minor}.{patch + 1}"
+    else:
+        if not VERSION_RE.fullmatch(requested):
+            raise ReleaseError(
+                "version must be stable SemVer without a v prefix, e.g. 0.15.1"
+            )
+        version = requested
+
+    if tuple(map(int, version.split("."))) <= current_parts:
+        raise ReleaseError(
+            f"new version {version} must be greater than current version {current}"
+        )
+    return version
+
+
 def release_changelog(text: str, tag: str) -> tuple[str, bool]:
-    marker = "# Changelog\n\n"
-    if not text.startswith(marker):
+    """Insert the dated section below the required Unreleased section."""
+    if not text.startswith("# Changelog\n\n"):
         raise ReleaseError("CHANGELOG.md does not start with the expected heading")
     if re.search(rf"^## {re.escape(tag)}\b", text, flags=re.MULTILINE):
         raise ReleaseError(f"CHANGELOG.md already contains an entry for {tag}")
@@ -70,20 +139,22 @@ def release_changelog(text: str, tag: str) -> tuple[str, bool]:
     unreleased = list(
         re.finditer(r"^## \[?unreleased\]?[ \t]*$", text, flags=re.IGNORECASE | re.MULTILINE)
     )
+    if not unreleased:
+        raise ReleaseError("CHANGELOG.md must contain an Unreleased section")
     if len(unreleased) > 1:
         raise ReleaseError("CHANGELOG.md contains multiple Unreleased sections")
-    if not unreleased:
-        section = f"{heading}\n\n- TODO: Describe this release.\n\n"
-        return marker + section + text[len(marker) :], True
 
     match = unreleased[0]
     next_heading = re.search(r"^## ", text[match.end() :], flags=re.MULTILINE)
     section_end = match.end() + next_heading.start() if next_heading else len(text)
-    body = text[match.end() : section_end]
-    todo_added = not body.strip()
+    notes = text[match.end() : section_end].strip()
+    todo_added = not notes
     if todo_added:
-        body = "\n\n- TODO: Describe this release.\n\n"
-    return text[: match.start()] + heading + body + text[section_end:], todo_added
+        notes = "- TODO: Describe this release."
+
+    # The Unreleased heading stays so the next cycle can keep appending to it.
+    section = f"## Unreleased\n\n{heading}\n\n{notes}\n\n"
+    return text[: match.start()] + section + text[section_end:], todo_added
 
 
 def main() -> int:
@@ -96,30 +167,21 @@ def main() -> int:
         raise ReleaseError("working tree must be clean before preparing a release")
 
     manifest_text = MANIFEST.read_text(encoding="utf-8")
-    workspace_pattern = r'^\[workspace\.package\]\s*?^version\s*=\s*"([^"]+)"\s*$'
-    dependency_pattern = (
-        r'^typstyle-core\s*=\s*\{[^}\n]*\bversion\s*=\s*"([^"]+)"[^}\n]*\}\s*$'
+    workspace_match = find_once(
+        manifest_text, WORKSPACE_VERSION, "workspace package version"
     )
-    current = find_once(
-        manifest_text, workspace_pattern, "workspace package version"
-    ).group(1)
-    current_match = VERSION_RE.fullmatch(current)
-    if not current_match:
-        raise ReleaseError(f"current workspace version {current!r} is not stable SemVer")
+    dependency_match = find_once(
+        manifest_text, CORE_DEPENDENCY, "typstyle-core dependency version"
+    )
+    current = workspace_match.group(1)
+    if dependency_match.group(1) != f"={current}":
+        raise ReleaseError(
+            "workspace typstyle-core dependency must exactly match the workspace version"
+        )
 
-    if args.version:
-        version_match = VERSION_RE.fullmatch(args.version)
-        if not version_match:
-            raise ReleaseError("version must be stable SemVer without a v prefix, e.g. 0.15.1")
-        version = args.version
-    else:
-        major, minor, patch = map(int, current_match.groups())
-        version = f"{major}.{minor}.{patch + 1}"
-        version_match = VERSION_RE.fullmatch(version)
+    version = resolve_version(current, args.version)
+    if args.version is None:
         print(f"No version specified; using next patch version {version}.", flush=True)
-
-    if tuple(map(int, version_match.groups())) <= tuple(map(int, current_match.groups())):
-        raise ReleaseError(f"new version {version} must be greater than current version {current}")
 
     tag = f"v{version}"
     tag_check = run("git", "tag", "--list", tag, capture=True)
@@ -128,37 +190,30 @@ def main() -> int:
     if tag_check.stdout.strip():
         raise ReleaseError(f"tag {tag} already exists")
 
-    core_dependency = find_once(
-        manifest_text, dependency_pattern, "typstyle-core dependency version"
-    ).group(1)
-    if core_dependency != f"={current}":
-        raise ReleaseError(
-            "workspace typstyle-core dependency does not exactly match the current workspace version"
-        )
+    ref = f"chore/release-{tag}"
+    ensure_ref_available(ref)
 
     changelog_text = CHANGELOG.read_text(encoding="utf-8")
     updated_changelog, todo_added = release_changelog(changelog_text, tag)
-
-    updated_manifest = replace_once(
+    updated_manifest = replace_groups(
         manifest_text,
-        r'(^\[workspace\.package\]\s*?^version\s*=\s*")[^"]+("\s*$)',
-        rf"\g<1>{version}\g<2>",
-        "workspace package version",
+        [(workspace_match, version), (dependency_match, f"={version}")],
     )
-    updated_manifest = replace_once(
-        updated_manifest,
-        r'(^typstyle-core\s*=\s*\{[^}\n]*\bversion\s*=\s*")=[^"]+("[^}\n]*\}\s*$)',
-        rf"\g<1>={version}\g<2>",
-        "typstyle-core dependency version",
-    )
+
     originals = {
         MANIFEST: MANIFEST.read_bytes(),
         LOCKFILE: LOCKFILE.read_bytes(),
         CHANGELOG: CHANGELOG.read_bytes(),
     }
     try:
-        MANIFEST.write_text(updated_manifest, encoding="utf-8")
-        CHANGELOG.write_text(updated_changelog, encoding="utf-8")
+        MANIFEST.write_text(updated_manifest, encoding="utf-8", newline="\n")
+        CHANGELOG.write_text(updated_changelog, encoding="utf-8", newline="\n")
+
+        notes = run("nu", str(RELEASE_NOTES), tag, capture=True)
+        if notes.returncode != 0:
+            raise ReleaseError(
+                f"could not extract release notes: {notes.stderr.strip()}"
+            )
 
         print("Checking the workspace and refreshing Cargo.lock...", flush=True)
         check = run("cargo", "check", "--workspace")
@@ -170,14 +225,32 @@ def main() -> int:
         raise
 
     print(f"\nPrepared {tag}.")
-    print("Next:")
+    print(f"\nRelease notes for {tag} as CI extracts them:\n")
+    print(notes.stdout.rstrip())
+    print()
+
+    message = f"chore: prepare {tag}"
+    if not USE_JJ:
+        switch_to_release_branch(ref)
+    commit = commit_release(message)
+    if commit.returncode != 0:
+        raise ReleaseError(
+            f"could not commit the release preparation: {commit.stderr.strip()}"
+        )
+    print(f"Committed Cargo.toml, Cargo.lock, and {CHANGELOG.name} as {message!r}.")
+    if USE_JJ:
+        create_release_bookmark(ref)
+        print(f"Created bookmark {ref!r}.")
+    else:
+        print(f"Created branch {ref!r}.")
+
+    print("\nNext:")
     if todo_added:
-        print(f"  1. Replace the TODO in {CHANGELOG.relative_to(ROOT)} with release notes.")
+        print(f"  1. Replace the TODO in {CHANGELOG.relative_to(ROOT)} and amend the commit.")
     else:
         print(f"  1. Review the release notes in {CHANGELOG.relative_to(ROOT)}.")
-    print("  2. Review: git diff -- Cargo.toml Cargo.lock CHANGELOG.md")
-    print(f'  3. Commit: git commit -am "chore: prepare {tag}"')
-    print(f"  4. After merging and passing CI: git tag -s {tag} && git push origin {tag}")
+    print("  2. Push the prepared commit and open a pull request.")
+    print(f"  3. After merging and passing CI: git tag -s {tag} && git push origin {tag}")
     return 0
 
 

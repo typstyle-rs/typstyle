@@ -81,7 +81,7 @@ just prepare-release
 
 For a minor or major release, provide the stable semantic version explicitly without the `v` prefix: `just prepare-release <new-version>`.
 
-The script checks that the working tree is clean, updates the workspace and internal dependency versions, refreshes `Cargo.lock`, and runs `cargo check --workspace`. If `CHANGELOG.md` has an `Unreleased` section, the script turns it into the dated release section and preserves its notes. Otherwise, it creates a release section with a `TODO` placeholder. It does not commit, tag, push, or publish anything.
+The script checks that the working tree is clean, updates the workspace and internal dependency versions, refreshes `Cargo.lock`, and runs `cargo check --workspace`. It keeps the `Unreleased` section at the top of `CHANGELOG.md` and moves its notes into a new dated release section directly below it, so the next cycle can keep appending to `Unreleased`. If `Unreleased` has no notes, the new section gets a `TODO` placeholder. The section is required, so the script aborts when it is missing. Finally, it prints the release notes that CI extracts for the GitHub release, commits the preparation as `chore: prepare v<new-version>`, and creates the `chore/release-v<new-version>` bookmark or branch that carries that commit. It uses Jujutsu when the checkout has a `.jj` directory and plain Git otherwise. It does not tag, push, or publish anything.
 
 === Update Workspace Version
 
@@ -105,7 +105,7 @@ typstyle-core = { path = "crates/typstyle-core", version = "=<new-version>" }
 
 === Add New Version Entry
 
-Keep upcoming release notes in an optional `Unreleased` section at the top of `CHANGELOG.md`:
+Keep upcoming release notes in the `Unreleased` section at the top of `CHANGELOG.md`:
 
 ````markdown
 ## Unreleased
@@ -115,7 +115,7 @@ Keep upcoming release notes in an optional `Unreleased` section at the top of `C
 - Enhancement: Specific improvement description
 ````
 
-The release script changes this heading to `## v<new-version> - [YYYY-MM-DD]`. If the section is absent, it inserts a version heading with a `TODO` instead.
+The section is permanent. The release script keeps the `## Unreleased` heading, moves its notes into a new `## v<new-version> - [YYYY-MM-DD]` section below it, and leaves `Unreleased` empty for the next cycle. The section is required, and the script aborts when it is missing. If it is empty, the new dated section gets a `TODO` placeholder.
 
 === Changelog Writing Guidelines
 
@@ -143,15 +143,7 @@ Use these standard categories for changelog entries:
 
 === Commit Version Updates
 
-Commit the version and changelog updates:
-
-```bash
-# Add changed files
-git add Cargo.toml Cargo.lock CHANGELOG.md
-
-# Commit changes
-git commit -m "chore: update version to v<new-version> and update changelog"
-```
+The preparation script already committed the version and changelog updates as `chore: prepare v<new-version>` and pointed the `chore/release-v<new-version>` bookmark (or Git branch) at that commit. If you edit the release notes afterwards, amend that commit before tagging. In a Jujutsu checkout, `jj squash` folds the edit into the prepared commit; with plain Git, use `git commit --amend`.
 
 === Create Tags
 
@@ -203,7 +195,7 @@ Please confirm the following items before release:
 - #box[☐] Update `CHANGELOG.md` with new version entry
 - #box[☐] Build project to ensure no errors
 - #box[☐] Run tests (optional but recommended)
-- #box[☐] Commit version updates and changelog
+- #box[☐] Run the preparation script, which commits the version updates and changelog
 - #box[☐] Create and push version tag
 - #box[☐] Monitor CI/CD process
 - #box[☐] Verify successful release
