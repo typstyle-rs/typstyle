@@ -53,7 +53,11 @@ export const registerTheme = async (
 
 export const registerThemes = async (
   monaco: Monaco,
-  themes: Array<{ name: string; url: string; extraRules?: editor.ITokenThemeRule[] }>,
+  themes: Array<{
+    name: string;
+    url: string;
+    extraRules?: editor.ITokenThemeRule[];
+  }>,
 ): Promise<void> => {
   await Promise.all(
     themes.map(({ name, url, extraRules }) =>

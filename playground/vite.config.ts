@@ -5,7 +5,6 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
-import toplevelAwait from "vite-plugin-top-level-await";
 import wasm from "vite-plugin-wasm";
 
 // https://vite.dev/config/
@@ -14,7 +13,7 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "src"),
+      "@": path.resolve(import.meta.dirname, "src"),
     },
   },
 
@@ -22,7 +21,6 @@ export default defineConfig({
     react(),
     tailwindcss(),
     wasm(),
-    toplevelAwait(), // required by wasm
     viteStaticCopy({
       targets: [
         {

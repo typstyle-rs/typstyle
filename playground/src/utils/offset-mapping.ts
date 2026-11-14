@@ -204,8 +204,7 @@ export function querySpanMapping(
     const prev = hi >= 0 ? mapping[hi] : null;
     const next = lo < mapping.length ? mapping[lo] : null;
     if (prev && next) {
-      best =
-        srcOffset - prev.srcEnd < next.srcStart - srcOffset ? prev : next;
+      best = srcOffset - prev.srcEnd < next.srcStart - srcOffset ? prev : next;
     } else {
       best = (prev ?? next)!;
     }
@@ -214,10 +213,7 @@ export function querySpanMapping(
   // Interpolate within the span
   const spanLen = best.srcEnd - best.srcStart;
   if (spanLen === 0) return best.outStart;
-  const t = Math.max(
-    0,
-    Math.min(1, (srcOffset - best.srcStart) / spanLen),
-  );
+  const t = Math.max(0, Math.min(1, (srcOffset - best.srcStart) / spanLen));
   const outLen = best.outEnd - best.outStart;
   return Math.round(best.outStart + t * outLen);
 }
@@ -263,8 +259,7 @@ export function querySpanMappingReverse(
     const prev = hi >= 0 ? sorted[hi] : null;
     const next = lo < sorted.length ? sorted[lo] : null;
     if (prev && next) {
-      best =
-        outOffset - prev.outEnd < next.outStart - outOffset ? prev : next;
+      best = outOffset - prev.outEnd < next.outStart - outOffset ? prev : next;
     } else {
       best = (prev ?? next)!;
     }
@@ -272,10 +267,7 @@ export function querySpanMappingReverse(
 
   const outLen = best.outEnd - best.outStart;
   if (outLen === 0) return best.srcStart;
-  const t = Math.max(
-    0,
-    Math.min(1, (outOffset - best.outStart) / outLen),
-  );
+  const t = Math.max(0, Math.min(1, (outOffset - best.outStart) / outLen));
   const srcLen = best.srcEnd - best.srcStart;
   return Math.round(best.srcStart + t * srcLen);
 }
