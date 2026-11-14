@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## v0.15.3 - [2026-11-15]
+
 - Feature(CLI): Add `--lines FIRST:LAST` to format only the selected 1-based, inclusive line ranges. The complete document is printed with only the selected ranges reformatted, so the option can be used as `jj fix`'s `line-range-args`.
 - Fix: Recognize enum markers with numbers up to `u64::MAX` on 32-bit targets, matching the Typst lexer, so text wrapping no longer breaks before them.
   ([#506](https://github.com/typstyle-rs/typstyle/issues/506))
