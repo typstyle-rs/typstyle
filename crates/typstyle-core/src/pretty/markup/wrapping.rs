@@ -7,11 +7,11 @@ use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 use super::{MarkupLine, MarkupRepr};
 use crate::{
     WrapMode,
+    kind::SyntaxKindExt,
     pretty::{
         Context, PrettyPrinter,
         prelude::*,
         text::{is_enum_marker, wrap_text},
-        util::is_comment_node,
     },
 };
 
@@ -113,7 +113,7 @@ impl<'a> PrettyPrinter<'a> {
                             sentence_breaks && inline_node_ends_with_sentence(node);
                     }
                     self.convert_expr(ctx, expr)
-                } else if is_comment_node(node) {
+                } else if node.kind().is_comment() {
                     // A comment interrupts the surrounding sentence.
                     pending_sentence_break = false;
                     self.convert_comment(ctx, node)
@@ -233,23 +233,21 @@ fn reflow_prefers_exclusive(node: &SyntaxNode) -> bool {
 /// For hard-line -> soft-line, keep a break after nodes where breaking is visually better:
 /// block elements, line comments, and structural nodes.
 fn reflow_keeps_break_after(node: &SyntaxNode) -> bool {
-    matches!(
-        node.kind(),
-        SyntaxKind::Heading
-            | SyntaxKind::ListItem
-            | SyntaxKind::EnumItem
-            | SyntaxKind::TermItem
-            | SyntaxKind::LineComment
-            | SyntaxKind::BlockComment
-            | SyntaxKind::Linebreak
-            | SyntaxKind::Label
-            | SyntaxKind::CodeBlock
-            | SyntaxKind::ContentBlock
-            | SyntaxKind::Conditional
-            | SyntaxKind::WhileLoop
-            | SyntaxKind::ForLoop
-            | SyntaxKind::Contextual
-    ) || is_block_equation(node)
+    let kind = node.kind();
+    kind.is_block_markup()
+        || kind.is_comment()
+        || matches!(
+            kind,
+            SyntaxKind::Linebreak
+                | SyntaxKind::Label
+                | SyntaxKind::CodeBlock
+                | SyntaxKind::ContentBlock
+                | SyntaxKind::Conditional
+                | SyntaxKind::WhileLoop
+                | SyntaxKind::ForLoop
+                | SyntaxKind::Contextual
+        )
+        || is_block_equation(node)
         || is_block_raw(node)
 }
 

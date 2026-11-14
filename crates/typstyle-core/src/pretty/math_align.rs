@@ -6,7 +6,7 @@ use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 use unicode_width::UnicodeWidthStr;
 
 use super::{Context, PrettyPrinter, context::AlignMode, prelude::*};
-use crate::{AttrStore, ext::StrExt};
+use crate::{AttrStore, ext::StrExt, kind::SyntaxKindExt};
 
 impl<'a> PrettyPrinter<'a> {
     /// Attempt to format a math node as an aligned grid if there are align points.
@@ -331,9 +331,7 @@ fn collect_aligned<'a>(math: Math<'a>, attrs: &AttrStore) -> RawAligned<'a> {
         attrs: &AttrStore,
         out: &mut Vec<&'a SyntaxNode>,
     ) {
-        if !(matches!(node.kind(), SyntaxKind::Math | SyntaxKind::MathDelimited)
-            && attrs.has_math_align_point(node))
-        {
+        if !(node.kind().is_math_container() && attrs.has_math_align_point(node)) {
             out.push(node);
             return;
         }

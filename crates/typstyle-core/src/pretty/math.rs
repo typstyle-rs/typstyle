@@ -12,9 +12,8 @@ use super::{
     },
     prelude::*,
     style::{FoldStyle, is_multiline_flavored},
-    util::is_comment_node,
 };
-use crate::ext::StrExt;
+use crate::{ext::StrExt, kind::SyntaxKindExt};
 
 impl<'a> PrettyPrinter<'a> {
     /// Converts an equation `$ ... $` as a `$`-delimited list of math lines.
@@ -116,7 +115,7 @@ impl<'a> PrettyPrinter<'a> {
             } else if node.kind() == SyntaxKind::Hash {
                 doc += self.arena.text("#");
                 peek_hash = true;
-            } else if is_comment_node(node) {
+            } else if node.kind().is_comment() {
                 doc += self.convert_comment(ctx, node);
             } else {
                 // may be LeftParen, RightParen

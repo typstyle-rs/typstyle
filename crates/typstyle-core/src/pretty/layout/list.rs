@@ -7,6 +7,7 @@ use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use crate::{
     ext::StrExt,
+    kind::SyntaxKindExt,
     pretty::{Context, Mode, PrettyPrinter, prelude::*, style::FoldStyle},
 };
 
@@ -257,10 +258,10 @@ impl<'a> ListStylist<'a> {
     /// records line breaks (honoring [`Self::keep_linebreak`]), and peeks `#` tokens.
     fn process_trivia(&mut self, ctx: Context, node: &'a SyntaxNode) {
         match node.kind() {
-            SyntaxKind::LineComment | SyntaxKind::BlockComment => {
+            kind if kind.is_comment() => {
                 self.has_comment = true;
                 // Line comment cannot appear in single line block
-                if node.kind() == SyntaxKind::LineComment {
+                if kind == SyntaxKind::LineComment {
                     self.has_line_comment = true;
                     self.fold_style = FoldStyle::Never;
                 }
