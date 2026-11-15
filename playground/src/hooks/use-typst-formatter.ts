@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import * as typstyle from "typstyle-wasm";
 import type { OutputType, RangeFormatterOptions } from "@/types";
-import type { SpanMapping } from "@/utils/offset-mapping";
 import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
+import type { SpanMapping } from "@/utils/offset-mapping";
 import { useAsyncError } from "./useErrorHandler";
 
 /** Result from WASM parse_with_mapping API. */
@@ -77,9 +77,11 @@ export function useTypstFormatter(
         case "ast": {
           // Try parse_with_mapping if available (provides scroll sync mapping)
           if (!useRange && "parse_with_mapping" in typstyle) {
-            const parseWithMapping = (typstyle as unknown as {
-              parse_with_mapping: (text: string) => MappingResult;
-            }).parse_with_mapping;
+            const parseWithMapping = (
+              typstyle as unknown as {
+                parse_with_mapping: (text: string) => MappingResult;
+              }
+            ).parse_with_mapping;
             const result = parseWithMapping(sourceCode);
             setAstOutput(result.text);
             setAstMapping(result.mapping ?? null);

@@ -1,10 +1,7 @@
 // Playground-specific Monaco setup
 
 import { initMonacoLoader, registerThemes } from "@/monaco";
-import {
-  DARK_TOKEN_RULES,
-  LIGHT_TOKEN_RULES,
-} from "@/monaco/theme-registry";
+import { DARK_TOKEN_RULES, LIGHT_TOKEN_RULES } from "@/monaco/theme-registry";
 import type { ThemeType } from "@/types";
 import { registerAstLanguage } from "./ast-language";
 import { registerIrLanguage } from "./ir-language";
