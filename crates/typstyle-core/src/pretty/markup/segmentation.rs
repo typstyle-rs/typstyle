@@ -9,6 +9,7 @@ use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use crate::{
     AttrStore,
+    ext::StrExt,
     pretty::text::is_line_sensitive_markup_marker,
     segmenter::{SentenceSegmenter, ends_with_cjk_terminator, has_terminal_suffix},
 };
@@ -36,6 +37,7 @@ impl MarkupSegmentation {
             segmenter: SentenceSegmenter::new(),
             text: String::new(),
             pieces: Vec::new(),
+            attachments: Vec::new(),
             plan: Self::default(),
             attrs,
             pending_linebreak_break: false,
@@ -53,7 +55,13 @@ impl MarkupSegmentation {
         self.nodes.entry(std::ptr::from_ref(node)).or_default()
     }
 
-    fn record_boundary(&mut self, pieces: &[Piece<'_>], offset: usize, after_space: bool) {
+    fn record_boundary(
+        &mut self,
+        pieces: &[Piece<'_>],
+        attachments: &[usize],
+        offset: usize,
+        after_space: bool,
+    ) {
         // Replace the whitespace before the boundary, or insert before the next
         // text when there is no gap. This keeps closing delimiters on their line.
         let byte = if after_space { offset - 1 } else { offset };
@@ -62,7 +70,21 @@ impl MarkupSegmentation {
             return;
         };
         match piece.node.kind() {
-            SyntaxKind::Space if after_space => self.breaks_mut(piece.node).space = true,
+            SyntaxKind::Space if after_space => {
+                // Metadata written right after this whitespace stays attached to the
+                // sentence before it, so the break has to wait for the text after the
+                // metadata. A source linebreak already separates the lines.
+                let deferred = !piece.node.leaf_text().has_linebreak()
+                    && attachments.binary_search(&piece.end).is_ok();
+                if deferred
+                    && let Some(next) = pieces.get(index + 1)
+                    && next.node.kind() == SyntaxKind::Text
+                {
+                    self.breaks_mut(next.node).before = true;
+                } else {
+                    self.breaks_mut(piece.node).space = true;
+                }
+            }
             SyntaxKind::Text if offset == piece.start => {
                 let node = piece.leading_wrapper.unwrap_or(piece.node);
                 self.breaks_mut(node).before = true;
@@ -103,6 +125,9 @@ struct Builder<'a, 'attrs> {
     segmenter: SentenceSegmenter,
     text: String,
     pieces: Vec<Piece<'a>>,
+    /// Text offsets where attached metadata (labels and block comments) occurs, so a
+    /// sentence break anchored to the whitespace before it can stay after it instead.
+    attachments: Vec<usize>,
     plan: MarkupSegmentation,
     attrs: &'attrs AttrStore,
     /// Whether the next editable whitespace must carry a sentence break that was
@@ -179,7 +204,9 @@ impl<'a> Builder<'a, '_> {
                 }
             } else if matches!(node.kind(), SyntaxKind::Label | SyntaxKind::BlockComment) {
                 // Metadata remains attached in source. A later whitespace node
-                // provides the editable break, after these attachments.
+                // provides the editable break; when none follows, the break is
+                // deferred to the text after the metadata instead.
+                self.attachments.push(self.text.len());
             } else if node.kind() == SyntaxKind::Linebreak {
                 if self.flush(Some(node)) {
                     // Keep `\` on the line of the sentence it terminates; the editable
@@ -212,18 +239,24 @@ impl<'a> Builder<'a, '_> {
                     && !after.starts_with(PROTECTED_JOINS)
                     && ends_with_cjk_terminator(before))
             {
-                self.plan.record_boundary(&self.pieces, offset, after_space);
+                self.plan
+                    .record_boundary(&self.pieces, &self.attachments, offset, after_space);
             }
         }
         if opaque.is_some()
             && ended_sentence
             && self.text.ends_with(|c: char| c.is_ascii_whitespace())
         {
-            self.plan
-                .record_boundary(&self.pieces, self.text.len(), true);
+            self.plan.record_boundary(
+                &self.pieces,
+                &self.attachments,
+                self.text.len(),
+                true,
+            );
         }
         self.text.clear();
         self.pieces.clear();
+        self.attachments.clear();
         // A run ending at a structural boundary cannot carry an attached `\` into the
         // next run; the linebreak branch re-arms this after calling `flush`.
         self.pending_linebreak_break = false;

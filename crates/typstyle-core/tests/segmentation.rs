@@ -102,6 +102,12 @@ fn protected_joins_survive_sentence_segmentation() {
 fn metadata_stays_attached_before_the_sentence_break() {
     assert_sentence_modes("Hello.<label> Next.", "Hello.<label>\nNext.\n");
     assert_sentence_modes("Hello. /* note */ Next.", "Hello. /* note */\nNext.\n");
+    // Without a following whitespace, the break waits for the text after the metadata
+    // instead of being dropped or separating the metadata from the sentence before it.
+    assert_sentence_modes("Hello. <label>Next.", "Hello. <label>\nNext.\n");
+    assert_sentence_modes("Hello. /* note */Next.", "Hello. /* note */\nNext.\n");
+    // A source linebreak already provides the break, so no extra blank line appears.
+    assert_sentence_modes("Hello.\n<label>Next.", "Hello.\n<label>Next.\n");
 }
 
 #[test]
