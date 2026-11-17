@@ -3,7 +3,7 @@
 
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
-use super::{MarkupLine, MarkupRepr, MarkupScope, segmentation::MarkupSegmentation};
+use super::{MarkupLine, MarkupRepr, segmentation::MarkupSegmentation};
 use crate::{
     WrapMode,
     kind::SyntaxKindExt,
@@ -129,13 +129,11 @@ impl<'a> PrettyPrinter<'a> {
         let Some(plan) = segmentation else {
             return self.convert_expr(ctx, expr);
         };
-        let (markup, open, close) = match expr {
-            Expr::Strong(strong) => (strong.body(), "*", "*"),
-            Expr::Emph(emph) => (emph.body(), "_", "_"),
-            _ => return self.convert_expr(ctx, expr),
-        };
-        self.convert_markup_with_segmentation(ctx, markup, MarkupScope::Strong, Some(plan))
-            .enclose(open, close)
+        match expr {
+            Expr::Strong(strong) => self.convert_strong_with_segmentation(ctx, strong, Some(plan)),
+            Expr::Emph(emph) => self.convert_emph_with_segmentation(ctx, emph, Some(plan)),
+            _ => self.convert_expr(ctx, expr),
+        }
     }
 }
 

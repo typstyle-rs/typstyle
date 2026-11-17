@@ -57,14 +57,36 @@ impl<'a> PrettyPrinter<'a> {
 
     /// Converts strong emphasis `*...*`.
     pub(super) fn convert_strong(&'a self, ctx: Context, strong: Strong<'a>) -> ArenaDoc<'a> {
-        let body = self.convert_markup_with_scope(ctx, strong.body(), MarkupScope::Strong);
-        body.enclose("*", "*")
+        self.convert_strong_with_segmentation(ctx, strong, None)
+    }
+
+    /// Converts strong emphasis, sharing `segmentation` with the enclosing sentence plan when
+    /// it is a transparent inline wrapper.
+    fn convert_strong_with_segmentation(
+        &'a self,
+        ctx: Context,
+        strong: Strong<'a>,
+        segmentation: Option<&MarkupSegmentation>,
+    ) -> ArenaDoc<'a> {
+        self.convert_markup_with_segmentation(ctx, strong.body(), MarkupScope::Strong, segmentation)
+            .enclose("*", "*")
     }
 
     /// Converts emphasis `_..._`.
     pub(super) fn convert_emph(&'a self, ctx: Context, emph: Emph<'a>) -> ArenaDoc<'a> {
-        let body = self.convert_markup_with_scope(ctx, emph.body(), MarkupScope::Strong);
-        body.enclose("_", "_")
+        self.convert_emph_with_segmentation(ctx, emph, None)
+    }
+
+    /// Converts emphasis, sharing `segmentation` with the enclosing sentence plan when it is a
+    /// transparent inline wrapper.
+    fn convert_emph_with_segmentation(
+        &'a self,
+        ctx: Context,
+        emph: Emph<'a>,
+        segmentation: Option<&MarkupSegmentation>,
+    ) -> ArenaDoc<'a> {
+        self.convert_markup_with_segmentation(ctx, emph.body(), MarkupScope::Strong, segmentation)
+            .enclose("_", "_")
     }
 
     /// Converts a raw block or inline raw span.
