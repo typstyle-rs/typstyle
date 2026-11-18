@@ -10,6 +10,7 @@
 //! terminal-suffix fallback; their source code is never treated as prose.
 
 use rustc_hash::FxHashMap;
+use smallvec::SmallVec;
 use typst_syntax::{SyntaxKind, SyntaxNode, ast::*};
 
 use crate::{
@@ -32,7 +33,7 @@ struct NodeBreaks {
     /// the following whitespace.
     linebreak: bool,
     /// Byte offsets inside this `Text` leaf where a new sentence starts.
-    text: Vec<usize>,
+    text: SmallVec<[usize; 2]>,
 }
 
 /// A plan belongs to one borrowed syntax tree. Node addresses distinguish even
@@ -49,7 +50,7 @@ impl MarkupSegmentation {
         let mut builder = Builder {
             segmenter: SentenceSegmenter::new(),
             text: String::new(),
-            pieces: Vec::new(),
+            pieces: Default::default(),
             plan: Self::default(),
             attrs,
             leading_wrapper: None,
@@ -120,7 +121,8 @@ impl MarkupSegmentation {
 
     /// Returns the byte offsets inside this `Text` leaf where a sentence starts.
     pub(super) fn in_text(&self, node: &SyntaxNode) -> &[usize] {
-        self.breaks(node).map_or(&[], |breaks| &breaks.text)
+        self.breaks(node)
+            .map_or(&[][..], |breaks| breaks.text.as_slice())
     }
 }
 
@@ -297,6 +299,10 @@ impl<'a> Builder<'a, '_> {
     /// last sentence ends with terminal punctuation. `opaque` enables the trailing
     /// whitespace fallback; `cjk_target` receives an unspaced CJK ending at the edge.
     fn flush(&mut self, opaque: bool, cjk_target: Option<&'a SyntaxNode>) -> bool {
+        if self.text.is_empty() {
+            self.pending_linebreak_break = false;
+            return false;
+        }
         // Edge evidence for `\` and opaque nodes. The body of the run is segmented
         // by ICU below, which sees both sides of each candidate.
         let ended_sentence = !has_protected_join(&self.text) && has_terminal_suffix(&self.text);
