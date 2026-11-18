@@ -20,6 +20,10 @@ harness = false
 name = "typst_docs"
 harness = false
 
+[[bench]]
+name = "wrap_stress"
+harness = false
+
 [dependencies]
 typst-syntax.workspace = true
 

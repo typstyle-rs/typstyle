@@ -93,7 +93,8 @@ Logs: ($checkout), ($checkout).stderr"
         }
         let log = $results | path join output.txt
         let status = capture {
-            ^cargo bench --locked -p typstyle-core --benches -- --save-baseline $arm.name
+            # Exclude the synthetic `wrap_stress` scaling target from automated runs.
+            ^cargo bench --locked -p typstyle-core --bench pretty_print --bench typst_docs -- --save-baseline $arm.name
         } $log
         # Criterion can report failed cases on stdout while returning success.
         let errors = open --raw $log | lines | where {|line| $line | str contains 'Criterion.rs ERROR:' }

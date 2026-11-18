@@ -84,9 +84,10 @@ cargo bench --workspace -- --list          # List benchmarks
 cargo bench --workspace                    # Run all benchmarks
 cargo bench -p typstyle-core --bench pretty_print
 cargo bench -p typstyle-core --bench typst_docs
+cargo bench -p typstyle-core --bench wrap_stress
 ```
 
-The `typst_docs` benchmark formats the same pinned Typst documentation corpus as the docs end-to-end test. It is fetched on first use and cached under `tests/.cache/docs`; when bumping `TYPST_DOCS_REV`, update `TYPST_DOCS_BYTES` in `crates/typstyle-core/benches/typst_docs.rs` too.
+The `typst_docs` benchmark formats the same pinned Typst documentation corpus as the docs end-to-end test across default (`typst-docs/all`) and text wrapping modes (`typst-docs/wrap/*`). It is fetched on first use and cached under `tests/.cache/docs`; when bumping `TYPST_DOCS_REV`, update `TYPST_DOCS_BYTES` in `crates/typstyle-core/benches/typst_docs.rs` too. The `wrap_stress` target is excluded from automated CI benchmark runs and is intended for on-demand local scaling checks.
 
 View HTML reports at `target/criterion/report/index.html`.
 

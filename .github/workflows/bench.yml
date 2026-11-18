@@ -22,7 +22,8 @@ jobs:
         uses: Swatinem/rust-cache@v2
       - name: Run benchmark
         shell: bash
-        run: cargo bench -p typstyle-core --benches -- --output-format bencher | tee output.txt
+        # Exclude the synthetic `wrap_stress` scaling target from continuous runs.
+        run: cargo bench -p typstyle-core --bench pretty_print --bench typst_docs -- --output-format bencher | tee output.txt
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
         with:
