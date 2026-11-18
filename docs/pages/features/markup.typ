@@ -60,6 +60,16 @@ Let's say you have a long text that needs to be wrapped in the markup. This is a
 - `sentence`: start each sentence on its own line, leaving line structure otherwise untouched.
 - `fill-sentence`: start each sentence on its own line *and* wrap long sentences to the line width.
 
+Sentence modes use Unicode sentence boundaries with a fixed list of abbreviation
+exceptions. Sentence detection follows prose across emphasis and quotes, while
+raw text stays intact and nonbreaking spaces are preserved.
+Sentence breaks replace editable whitespace and can also separate adjacent
+sentences after CJK sentence punctuation.
+Abbreviation exceptions are a formatting convention: a listed abbreviation such as `etc.`
+suppresses a break even when its period could also end a sentence. Arbitrary
+expressions have unknown output, so sentence detection at their edges uses
+terminal punctuation from the preceding prose rather than inspecting code.
+
 ```typst
 /// typstyle: wrap_mode=fill-sentence, max_width=30
 Let's say you have a long text that needs to be wrapped in the markup. This is a very long sentence.
