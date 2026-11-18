@@ -81,7 +81,9 @@ pub fn format_stdin(args: &CliArguments) -> Result<ExitStatus> {
 
     format_one(None, &typstyle, args).map(|res| match res {
         FormatResult::Formatted(_) if args.check || args.diff => ExitStatus::Failure,
-        _ => ExitStatus::Success,
+        FormatResult::Formatted(_) => ExitStatus::Success,
+        FormatResult::Unchanged => ExitStatus::Success,
+        FormatResult::Erroneous => ExitStatus::Failure,
     })
 }
 
@@ -95,6 +97,7 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
         format_count: usize,
         unchanged_count: usize,
         error_count: usize,
+        parse_error_count: usize,
     }
     let mut summary = Summary::default();
 
@@ -118,7 +121,8 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
         // Check if the content is already well-formatted (unchanged)
         match res {
             FormatResult::Formatted(_) => summary.format_count += 1,
-            _ => summary.unchanged_count += 1,
+            FormatResult::Erroneous => summary.parse_error_count += 1,
+            FormatResult::Unchanged => summary.unchanged_count += 1,
         }
     }
     let duration = start_time.elapsed();
@@ -160,6 +164,7 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
     }
 
     Ok(match mode {
+        _ if summary.parse_error_count > 0 => ExitStatus::Failure,
         FormatMode::Check | FormatMode::Diff if summary.format_count > 0 => ExitStatus::Failure,
         _ => ExitStatus::Success,
     })
