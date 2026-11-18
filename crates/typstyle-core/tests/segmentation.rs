@@ -102,10 +102,11 @@ fn protected_joins_survive_sentence_segmentation() {
 fn metadata_stays_attached_before_the_sentence_break() {
     assert_sentence_modes("Hello.<label> Next.", "Hello.<label>\nNext.\n");
     assert_sentence_modes("Hello. /* note */ Next.", "Hello. /* note */\nNext.\n");
-    // Without a following whitespace, the break waits for the text after the metadata
-    // instead of being dropped or separating the metadata from the sentence before it.
-    assert_sentence_modes("Hello. <label>Next.", "Hello. <label>\nNext.\n");
-    assert_sentence_modes("Hello. /* note */Next.", "Hello. /* note */\nNext.\n");
+    // Without a following whitespace there is no editable position, so the break is
+    // not materialized and the metadata cannot be separated from its sentence.
+    assert_sentence_modes("Hello. <label>Next.", "Hello. <label>Next.\n");
+    // A block comment is not line-sensitive, so the break can land before it.
+    assert_sentence_modes("Hello. /* note */Next.", "Hello.\n/* note */Next.\n");
     // A source linebreak already provides the break, so no extra blank line appears.
     assert_sentence_modes("Hello.\n<label>Next.", "Hello.\n<label>Next.\n");
 }
@@ -170,11 +171,27 @@ fn cjk_sentence_boundaries_allow_unspaced_prose() {
             "「こんにちは！」次の文です。",
             "「こんにちは！」\n次の文です。\n",
         ),
+        ("*你好。世界。*", "*你好。\n世界。*\n"),
+        ("你好。- 仍是正文。", "你好。- 仍是正文。\n"),
+    ] {
+        assert_sentence_modes(input, expected);
+    }
+}
+
+#[test]
+fn unspaced_cjk_boundaries_start_nodes_on_new_lines() {
+    // A CJK sentence ending needs no whitespace. The break starts the next node,
+    // or its enclosing wrapper, on a new line instead of splitting the wrapper.
+    for (input, expected) in [
         ("*你好。*世界。", "*你好。*\n世界。\n"),
         ("你好。*世界。*", "你好。\n*世界。*\n"),
         ("你好。*_世界。_*", "你好。\n*_世界。_*\n"),
-        ("*你好。世界。*", "*你好。\n世界。*\n"),
-        ("你好。- 仍是正文。", "你好。- 仍是正文。\n"),
+        ("你好。`世界。`", "你好。\n`世界。`\n"),
+        ("你好。$x.$", "你好。\n$x.$\n"),
+        ("你好。<label>世界。", "你好。<label>\n世界。\n"),
+        ("你好。*\"世界。\"*", "你好。\n*\"世界。\"*\n"),
+        ("你好。*$x.$*", "你好。\n*$x.$*\n"),
+        ("你好。<label>*世界。*", "你好。<label>\n*世界。*\n"),
     ] {
         assert_sentence_modes(input, expected);
     }

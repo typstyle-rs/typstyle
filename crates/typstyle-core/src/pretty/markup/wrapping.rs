@@ -18,8 +18,9 @@ impl<'a> PrettyPrinter<'a> {
     /// Lays out a markup body in a reflowing mode.
     ///
     /// Sentence boundaries come from the contextual segmentation plan, and `fill` adds
-    /// width-dependent reflow inside a sentence. Breaks use source whitespace or an unspaced
-    /// CJK sentence boundary. Closing quotes, labels, and attached `\` stay with their sentence.
+    /// width-dependent reflow inside a sentence. A break replaces source whitespace or starts
+    /// the next node on a new line after an unspaced CJK sentence ending. Closing quotes,
+    /// labels, and attached `\` stay with their sentence.
     pub(super) fn convert_markup_body_reflow(
         &'a self,
         ctx: Context,

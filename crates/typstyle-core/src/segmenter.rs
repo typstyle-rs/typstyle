@@ -7,6 +7,18 @@
 
 use icu_segmenter::SentenceSegmenterBorrowed;
 
+/// Punctuation that can end a sentence.
+pub(crate) const TERMINAL_PUNCTUATION: [char; 6] = ['.', '!', '?', '。', '！', '？'];
+
+/// CJK terminators that also permit a break without whitespace.
+pub(crate) const CJK_TERMINATORS: [char; 4] = ['。', '！', '？', '｡'];
+
+/// Closing delimiters ignored when looking for terminal punctuation.
+const CLOSERS: &str = ")]}）】』」〉》\"'”’»›";
+
+/// Opening delimiters ignored when testing an abbreviation token.
+const OPENERS: &str = "([{（【『「〈《\"'“‘«‹";
+
 /// Contextual sentence segmentation with the formatter's default suppressions.
 pub(crate) struct SentenceSegmenter {
     inner: SentenceSegmenterBorrowed<'static>,
@@ -33,21 +45,19 @@ impl SentenceSegmenter {
 /// present, so lowercase continuations and closing punctuation retain context.
 pub(crate) fn has_terminal_suffix(text: &str) -> bool {
     let text = trim_closers(text);
-    text.ends_with(['.', '!', '?', '。', '！', '？']) && !ends_with_abbreviation(text)
+    text.ends_with(TERMINAL_PUNCTUATION) && !ends_with_abbreviation(text)
 }
 
 /// Returns whether an unspaced boundary follows CJK sentence punctuation.
 pub(crate) fn ends_with_cjk_terminator(text: &str) -> bool {
-    trim_closers(text).ends_with(['。', '！', '？', '｡'])
+    trim_closers(text).ends_with(CJK_TERMINATORS)
 }
 
 fn trim_closers(text: &str) -> &str {
-    const CLOSERS: &str = ")]}）】』」〉》\"'”’»›";
     text.trim_end_matches(|c: char| c.is_whitespace() || CLOSERS.contains(c))
 }
 
 fn ends_with_abbreviation(text: &str) -> bool {
-    const OPENERS: &str = "([{（【『「〈《\"'“‘«‹";
     const ABBREVIATIONS: &[&str] = &[
         "dr.", "mr.", "mrs.", "ms.", "prof.", "sr.", "jr.", "st.", "vs.", "etc.", "e.g.", "i.e.",
         "al.", "vol.", "ed.", "pp.", "fig.", "sec.", "approx.",
