@@ -1,25 +1,22 @@
 //! Entry point of the libtest-mimic test harness for Typstyle.
 //!
-//! Collects the unit, partial, and (with the `consistency` feature) repository
-//! end-to-end tests and runs them.
+//! Collects the formatting trials and, with the `consistency` feature, the
+//! repository end-to-end trials, and runs them.
 
 #[cfg(feature = "consistency")]
-#[path = "repo-e2e.rs"]
-mod repo_e2e;
-
+mod e2e;
 mod partial;
-mod unit;
+mod whole_file;
 
 use std::error::Error;
 
 use libtest_mimic::Arguments;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    #[allow(unused_mut)]
-    let mut tests = unit::collect_tests()?;
+    let mut tests = whole_file::collect_tests()?;
     tests.append(&mut partial::collect_tests());
     #[cfg(feature = "consistency")]
-    tests.append(&mut repo_e2e::collect_tests());
+    tests.append(&mut e2e::repos::collect_tests());
 
     libtest_mimic::run(&Arguments::from_args(), tests).exit();
 }

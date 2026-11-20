@@ -25,7 +25,7 @@ Formatter options cross crate and application boundaries. Changing only core `Co
 
 == Tests and Rust Consumers
 
-+ Update direct `Config` literals in `crates/` and `tests/`; update `tests/src/common/directive.rs` if fixtures need to select the option.
++ Update direct `Config` literals in `crates/` and `tests/`; update `tests/src/fixtures/directive.rs` if fixtures need to select the option.
 + Add focused semantic tests and representative fixture snapshots. Keep convergence and consistency checks enabled unless disabling them is understood and documented.
 
 Before considering migration complete, search the repository and check the workspace:

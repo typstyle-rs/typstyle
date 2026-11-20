@@ -29,6 +29,8 @@ thiserror.workspace = true
 unicode-width.workspace = true
 
 [dev-dependencies]
+typstyle-tests.workspace = true
+
 insta.workspace = true
 criterion.workspace = true
 serde_json.workspace = true

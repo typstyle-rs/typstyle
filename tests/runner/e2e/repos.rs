@@ -1,26 +1,30 @@
 //! End-to-end tests that format and compile real-world Typst repositories.
 //!
-//! Each test case from the `e2e-repos.toml` fixture is cloned, formatted, and compiled
-//! to verify that formatting preserves the compiled output.
+//! Each test case from the `repos.toml` fixture is cloned, formatted, and
+//! compiled to verify that formatting preserves the compiled output.
 
 use std::{collections::HashSet, fs, path::Path};
 
-use anyhow::{Context, anyhow, bail};
+use anyhow::{Context, anyhow};
 use libtest_mimic::{Failed, Trial};
 use serde::Deserialize;
-use typst_syntax::Source;
 use typstyle_consistency::{CheckingOptions, ErrorSink, FormattedSources, FormatterHarness};
-use typstyle_core::{Config, Typstyle};
-use typstyle_tests::common::{fixtures_dir, test_dir};
+use typstyle_core::Config;
+use typstyle_tests::fixtures::test_dir;
 
-/// The parsed content of the `e2e-repos.toml` fixture.
+use crate::e2e::{configs, make_formatter};
+
+/// The parsed content of the repository test cases.
+const TEST_CONFIG: &str = include_str!("repos.toml");
+
+/// The parsed content of the `repos.toml` fixture.
 #[derive(Deserialize)]
 struct TestConfig {
     /// The repository test cases to run.
     testcase: Vec<Testcase>,
 }
 
-/// A repository test case, as declared in the `e2e-repos.toml` fixture.
+/// A repository test case, as declared in `repos.toml`.
 #[derive(Debug, Clone, Deserialize)]
 struct Testcase {
     /// The name of this test case. Does not require to be unique.
@@ -53,20 +57,9 @@ struct Testcase {
     blacklist: HashSet<String>,
 }
 
-/// A formatting configuration paired with a name identifying it in the comparison output.
-struct NamedConfig {
-    /// The name of the configuration, used in error and comparison output.
-    name: &'static str,
-    /// The style configuration used to format the repository.
-    config: Config,
-}
-
-/// Creates one test for each non-skipped test case in the `e2e-repos.toml` fixture.
-pub(super) fn collect_tests() -> Vec<Trial> {
-    let config = toml::from_str::<TestConfig>(
-        &fs::read_to_string(fixtures_dir().join("e2e-repos.toml")).unwrap(),
-    )
-    .unwrap();
+/// Creates one test for each non-skipped test case in `repos.toml`.
+pub fn collect_tests() -> Vec<Trial> {
+    let config = toml::from_str::<TestConfig>(TEST_CONFIG).unwrap();
 
     config
         .testcase
@@ -85,31 +78,15 @@ pub(super) fn collect_tests() -> Vec<Trial> {
 ///
 /// The cloned repository is removed afterwards.
 fn run_testcase(testcase: Testcase) -> anyhow::Result<()> {
-    let e2e_dir = test_dir().join("e2e");
+    let cache_dir = test_dir().join("e2e");
     // do mkdir -p project_root/tests/e2e
-    let _ = fs::create_dir_all(&e2e_dir);
-    let testcase_dir = e2e_dir.join(&*testcase.name);
+    let _ = fs::create_dir_all(&cache_dir);
+    let testcase_dir = cache_dir.join(&*testcase.name);
 
     clone_testcase_repo(&testcase, &testcase_dir)?;
 
-    let fmt_configs = &[
-        NamedConfig {
-            name: "default",
-            config: Config {
-                reorder_import_items: true,
-                ..Default::default()
-            },
-        },
-        NamedConfig {
-            name: "reflow",
-            config: Config {
-                reorder_import_items: true,
-                wrap_mode: typstyle_core::WrapMode::Fill,
-                ..Default::default()
-            },
-        },
-    ];
-    check_testcase(&testcase, &testcase_dir, fmt_configs)?;
+    let fmt_configs = configs();
+    check_testcase(&testcase, &testcase_dir, &fmt_configs)?;
 
     let _ = fs::remove_dir_all(testcase_dir);
     Ok(())
@@ -154,7 +131,7 @@ fn clone_testcase_repo(testcase: &Testcase, testcase_dir: &Path) -> anyhow::Resu
 fn check_testcase(
     testcase: &Testcase,
     testcase_dir: &Path,
-    named_configs: &[NamedConfig],
+    named_configs: &[(&str, Config)],
 ) -> anyhow::Result<()> {
     if testcase.entrypoint.is_none() && testcase.examples.is_none() {
         return Err(anyhow!(
@@ -174,15 +151,11 @@ fn check_testcase(
 
     let base_world = harness.snapshot();
     let mut fmt_sources = vec![];
-    for config in named_configs {
-        let mut sub_sink = ErrorSink::new(format!("formatting with {}", config.name));
+    for (name, config) in named_configs {
+        let mut sub_sink = ErrorSink::new(format!("formatting with {name}"));
         fmt_sources.push(FormattedSources {
-            name: config.name.to_string(),
-            sources: harness.format(
-                &base_world,
-                make_formatter(config.config.clone()),
-                &mut sub_sink,
-            )?,
+            name: (*name).to_string(),
+            sources: harness.format(&base_world, make_formatter(config.clone()), &mut sub_sink)?,
         });
         sub_sink.sink_to(&mut err_sink);
     }
@@ -214,33 +187,5 @@ fn check_testcase(
         Ok(())
     } else {
         (&err_sink).into()
-    }
-}
-
-/// Builds a closure that formats a source in two passes, failing if the passes disagree.
-///
-/// Sources with syntax errors are rejected.
-fn make_formatter(config: Config) -> impl Fn(Source) -> anyhow::Result<String> {
-    move |source| {
-        let root = source.root();
-        if root.diagnosis().errors {
-            let (errors, _) = root.errors_and_warnings();
-            bail!("the file has syntax errors: {errors:?}");
-        }
-        let t = Typstyle::new(config.clone());
-        let first_pass = t.format_source(source).render().context("first pass")?;
-        let second_pass = t.format_text(&first_pass).render().context("second pass")?;
-        if first_pass != second_pass {
-            bail!(
-                "the formatting does not converge:\n{}",
-                similar_asserts::SimpleDiff::from_str(
-                    &first_pass,
-                    &second_pass,
-                    "first_pass",
-                    "second_pass"
-                )
-            )
-        }
-        Ok(first_pass)
     }
 }

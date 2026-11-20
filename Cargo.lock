@@ -4512,6 +4512,7 @@ dependencies = [
  "smallvec",
  "thiserror",
  "typst-syntax",
+ "typstyle-tests",
  "unicode-width 0.2.2",
 ]
 

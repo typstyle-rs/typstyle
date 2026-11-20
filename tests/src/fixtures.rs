@@ -1,25 +1,23 @@
-//! Shared infrastructure for reading test fixtures and their embedded directives.
+//! Fixture loading and the directives embedded at the top of fixture files.
 
 pub mod directive;
 
-use std::{
-    fs,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use typst_syntax::Source;
 use typstyle_core::Config;
 
 use self::directive::{parse_directives, process_includes};
+use crate::source::read_content;
 
 /// Returns the root directory of the tests crate.
 pub fn test_dir() -> &'static Path {
     Path::new(env!("CARGO_MANIFEST_DIR"))
 }
 
-/// Returns the directory containing the test fixtures.
-pub fn fixtures_dir() -> PathBuf {
+/// Returns the root directory containing the test fixtures.
+pub fn root() -> PathBuf {
     test_dir().join("fixtures")
 }
 
@@ -45,31 +43,4 @@ pub fn read_source_with_options(path: &Path) -> Result<(Source, Options)> {
     let options = parse_directives(&content)?;
     let final_content = process_includes(path, &content, &options)?;
     Ok((Source::detached(final_content), options))
-}
-
-/// Reads a fixture file into a detached [`Source`] without parsing directives.
-pub fn read_source(path: &Path) -> Result<Source> {
-    read_content(path).map(Source::detached)
-}
-
-/// Reads a file as UTF-8 and normalizes its CRLF line endings to LF.
-pub fn read_content(path: &Path) -> Result<String> {
-    let content = fs::read(path).context("Cannot read file")?;
-
-    // Check that the file is valid UTF-8
-    let content =
-        String::from_utf8(content).context("The file's contents are not a valid UTF-8 string!")?;
-
-    let content = remove_crlf(content);
-
-    Ok(content)
-}
-
-/// Replaces CRLF line endings with LF when running on Windows.
-fn remove_crlf(content: String) -> String {
-    if cfg!(windows) {
-        content.replace("\r\n", "\n")
-    } else {
-        content
-    }
 }
