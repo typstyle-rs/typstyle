@@ -48,12 +48,14 @@ The project uses comprehensive testing:
 - **Snapshot tests**: Use `insta` crate, outputs in `tests/fixtures/*/snap/`
 - **Convergence tests**: Ensure formatting converges (format twice = same result)
 - **Correctness tests**: Ensure rendered output unchanged after formatting
-- **E2E tests**: Test against real repos like `tablex`, `cetz`, `fletcher`
+- **E2E tests**: Test against real repos like `tablex`, `cetz`, `fletcher`, plus every `.typ` file in the pinned official Typst docs
+- **Docs corpus**: Fetched from the Typst repository at `TYPST_DOCS_REV` on first use, cached under `tests/.cache/docs`
 
 ### Benchmarking
 ```bash
-cargo bench -p typstyle-core    # Run benchmarks
-cargo bench --bench pretty_print # Pretty printing benchmarks
+cargo bench -p typstyle-core      # Run benchmarks
+cargo bench --bench pretty_print  # Pretty printing benchmarks
+cargo bench --bench typst_docs    # Official Typst docs corpus
 ```
 
 ## Key Files

@@ -1,7 +1,8 @@
-//! Acquisition and validation of the pinned Typst documentation corpus.
+//! Shared acquisition and validation of the pinned Typst documentation corpus.
 //!
-//! The checkout is cached by revision under `.cache/docs`, so bumping the pin
-//! cannot silently reuse an older checkout.
+//! Both the docs end-to-end test and the `typst-docs` benchmark format the same
+//! upstream sources. The checkout is cached by revision under `.cache/docs`, so
+//! bumping the pin cannot silently reuse an older checkout.
 
 use std::{
     fs::{self, File, OpenOptions},

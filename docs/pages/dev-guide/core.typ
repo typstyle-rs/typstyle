@@ -45,6 +45,13 @@ cargo nextest run --workspace -E 'test([snapshot])' \
 cargo insta review
 ```
 
+End-to-end tests only:
+```bash
+cargo nextest run --workspace -E 'test([e2e])' --no-fail-fast
+```
+
+These cover real-world Typst repositories and the official Typst documentation. The docs corpus is a sparse checkout of the Typst repository at `TYPST_DOCS_REV` (see `tests/src/docs_corpus.rs`), fetched on first use and cached under `tests/.cache/docs`, so the first run needs `git` and network access.
+
 Exclude end-to-end tests:
 ```bash
 cargo nextest run --workspace -E '!test([e2e])' --no-fail-fast
@@ -73,9 +80,13 @@ cargo insta accept    # Accept all changes
 Using #link("https://github.com/bheisler/criterion.rs")[Criterion.rs]:
 
 ```bash
-cargo bench --workspace -- --list    # List benchmarks
-cargo bench --workspace              # Run all benchmarks
+cargo bench --workspace -- --list          # List benchmarks
+cargo bench --workspace                    # Run all benchmarks
+cargo bench -p typstyle-core --bench pretty_print
+cargo bench -p typstyle-core --bench typst_docs
 ```
+
+The `typst_docs` benchmark formats the same pinned Typst documentation corpus as the docs end-to-end test. It is fetched on first use and cached under `tests/.cache/docs`; when bumping `TYPST_DOCS_REV`, update `TYPST_DOCS_BYTES` in `crates/typstyle-core/benches/typst_docs.rs` too.
 
 View HTML reports at `target/criterion/report/index.html`.
 

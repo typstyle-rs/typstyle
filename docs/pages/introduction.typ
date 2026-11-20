@@ -37,7 +37,7 @@ These guarantees are enforced through comprehensive test suites:
 - *Snapshot tests*: Every formatting change is validated against reference outputs to prevent regressions.
 - *Idempotency tests*: Each test fixture is formatted repeatedly to verify it reaches a stable fixed point.
 - *Correctness tests*: Rendered outputs are compared pixel-by-pixel to ensure semantic equivalence before and after formatting.
-- *End-to-end tests*: Real-world Typst repositories are formatted and verified against all the above checks.
+- *End-to-end tests*: Real-world Typst repositories are formatted and verified against all the above checks. The official Typst documentation is also formatted to verify parsing, idempotency, and error-free output; rendering is skipped because its build depends on `typst-docs` internals.
 
 = Try It Online
 

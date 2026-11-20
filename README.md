@@ -202,11 +202,14 @@ We maintain a comprehensive suite of tests to ensure the correctness and reliabi
 2. **Snapshot tests**: Format result are stored in the `snapshots` directory and are compared to the current result when running the tests.
 3. **Correctness test**: We compare the rendered output of the code before and after formatting and ensure they are the same.
 4. **E2E Correctness test**: We collect a bunch of typst code repo including `tablex`, `cetz`, `fletcher`... and format them to ensure: (a) the format result converges, and (b) the rendered output is the same.
-5. **CLI tests**: We ensure that the CLI arguments can correctly control the behavior of the program, and the output is desirable.
+5. **Typst docs E2E test**: We format every `.typ` file in the official Typst documentation at a pinned revision, checking that each file and its formatted output parse and that formatting converges under the default and reflow configurations.
+6. **CLI tests**: We ensure that the CLI arguments can correctly control the behavior of the program, and the output is desirable.
 
 ### Benchmark
 
-We provide benchmarks for node attribute computation and pretty printing. Typically, it can format a large document (given parsed source) within 5ms (e.g., `tablex.typ` with ~3000 lines).
+We provide benchmarks for node attribute computation and pretty printing, including the whole official Typst documentation corpus. Typically, it can format a large document (given parsed source) within 5ms (e.g., `tablex.typ` with ~3000 lines).
+
+The Typst docs corpus is a sparse checkout of the Typst repository at a pinned revision, fetched on first use and cached under `tests/.cache/docs`.
 
 We also have continuous benchmarking for each commit on `master` branch. See <https://typstyle-rs.github.io/typstyle-bench-results/dev/bench/>.
 
