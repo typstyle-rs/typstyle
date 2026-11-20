@@ -10,7 +10,7 @@ use libtest_mimic::{Failed, Trial};
 use serde::Deserialize;
 use typstyle_consistency::{CheckingOptions, ErrorSink, FormattedSources, FormatterHarness};
 use typstyle_core::Config;
-use typstyle_tests::fixtures::test_dir;
+use typstyle_tests::{fixtures::test_dir, git_checkout};
 
 use crate::e2e::{configs, make_formatter};
 
@@ -78,8 +78,8 @@ pub fn collect_tests() -> Vec<Trial> {
 ///
 /// The cloned repository is removed afterwards.
 fn run_testcase(testcase: Testcase) -> anyhow::Result<()> {
-    let cache_dir = test_dir().join("e2e");
-    // do mkdir -p project_root/tests/e2e
+    let cache_dir = test_dir().join(".cache").join("repos");
+    // do mkdir -p project_root/tests/.cache/repos
     let _ = fs::create_dir_all(&cache_dir);
     let testcase_dir = cache_dir.join(&*testcase.name);
 
@@ -95,9 +95,10 @@ fn run_testcase(testcase: Testcase) -> anyhow::Result<()> {
 /// Clones the test case's repository into the target directory, checking out the
 /// configured revision if any.
 ///
-/// An existing directory is kept as is, for quick debugging.
+/// An existing checkout is reused when it is already at the configured revision.
 fn clone_testcase_repo(testcase: &Testcase, testcase_dir: &Path) -> anyhow::Result<()> {
-    if fs::exists(testcase_dir)? {
+    let rev = testcase.rev.as_deref();
+    if git_checkout::is_at_revision(testcase_dir, rev)? {
         return Ok(()); // for quick debugging
     }
 
@@ -111,7 +112,7 @@ fn clone_testcase_repo(testcase: &Testcase, testcase_dir: &Path) -> anyhow::Resu
         .arg("--recurse-submodules")
         .output()
         .context("failed to clone repo")?;
-    if let Some(rev) = testcase.rev.as_ref() {
+    if let Some(rev) = rev {
         // do git checkout testcase.revision
         std::process::Command::new("git")
             .arg("checkout")
@@ -119,6 +120,13 @@ fn clone_testcase_repo(testcase: &Testcase, testcase_dir: &Path) -> anyhow::Resu
             .current_dir(testcase_dir)
             .output()
             .context("failed to checkout revision")?;
+    }
+    if !git_checkout::is_at_revision(testcase_dir, rev)? {
+        let expected = match rev {
+            Some(rev) => format!("revision `{rev}`"),
+            None => "a usable Git checkout".to_string(),
+        };
+        return Err(anyhow!("the cloned repository is not at {expected}"));
     }
     Ok(())
 }
