@@ -23,6 +23,7 @@ typstyle-consistency = { workspace = true, optional = true }
 
 anyhow.workspace = true
 serde.workspace = true
+tempfile.workspace = true
 toml.workspace = true
 typst-syntax.workspace = true
 

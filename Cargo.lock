@@ -4526,6 +4526,7 @@ dependencies = [
  "libtest-mimic",
  "serde",
  "similar-asserts",
+ "tempfile",
  "toml",
  "typst-syntax",
  "typstyle-consistency",

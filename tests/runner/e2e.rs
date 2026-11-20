@@ -1,5 +1,7 @@
 //! End-to-end trials over external Typst sources.
 
+pub mod docs;
+#[cfg(feature = "consistency")]
 pub mod repos;
 
 use anyhow::{Context, Result, bail};
@@ -29,7 +31,8 @@ pub fn configs() -> [(&'static str, Config); 2] {
 
 /// Builds a closure that formats a source in two passes, failing if the passes disagree.
 ///
-/// Sources with syntax errors are rejected.
+/// Sources with syntax errors are rejected, and so are formatted outputs that no
+/// longer parse.
 pub fn make_formatter(config: Config) -> impl Fn(Source) -> Result<String> {
     move |source| {
         let root = source.root();
@@ -39,7 +42,12 @@ pub fn make_formatter(config: Config) -> impl Fn(Source) -> Result<String> {
         }
         let t = Typstyle::new(config.clone());
         let first_pass = t.format_source(source).render().context("first pass")?;
-        let second_pass = t.format_text(&first_pass).render().context("second pass")?;
+        let reparsed = Source::detached(first_pass.clone());
+        if reparsed.root().diagnosis().errors {
+            let (errors, _) = reparsed.root().errors_and_warnings();
+            bail!("the formatted source has syntax errors: {errors:?}");
+        }
+        let second_pass = t.format_source(reparsed).render().context("second pass")?;
         if first_pass != second_pass {
             bail!(
                 "the formatting does not converge:\n{}",
