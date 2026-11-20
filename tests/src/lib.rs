@@ -1,8 +1,10 @@
 //! Shared support for Typstyle's test runner and benchmarks.
 //!
-//! [`source`] reads source files and [`fixtures`] loads fixture directives.
+//! [`source`] reads source files, [`fixtures`] loads fixture directives, and
+//! [`git_checkout`] validates cached Git checkouts.
 
 pub mod fixtures;
+pub mod git_checkout;
 pub mod source;
 
 // Used by the test runner (`tests/runner/`) behind the `consistency` feature;
