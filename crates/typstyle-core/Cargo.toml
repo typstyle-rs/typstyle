@@ -16,6 +16,10 @@ bench = false
 name = "pretty_print"
 harness = false
 
+[[bench]]
+name = "typst_docs"
+harness = false
+
 [dependencies]
 typst-syntax.workspace = true
 
