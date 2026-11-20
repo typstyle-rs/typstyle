@@ -1,12 +1,13 @@
 //! Benchmarks pretty-printing of the test assets with the default configuration.
 
-use std::fs;
+use std::{fs, path::Path};
 
 use criterion::{Criterion, criterion_group, criterion_main};
 use typst_syntax::Source;
 use typstyle_core::{Config, Typstyle};
+use typstyle_tests::fixtures;
 
-fn bench_pretty(c: &mut Criterion, id: &str, path: &str, config: Config) {
+fn bench_pretty(c: &mut Criterion, id: &str, path: &Path, config: Config) {
     let content = fs::read_to_string(path).unwrap();
     let source = Source::detached(content);
     let t = Typstyle::new(config);
@@ -39,11 +40,12 @@ const TEST_ASSETS: &[(&str, &str)] = &[
 ];
 
 fn benchmark_pretty(c: &mut Criterion) {
+    let root = fixtures::root();
     for (path, name) in TEST_ASSETS {
         bench_pretty(
             c,
             &format!("pretty-{name}"),
-            &format!("../../tests/fixtures/{path}.typ"),
+            &root.join(format!("{path}.typ")),
             if *name == "deep-nested-args" {
                 Config::new().with_width(10) // special config
             } else {

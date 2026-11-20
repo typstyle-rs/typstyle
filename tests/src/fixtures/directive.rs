@@ -8,7 +8,8 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, bail};
 use typstyle_core::WrapMode;
 
-use super::{Options, read_content};
+use super::Options;
+use crate::{fixtures, source::read_content};
 
 /// Parses typstyle directives from consecutive directive lines at the start of a file
 ///
@@ -109,11 +110,9 @@ pub fn parse_directives(content: &str) -> Result<Options> {
 
 /// Resolves an include path specification to an absolute path
 fn resolve_include_path(include_spec: &str, base_path: &Path) -> Result<PathBuf> {
-    use crate::common::fixtures_dir;
-
     if include_spec.starts_with('/') {
         // Path starts with '/', treat as relative to fixtures directory
-        Ok(fixtures_dir().join(include_spec.trim_start_matches('/')))
+        Ok(fixtures::root().join(include_spec.trim_start_matches('/')))
     } else {
         // Path doesn't start with '/', treat as relative to the parent directory of the current file
         let parent = base_path

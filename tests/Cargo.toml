@@ -10,7 +10,7 @@ bench = false
 
 [[test]]
 name = "tests"
-path = "src/tests.rs"
+path = "runner/main.rs"
 harness = false
 
 [features]
@@ -27,6 +27,11 @@ toml.workspace = true
 typst-syntax.workspace = true
 
 console.workspace = true
+similar-asserts.workspace = true
+
+[dev-dependencies]
 insta.workspace = true
 libtest-mimic.workspace = true
-similar-asserts.workspace = true
+
+[lints]
+workspace = true

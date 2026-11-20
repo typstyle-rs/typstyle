@@ -6,7 +6,7 @@ use insta::internals::Content;
 use libtest_mimic::{Failed, Trial};
 use typst_syntax::Source;
 use typstyle_core::Typstyle;
-use typstyle_tests::common::{fixtures_dir, read_source_with_options};
+use typstyle_tests::fixtures::{self, read_source_with_options};
 
 /// Creates one test for each `.typ` file in the current directory or
 /// sub-directories of the current directory.
@@ -96,7 +96,7 @@ pub fn collect_tests() -> Result<Vec<Trial>, Box<dyn Error>> {
 
     // We recursively look for `.typ` files, starting from the current directory.
     let mut tests = Vec::new();
-    let current_dir = fixtures_dir();
+    let current_dir = fixtures::root();
     visit_dir(&current_dir, &mut tests)?;
 
     Ok(tests)
@@ -141,9 +141,9 @@ fn check_snapshot(path: &Path, width: usize) -> Result<(), Failed> {
 /// Checks that repeatedly formatting a fixture file at the given max width converges.
 ///
 /// Erroneous sources and fixtures with
-/// [`skip_consistency`](typstyle_tests::common::Options::skip_consistency) set are
+/// [`skip_consistency`](typstyle_tests::fixtures::Options::skip_consistency) set are
 /// skipped. The fixture's
-/// [`relax_convergence`](typstyle_tests::common::Options::relax_convergence) allows its
+/// [`relax_convergence`](typstyle_tests::fixtures::Options::relax_convergence) allows its
 /// output to change for a few iterations before the check fails.
 fn check_convergence(path: &Path, width: usize) -> Result<(), Failed> {
     let (source, opt) = read_source_with_options(path)?;
@@ -188,7 +188,7 @@ fn check_convergence(path: &Path, width: usize) -> Result<(), Failed> {
 ///
 /// The fixture is formatted at the given max width and compiled next to the original,
 /// and the outputs must match. Erroneous sources and fixtures with
-/// [`skip_consistency`](typstyle_tests::common::Options::skip_consistency) set are
+/// [`skip_consistency`](typstyle_tests::fixtures::Options::skip_consistency) set are
 /// skipped. Only available with the `consistency` feature.
 #[cfg(feature = "consistency")]
 fn check_output_consistency(path: &Path, width: usize) -> Result<(), Failed> {
@@ -208,7 +208,7 @@ fn check_output_consistency(path: &Path, width: usize) -> Result<(), Failed> {
     let mut err_sink = ErrorSink::new(format!("consistency {}", path.display()));
 
     let mut harness = FormatterHarness::new("".to_string(), PathBuf::new())?;
-    let main_vpath = path.strip_prefix(fixtures_dir())?;
+    let main_vpath = path.strip_prefix(fixtures::root())?;
     harness.add_source_file(main_vpath, source.text())?;
 
     let base_world = harness.snapshot();

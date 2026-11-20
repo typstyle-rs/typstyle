@@ -7,7 +7,7 @@ use std::{ops::Range, path::Path};
 use insta::internals::Content;
 use libtest_mimic::{Failed, Trial};
 use typstyle_core::Typstyle;
-use typstyle_tests::common::{fixtures_dir, read_source};
+use typstyle_tests::{fixtures, source::read_source};
 
 /// A partial-formatting test case: a fixture file and the byte ranges to format in it.
 struct Testcase {
@@ -41,7 +41,7 @@ pub fn collect_tests() -> Vec<Trial> {
         ),
     ];
 
-    let root = fixtures_dir();
+    let root = fixtures::root();
     cases
         .into_iter()
         .flat_map(|case| {
