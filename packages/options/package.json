@@ -1,0 +1,15 @@
+{
+  "name": "@typstyle/options",
+  "version": "0.15.3",
+  "description": "Generated formatter option types, defaults, and schemas for Typstyle",
+  "type": "module",
+  "license": "Apache-2.0",
+  "exports": {
+    ".": "./src/index.ts",
+    "./generated/*": "./generated/*"
+  },
+  "files": [
+    "generated",
+    "src"
+  ]
+}

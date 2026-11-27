@@ -4,9 +4,13 @@
 //! [`Formatter`] it creates for a single source. With the `mapping` feature enabled,
 //! span mappings for debug AST output are also available.
 
+// Allows generated code inside this crate to refer to `::typstyle_core`.
+extern crate self as typstyle_core;
+
 pub mod attr;
 pub mod ext;
 pub mod liteval;
+pub mod option;
 pub mod partial;
 pub mod pretty;
 
@@ -15,7 +19,8 @@ mod kind;
 mod utils;
 
 pub use attr::AttrStore;
-pub use config::{Config, LineEnding, WrapMode};
+pub use config::{Config, LineEnding, Options, PartialConfig, PartialOptions, WrapMode};
+pub use option::{ConfigError, OptionKind, OptionSpec, OptionsError};
 use pretty::{PrettyPrinter, prelude::*};
 use thiserror::Error;
 use typst_syntax::{Source, SyntaxNode};

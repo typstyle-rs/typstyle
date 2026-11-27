@@ -1,0 +1,20 @@
+[package]
+name = "xtask"
+description = "Repository automation for Typstyle."
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+anyhow.workspace = true
+prettyplease.workspace = true
+proc-macro2.workspace = true
+quote.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+syn.workspace = true
+toml.workspace = true
+
+[lints]
+workspace = true

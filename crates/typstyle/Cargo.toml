@@ -17,7 +17,7 @@ bench = false
 doc = false
 
 [dependencies]
-typstyle-core.workspace = true
+typstyle-core = { workspace = true, features = ["serde"] }
 
 typst-syntax.workspace = true
 
@@ -27,6 +27,7 @@ clap_complete = { workspace = true, optional = true }
 itertools.workspace = true
 path-absolutize.workspace = true
 similar.workspace = true
+toml.workspace = true
 walkdir.workspace = true
 
 log.workspace = true

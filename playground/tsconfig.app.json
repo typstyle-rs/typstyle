@@ -14,10 +14,12 @@
     "moduleDetection": "force",
     "noEmit": true,
     "jsx": "react-jsx",
+    "resolveJsonModule": true,
 
     /* Path mapping */
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@typstyle/options": ["../packages/options/src/index.ts"]
     },
 
     /* Linting */

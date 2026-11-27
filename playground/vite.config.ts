@@ -19,6 +19,10 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
+      "@typstyle/options": path.resolve(
+        import.meta.dirname,
+        "../packages/options/src/index.ts",
+      ),
     },
   },
 

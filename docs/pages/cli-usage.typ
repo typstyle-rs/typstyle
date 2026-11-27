@@ -34,6 +34,32 @@ typstyle src/ docs/
 
 = Main Options
 
+== Configuration Files
+
+Options can be stored in TOML. The CLI looks for `typstyle.toml` or `.typstyle.toml` from the
+current directory upwards, and reads a user configuration from `$TYPSTYLE_CONFIG`,
+`$XDG_CONFIG_HOME/typstyle/config.toml`, or `~/.config/typstyle/config.toml`.
+
+```toml
+max_width = 100
+tab_spaces = 4
+wrap_mode = "fill"
+reorder_import_items = false
+```
+
+Explicit flags win over project configuration, which wins over user configuration:
+
+```bash
+# Use a specific configuration file instead of project discovery
+typstyle --config ./ci/typstyle.toml --check .
+
+# Override one option without changing the file
+typstyle --line-width 100 --wrap-text=fill -i src/
+```
+
+Unknown keys and invalid values are rejected. Boolean flags accept
+explicit values, so `--reorder-import-items=false` overrides a configuration file.
+
 == Format Control
 
 === In-Place Formatting

@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "blank_lines_upper_bound": {
+      "default": 1,
+      "description": "Maximum number of consecutive blank lines allowed.",
+      "type": "integer"
+    },
+    "collapse_markup_spaces": {
+      "default": false,
+      "description": "When `true`, consecutive whitespace in markup is collapsed into a single space.",
+      "type": "boolean"
+    },
+    "line_ending": {
+      "default": "preserve",
+      "description": "Policy for generated line breaks. Literal source text is preserved.",
+      "enum": [
+        "lf",
+        "crlf",
+        "preserve"
+      ],
+      "type": "string"
+    },
+    "max_width": {
+      "default": 80,
+      "description": "Maximum width of each line.",
+      "type": "integer"
+    },
+    "reorder_import_items": {
+      "default": true,
+      "description": "When `true`, import items are sorted alphabetically.",
+      "type": "boolean"
+    },
+    "tab_spaces": {
+      "default": 2,
+      "description": "Number of spaces to use for each indentation level.",
+      "type": "integer"
+    },
+    "wrap_mode": {
+      "default": "none",
+      "description": "Text wrapping mode for markup.",
+      "enum": [
+        "none",
+        "fill",
+        "sentence",
+        "fill-sentence"
+      ],
+      "type": "string"
+    }
+  },
+  "title": "Typstyle options",
+  "type": "object"
+}

@@ -1,20 +1,34 @@
+import {
+  OPTION_KEYS,
+  OPTIONS_SCHEMA,
+  type OptionKey,
+  type PartialOptions,
+} from "@typstyle/options";
 import * as lz from "lz-string";
 import queryString from "query-string";
 import type { OutputType } from "../types";
-import { DEFAULT_FORMAT_OPTIONS, type FormatOptions } from "./formatter";
 import { fetchFromPastebin, uploadToPastebin } from "./pastebin";
 
 export interface PlaygroundState {
   sourceCode: string;
-  formatOptions: Partial<FormatOptions>;
+  formatOptions: PartialOptions;
   tab: OutputType;
 }
 
 export interface PlaygroundUrlState {
   sourceCode?: string;
-  formatOptions: Partial<FormatOptions>;
+  formatOptions: PartialOptions;
   tab?: OutputType;
 }
+
+/** URL keys used before options were generated from `options.toml`. */
+const LEGACY_OPTION_KEYS: Record<string, keyof PartialOptions> = {
+  lineWidth: "max_width",
+  indentWidth: "tab_spaces",
+  collapseMarkupSpaces: "collapse_markup_spaces",
+  reorderImportItems: "reorder_import_items",
+  wrapMode: "wrap_mode",
+};
 
 // Maximum URL length before using pastebin for source code storage
 // We use a shorter (< 2048) length to avoid verbosity
@@ -25,7 +39,7 @@ const MAX_URL_LENGTH = 1024;
  */
 export function updateUrlWithState(
   sourceCode: string,
-  options: Partial<FormatOptions>,
+  options: PartialOptions,
   tab?: OutputType,
 ): void {
   const currentUrl = new URL(window.location.href);
@@ -87,18 +101,38 @@ export async function getStateFromUrl(): Promise<PlaygroundUrlState> {
 
   // Parse options from query params (use current URL state)
   const query = queryString.parse(
-    queryString.pick(url.search, Object.keys(DEFAULT_FORMAT_OPTIONS)),
+    queryString.pick(url.search, [
+      ...OPTION_KEYS,
+      ...Object.keys(LEGACY_OPTION_KEYS),
+    ]),
     {
       parseBooleans: true,
       parseNumbers: true,
     },
   );
+  const formatOptions: Record<string, unknown> = {};
+  for (const key of OPTION_KEYS) {
+    const value = query[key];
+    if (value !== undefined && isValidOptionValue(key, value)) {
+      formatOptions[key] = value;
+    }
+  }
+  for (const [legacy, key] of Object.entries(LEGACY_OPTION_KEYS)) {
+    const value = query[legacy];
+    if (
+      !(key in formatOptions) &&
+      value !== undefined &&
+      isValidOptionValue(key, value)
+    ) {
+      formatOptions[key] = value;
+    }
+  }
 
   const tab = parseTabParam(params.get("tab"));
 
   return {
     sourceCode,
-    formatOptions: query as Partial<FormatOptions>,
+    formatOptions: formatOptions as PartialOptions,
     tab,
   };
 }
@@ -129,6 +163,23 @@ export async function generateShareUrl(
 
   // If pastebin fails, use current URL as-is
   return { url: window.location.href, usedPastebin: false };
+}
+
+function isValidOptionValue(key: OptionKey, value: unknown): boolean {
+  const property = OPTIONS_SCHEMA.properties[key];
+  switch (property.type) {
+    case "boolean":
+      return typeof value === "boolean";
+    case "integer":
+      return typeof value === "number" && Number.isInteger(value);
+    case "number":
+      return typeof value === "number" && Number.isFinite(value);
+    case "string":
+      return (
+        typeof value === "string" &&
+        (property.enum === undefined || property.enum.includes(value))
+      );
+  }
 }
 
 function parseTabParam(value: string | null): OutputType | undefined {

@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+- Feature: Add canonical `Options` and `PartialOptions` configuration types. `Config` and
+  `PartialConfig` remain aliases. `options.toml` is the single declaration source;
+  `cargo xtask generate-options` writes ordinary Rust, CLI arguments, TypeScript, JSON
+  Schema, UI metadata, and an option reference without adding a published macro crate.
+- Feature(CLI): Read TOML configuration from `--config`, `typstyle.toml`/`.typstyle.toml`
+  discovered upwards, and a user configuration. Layers merge in the order user, project, CLI;
+  unknown keys are rejected and explicit CLI values override files.
+- Feature(Playground): Render formatter controls from generated JSON Schema and UI metadata,
+  and persist only explicit overrides in the URL.
+- Feature: Generate TypeScript types, defaults, JSON Schema, UI metadata, and the option
+  reference with `cargo xtask generate-options`; CI rejects stale artifacts.
+
 ## v0.15.3 - [2026-11-15]
 
 - Feature(CLI): Add `--lines FIRST:LAST` to format only the selected 1-based, inclusive line ranges. The complete document is printed with only the selected ranges reformatted, so the option can be used as `jj fix`'s `line-range-args`.

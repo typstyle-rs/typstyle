@@ -2,8 +2,8 @@ import { useMemo, useRef, useState } from "react";
 import type { CodeEditorRef } from "./components/editor";
 import { OutputEditor, SourceEditor } from "./components/editor";
 import { FloatingErrorCard } from "./components/FloatingErrorCard";
+import { OptionsEditor } from "./components/forms/OptionsEditor";
 import { RangeControls } from "./components/forms/RangeControls";
-import { SettingsPanel } from "./components/forms/SettingsPanel";
 import { Header } from "./components/Header";
 import { MainLayout } from "./components/MainLayout";
 import { LoadingSpinner, StatusBar } from "./components/ui";
@@ -28,12 +28,13 @@ function Playground() {
       sourceCode,
       deferredSourceCode,
       formatOptions,
+      optionOverrides,
       isInitializing,
       activeOutput,
       cursorSyncEnabled,
     },
     setSourceCode,
-    setFormatOptions,
+    setOptionOverrides,
     setActiveOutput,
     setCursorSyncEnabled,
   } = usePlaygroundState();
@@ -150,7 +151,7 @@ function Playground() {
   const handleShareClick = async () => {
     const playgroundState = {
       sourceCode,
-      formatOptions,
+      formatOptions: optionOverrides,
       tab: activeOutput,
     };
     await shareManager.generateShare(playgroundState);
@@ -163,10 +164,7 @@ function Playground() {
   const optionsPanel = (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-hidden">
-        <SettingsPanel
-          formatOptions={formatOptions}
-          setFormatOptions={setFormatOptions}
-        />
+        <OptionsEditor value={optionOverrides} onChange={setOptionOverrides} />
       </div>
       <RangeControls
         isRangeMode={isRangeMode}
@@ -180,7 +178,7 @@ function Playground() {
       key="source-editor"
       value={sourceCode}
       onChange={handleEditorChange}
-      lineLengthGuide={formatOptions.lineWidth}
+      lineLengthGuide={formatOptions.max_width}
       formatOptions={formatOptions}
       onSelectionChange={editorSelection.updateSelection}
     />
@@ -191,8 +189,8 @@ function Playground() {
       key="output-formatted"
       content={formatter.formattedCode}
       language="typst"
-      indentSize={formatOptions.indentWidth}
-      lineLengthGuide={formatOptions.lineWidth}
+      indentSize={formatOptions.tab_spaces}
+      lineLengthGuide={formatOptions.max_width}
     />
   );
   const astPanel = (

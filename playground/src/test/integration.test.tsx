@@ -1,8 +1,8 @@
 import { renderHook, waitFor } from "@testing-library/react";
+import { DEFAULT_OPTIONS } from "@typstyle/options";
 import { describe, expect, it, vi } from "vitest";
 import { useTypstFormatter } from "@/hooks/use-typst-formatter";
 import type { OutputType } from "@/types";
-import { DEFAULT_FORMAT_OPTIONS } from "@/utils/formatter";
 
 // Mock the error handler
 vi.mock("@/hooks/useErrorHandler", () => ({
@@ -15,7 +15,7 @@ describe("Playground Integration Tests", () => {
       const testCode = '#hello("world")';
 
       const { result } = renderHook(() =>
-        useTypstFormatter(testCode, DEFAULT_FORMAT_OPTIONS, "formatted"),
+        useTypstFormatter(testCode, DEFAULT_OPTIONS, "formatted"),
       );
 
       // Wait for the formatting to complete
@@ -31,7 +31,7 @@ describe("Playground Integration Tests", () => {
       const testCode = '#hello("world")';
 
       const { result } = renderHook(() =>
-        useTypstFormatter(testCode, DEFAULT_FORMAT_OPTIONS, "ast"),
+        useTypstFormatter(testCode, DEFAULT_OPTIONS, "ast"),
       );
 
       await waitFor(() => {
@@ -45,7 +45,7 @@ describe("Playground Integration Tests", () => {
       const testCode = '#hello("world")';
 
       const { result } = renderHook(() =>
-        useTypstFormatter(testCode, DEFAULT_FORMAT_OPTIONS, "pir"),
+        useTypstFormatter(testCode, DEFAULT_OPTIONS, "pir"),
       );
 
       await waitFor(() => {
@@ -59,7 +59,7 @@ describe("Playground Integration Tests", () => {
       const invalidCode = "#invalid(syntax here";
 
       const { result } = renderHook(() =>
-        useTypstFormatter(invalidCode, DEFAULT_FORMAT_OPTIONS, "formatted"),
+        useTypstFormatter(invalidCode, DEFAULT_OPTIONS, "formatted"),
       );
 
       // The hook should handle errors without crashing
@@ -76,8 +76,7 @@ describe("Playground Integration Tests", () => {
       const updatedCode = '#goodbye("world")';
 
       const { result, rerender } = renderHook(
-        ({ code }) =>
-          useTypstFormatter(code, DEFAULT_FORMAT_OPTIONS, "formatted"),
+        ({ code }) => useTypstFormatter(code, DEFAULT_OPTIONS, "formatted"),
         { initialProps: { code: initialCode } },
       );
 
@@ -100,7 +99,7 @@ describe("Playground Integration Tests", () => {
 
       const { result, rerender } = renderHook(
         ({ outputType }) =>
-          useTypstFormatter(testCode, DEFAULT_FORMAT_OPTIONS, outputType),
+          useTypstFormatter(testCode, DEFAULT_OPTIONS, outputType),
         { initialProps: { outputType: "formatted" as OutputType } },
       );
 

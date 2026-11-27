@@ -1,12 +1,15 @@
 //! Definition of the `typstyle` command-line interface, parsed with clap.
 //!
-//! [`StyleArgs`] maps the style options to the formatter's [`typstyle_core::Config`].
+//! Style arguments are generated from `options.toml` by
+//! `cargo xtask generate-options`. Only CLI concerns that do not describe an option remain
+//! handwritten.
 
 use std::{path::PathBuf, sync::LazyLock};
 
-use clap::{Args, CommandFactory, Parser, Subcommand, ValueEnum, error::ErrorKind};
+use clap::{Args, CommandFactory, Parser, Subcommand, error::ErrorKind};
 
 use crate::fmt::LineRange;
+use crate::generated_args::OptionArgs;
 
 /// Arguments of the `typstyle` CLI.
 #[derive(Parser)]
@@ -48,9 +51,23 @@ pub struct CliArguments {
     #[arg(long, default_value_t = false, global = true, conflicts_with = "check")]
     pub diff: bool,
 
+    /// Path to a TOML configuration file.
+    ///
+    /// When omitted, `typstyle.toml` or `.typstyle.toml` is discovered from the current
+    /// directory upwards, and a user configuration is read from
+    /// `$TYPSTYLE_CONFIG`, `$XDG_CONFIG_HOME/typstyle/config.toml`, or
+    /// `~/.config/typstyle/config.toml`.
+    #[arg(
+        long,
+        global = true,
+        value_name = "PATH",
+        help_heading = "Configuration"
+    )]
+    pub config: Option<PathBuf>,
+
     /// Options configuring the formatting style.
     #[command(flatten, next_help_heading = "Format Configuration")]
-    pub style: StyleArgs,
+    pub style: OptionArgs,
 
     /// Options for printing debug output of the formatter.
     #[command(flatten, next_help_heading = "Debug Options")]
@@ -107,77 +124,6 @@ pub enum Command {
         #[arg(value_enum)]
         shell: clap_complete::Shell,
     },
-}
-
-/// Style options that map to the formatter's [`typstyle_core::Config`].
-#[derive(Args)]
-pub struct StyleArgs {
-    /// Maximum width of each line.
-    #[arg(
-        short = 'l',
-        long,
-        visible_short_alias = 'c',
-        visible_alias = "column",
-        default_value_t = 80,
-        global = true
-    )]
-    pub line_width: usize,
-
-    /// Number of spaces per indentation level.
-    #[arg(
-        short = 't',
-        long,
-        visible_alias = "tab-width",
-        default_value_t = 2,
-        global = true
-    )]
-    pub indent_width: usize,
-
-    /// Line-ending policy for formatted source output.
-    #[arg(long, value_enum, default_value_t = LineEndingMode::Preserve, global = true)]
-    pub line_ending: LineEndingMode,
-
-    /// Disable alphabetical reordering of import items.
-    #[arg(long, default_value_t = false, global = true)]
-    pub no_reorder_import_items: bool,
-
-    /// Text wrapping mode: none (default), fill (wrap to line width), sentence (one per line), or fill-sentence (both).
-    #[arg(
-        long,
-        value_enum,
-        default_value_t = WrapTextMode::None,
-        default_missing_value = "fill",
-        num_args = 0..=1,
-        require_equals = true,
-        global = true
-    )]
-    pub wrap_text: WrapTextMode,
-}
-
-/// CLI policy for selecting the generated line terminator for each input.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, ValueEnum)]
-pub enum LineEndingMode {
-    /// Generate LF breaks, preserving literal source text.
-    Lf,
-    /// Generate CRLF breaks, preserving literal source text.
-    Crlf,
-    /// Generate CRLF only when the input contains CRLF and no bare LF or CR.
-    #[default]
-    Preserve,
-}
-
-/// Text wrapping mode for CLI
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, ValueEnum)]
-pub enum WrapTextMode {
-    /// Do not wrap text (default)
-    #[default]
-    None,
-    /// Wrap text to fit within line width
-    Fill,
-    /// Place each sentence on its own line
-    Sentence,
-    /// Place each sentence on its own line, wrapping long sentences to the line width
-    FillSentence,
 }
 
 /// Debug options for printing intermediate artifacts of the formatter.

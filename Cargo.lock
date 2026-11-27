@@ -2692,6 +2692,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "prettyplease"
+version = "0.2.37"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "479ca8adacdd7ce8f1fb39ce9ecccbfe93a3f1344b3d0d97f20bc0196208f62b"
+dependencies = [
+ "proc-macro2",
+ "syn 2.0.119",
+]
+
+[[package]]
 name = "proc-macro-hack"
 version = "0.5.20+deprecated"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4471,6 +4481,7 @@ dependencies = [
  "path-absolutize",
  "similar 3.2.0",
  "tempfile",
+ "toml",
  "typst-syntax",
  "typstyle-core",
  "vergen",
@@ -4551,7 +4562,6 @@ dependencies = [
  "js-sys",
  "serde",
  "serde-wasm-bindgen",
- "syn 3.0.7",
  "typst-syntax",
  "typstyle-core",
  "wasm-bindgen",
@@ -5281,6 +5291,20 @@ name = "xmp-writer"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9440ea3e5aeabb0ac63af70daf835274065238cdd0cec83418f417eae38bacee"
+
+[[package]]
+name = "xtask"
+version = "0.15.3"
+dependencies = [
+ "anyhow",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn 2.0.119",
+ "toml",
+]
 
 [[package]]
 name = "yaml-rust"

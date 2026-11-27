@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import * as typstyle from "typstyle-wasm";
 import type { OutputType, RangeFormatterOptions } from "@/types";
-import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
+import type { FormatOptions } from "@/utils/formatter";
 import type { SpanMapping } from "@/utils/offset-mapping";
 import { useAsyncError } from "./useErrorHandler";
 
@@ -35,7 +35,7 @@ export function useTypstFormatter(
   const captureAsyncError = useAsyncError();
 
   const formatCode = async () => {
-    const config = formatOptionsToConfig(formatOptions);
+    const config = formatOptions;
 
     try {
       // Determine if we should use range operations
