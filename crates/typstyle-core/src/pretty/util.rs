@@ -15,17 +15,6 @@ pub fn is_only_one_and<T>(
         .is_some_and(|first| iterator.next().is_none() && f(&first))
 }
 
-/// Returns `true` if the iterator is empty, or yields exactly one item that satisfies
-/// `f`.
-pub fn is_empty_or_one_if<T>(
-    mut iterator: impl Iterator<Item = T>,
-    f: impl FnOnce(&T) -> bool,
-) -> bool {
-    iterator
-        .next()
-        .is_none_or(|it| iterator.next().is_none() && f(&it))
-}
-
 /// Returns whether any direct child of the node is a comment.
 pub fn has_comment_children(node: &SyntaxNode) -> bool {
     node.children().any(|it| it.kind().is_comment())

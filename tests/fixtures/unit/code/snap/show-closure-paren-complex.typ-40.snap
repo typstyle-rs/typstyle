@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/unit/code/show-closure-paren-complex.typ
 ---
 #show raw.where(
@@ -9,10 +9,9 @@ input_file: tests/fixtures/unit/code/show-closure-paren-complex.typ
     and it.text.ends-with(">")
 ) {
   set text(1.2em)
-  doc-style.show-type(it.text.slice(
-    1,
-    -1,
-  ))
+  doc-style.show-type(
+    it.text.slice(1, -1),
+  )
 } else {
   it
 }

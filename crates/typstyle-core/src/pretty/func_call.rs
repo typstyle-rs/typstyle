@@ -15,7 +15,7 @@ use super::{
     style::FoldStyle,
     table,
 };
-use crate::{ext::StrExt, pretty::args};
+use crate::{AttrStore, ext::StrExt, pretty::args};
 
 impl<'a> PrettyPrinter<'a> {
     /// Converts a function call, `callee(args)`.
@@ -142,8 +142,10 @@ impl<'a> PrettyPrinter<'a> {
             _ if pargs.is_empty() => FoldStyle::Always,
             FoldStyle::Always => FoldStyle::Always,
             _ if ctx.break_suppressed && pargs.len() == 1 => FoldStyle::Always,
-            _ if ctx.break_suppressed => suggest_fold_style_for_args(&pargs, FoldStyle::Fit),
-            fold_style => suggest_fold_style_for_args(&pargs, fold_style),
+            _ if ctx.break_suppressed => {
+                suggest_fold_style_for_args(&pargs, FoldStyle::Fit, &self.attr_store)
+            }
+            fold_style => suggest_fold_style_for_args(&pargs, fold_style, &self.attr_store),
         };
 
         ListStylist::new(self)
@@ -274,16 +276,21 @@ fn is_ends_with_hashed_expr(children: std::slice::Iter<'_, SyntaxNode>) -> bool 
 /// # Parameters
 /// - `pargs`: A slice of parenthesized arguments to analyze.
 /// - `hint`: The fallback fold style to use if no rule matches.
+/// - `attr_store`: Precomputed node attributes used when inspecting combinable calls.
 ///
 /// # Returns
 /// - The suggested `FoldStyle`
-fn suggest_fold_style_for_args(pargs: &[Arg], hint: FoldStyle) -> FoldStyle {
+fn suggest_fold_style_for_args(
+    pargs: &[Arg],
+    hint: FoldStyle,
+    attr_store: &AttrStore,
+) -> FoldStyle {
     let Some((&last, initials)) = pargs.split_last() else {
         return FoldStyle::Always; // This should have been covered by call site.
     };
     let last_expr = args::unwrap_expr_deep(last);
 
-    if !args::is_combinable(last_expr) {
+    if !args::is_combinable(last_expr, attr_store) {
         return hint;
     }
 
@@ -318,4 +325,113 @@ fn suggest_fold_style_for_args(pargs: &[Arg], hint: FoldStyle) -> FoldStyle {
     }
 
     FoldStyle::Compact
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{Config, Typstyle};
+
+    fn format_with_width(input: &str, width: usize) -> String {
+        let formatter = Typstyle::new(Config::new().with_width(width));
+        let formatted = formatter.format_text(input).render().unwrap();
+        assert_eq!(
+            formatter.format_text(&formatted).render().unwrap(),
+            formatted,
+            "formatting did not converge for:\n{formatted}"
+        );
+        formatted
+    }
+
+    #[test]
+    fn simple_single_line_trailing_func_calls_do_not_use_compact_layout() {
+        let cases = [
+            (
+                80,
+                "#draw.line(swap(grid.centers.at(axis).at(i), min), swap(grid.centers.at(axis).at(i), max))\n",
+                "#draw.line(\n  swap(grid.centers.at(axis).at(i), min),\n  swap(grid.centers.at(axis).at(i), max),\n)\n",
+            ),
+            (
+                80,
+                "#f(text(red)[colored], text(blue)[colored], text(green)[colored], text(purple)[colored])\n",
+                "#f(\n  text(red)[colored],\n  text(blue)[colored],\n  text(green)[colored],\n  text(purple)[colored],\n)\n",
+            ),
+            (
+                40,
+                "#f(1, \"two\", three: 4, (x: 5), text(stroke: 1pt)[])\n",
+                "#f(\n  1,\n  \"two\",\n  three: 4,\n  (x: 5),\n  text(stroke: 1pt)[],\n)\n",
+            ),
+            (
+                78,
+                "#let header = utils.call-or-display(self, self.page.at(\"header\", default: none))\n",
+                "#let header = utils.call-or-display(\n  self,\n  self.page.at(\"header\", default: none),\n)\n",
+            ),
+            (
+                40,
+                "#doc-style.show-type(it.text.slice(1, -1))\n",
+                "#doc-style.show-type(\n  it.text.slice(1, -1),\n)\n",
+            ),
+            (
+                30,
+                "#quantum-circuit(2, rstick($|psi〉$))\n",
+                "#quantum-circuit(\n  2,\n  rstick($|psi〉$),\n)\n",
+            ),
+            (
+                120,
+                "#block(inset: 4pt, stroke: (top: headcolor), text(headcolor)[johanvx (https://github.com/johanvx) #h(1fr) #datetime.today().display()])\n",
+                "#block(\n  inset: 4pt,\n  stroke: (top: headcolor),\n  text(headcolor)[johanvx (https://github.com/johanvx) #h(1fr) #datetime.today().display()],\n)\n",
+            ),
+            (
+                80,
+                "#box(width: new-width, height: available-height, scale(x: ratio, y: ratio, origin: top + left, boxed-content))\n",
+                "#box(\n  width: new-width,\n  height: available-height,\n  scale(x: ratio, y: ratio, origin: top + left, boxed-content),\n)\n",
+            ),
+            (
+                80,
+                "#stack(spacing: -wrapped-body-size.height, body, rect(fill: fill, ..named, ..cover-args.pos()))\n",
+                "#stack(\n  spacing: -wrapped-body-size.height,\n  body,\n  rect(fill: fill, ..named, ..cover-args.pos()),\n)\n",
+            ),
+        ];
+
+        for (width, input, expected) in cases {
+            assert_eq!(
+                format_with_width(input, width),
+                expected,
+                "width={width}, input={input}"
+            );
+        }
+    }
+
+    #[test]
+    fn structured_multiline_func_calls_keep_compact_layout() {
+        let cases = [
+            (
+                80,
+                "#align(center, link(\"https://example.com\")[\n  #text(large)[*Title*]\n])\n",
+                "#align(center, link(\"https://example.com\")[\n  #text(large)[*Title*]\n])\n",
+            ),
+            (
+                80,
+                "#align(center, table(columns: 2, [A], [B], [C], [D]))\n",
+                "#align(center, table(\n  columns: 2,\n  [A], [B],\n  [C], [D],\n))\n",
+            ),
+            (
+                80,
+                "#place(top + left, locate(loc => {\n  let pos = loc.position()\n  pos\n}))\n",
+                "#place(top + left, locate(loc => {\n  let pos = loc.position()\n  pos\n}))\n",
+            ),
+            (
+                80,
+                "#arguments(arguments(\n  (1, 2, 3, 4, 5),\n))\n",
+                "#arguments(arguments(\n  (1, 2, 3, 4, 5),\n))\n",
+            ),
+        ];
+
+        for (width, input, expected) in cases {
+            assert_eq!(
+                format_with_width(input, width),
+                expected,
+                "width={width}, input={input}"
+            );
+        }
+    }
 }

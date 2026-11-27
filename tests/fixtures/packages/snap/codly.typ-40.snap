@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/packages/codly.typ
 ---
 /*
@@ -1821,9 +1821,11 @@ input_file: tests/fixtures/packages/codly.typ
     // Must be done before the smart indentation code.
     // Otherwise it results in two paragraphs.
     if numbers-format != none {
-      items.push(numbers-format(
-        line.number + offset,
-      ))
+      items.push(
+        numbers-format(
+          line.number + offset,
+        ),
+      )
     } else {
       l = [#raw.line(
         line.number + offset,

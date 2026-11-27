@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
 ---
 // DUMMY
@@ -266,15 +266,15 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
       let sorted = values.sorted()
       let n = sorted.len()
       (
-        q1: sorted.at(calc.floor(
-          n * 0.25,
-        )),
-        q2: sorted.at(calc.floor(
-          n * 0.5,
-        )), // median
-        q3: sorted.at(calc.floor(
-          n * 0.75,
-        )),
+        q1: sorted.at(
+          calc.floor(n * 0.25),
+        ),
+        q2: sorted.at(
+          calc.floor(n * 0.5),
+        ), // median
+        q3: sorted.at(
+          calc.floor(n * 0.75),
+        ),
       )
     },
   ),
@@ -517,27 +517,39 @@ input_file: tests/fixtures/ai/feat/comprehensive-showcase.typ
             (
               upper(dist.first())
                 + dist.slice(1),
-              str(calc.round(
-                stats.mean,
-                digits: 2,
-              )),
-              str(calc.round(
-                stats.median,
-                digits: 2,
-              )),
-              str(calc.round(
-                stats.std,
-                digits: 2,
-              )),
-              str(calc.round(
-                stats.quartiles.q3
-                  - stats.quartiles.q1,
-                digits: 2,
-              )),
-              str(calc.round(
-                stats.max - stats.min,
-                digits: 2,
-              )),
+              str(
+                calc.round(
+                  stats.mean,
+                  digits: 2,
+                ),
+              ),
+              str(
+                calc.round(
+                  stats.median,
+                  digits: 2,
+                ),
+              ),
+              str(
+                calc.round(
+                  stats.std,
+                  digits: 2,
+                ),
+              ),
+              str(
+                calc.round(
+                  stats.quartiles.q3
+                    - stats
+                      .quartiles
+                      .q1,
+                  digits: 2,
+                ),
+              ),
+              str(
+                calc.round(
+                  stats.max - stats.min,
+                  digits: 2,
+                ),
+              ),
             )
           })
           .flatten()

@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/packages/cetz-manual.typ
 ---
 #import "doc/util.typ": *
@@ -40,10 +40,10 @@ input_file: tests/fixtures/packages/cetz-manual.typ
 // Outline
 #{
   show heading: none
-  columns(2, outline(
-    indent: true,
-    depth: 3,
-  ))
+  columns(
+    2,
+    outline(indent: true, depth: 3),
+  )
   pagebreak(weak: true)
 }
 
@@ -77,10 +77,9 @@ Note that draw functions are imported inside the scope of the `canvas` block. Th
     and it.text.ends-with(">")
 ) {
   set text(1.2em)
-  doc-style.show-type(it.text.slice(
-    1,
-    -1,
-  ))
+  doc-style.show-type(
+    it.text.slice(1, -1),
+  )
 } else {
   it
 }
@@ -292,11 +291,13 @@ Marks are arrow tips that can be added to the end of path based elements that su
           name-to-mnemonic
             .at(name, default: ([],))
             .join([, ]),
-          cetz.canvas(cetz.draw.line(
-            (),
-            (1, 0),
-            mark: (end: name),
-          )),
+          cetz.canvas(
+            cetz.draw.line(
+              (),
+              (1, 0),
+              mark: (end: name),
+            ),
+          ),
         )
       }
     ),
@@ -1112,14 +1113,14 @@ Axis names to be used for styling:
 )
 
 ==== Default `scientific` Style
-#raw(repr(
-  axes.default-style-scientific,
-))
+#raw(
+  repr(axes.default-style-scientific),
+)
 
 ==== Default `school-book` Style
-#raw(repr(
-  axes.default-style-schoolbook,
-))
+#raw(
+  repr(axes.default-style-schoolbook),
+)
 
 == Chart
 
@@ -1193,14 +1194,14 @@ styled the same way, see @plot.style.
 #raw(repr(chart.barchart-default-style))
 
 ==== Default `columnchart` Style
-#raw(repr(
-  chart.columnchart-default-style,
-))
+#raw(
+  repr(chart.columnchart-default-style),
+)
 
 ==== Default `boxwhisker` Style
-#raw(repr(
-  chart.boxwhisker-default-style,
-))
+#raw(
+  repr(chart.boxwhisker-default-style),
+)
 
 ==== Default `piechart` Style
 #raw(repr(chart.piechart-default-style))
@@ -1363,10 +1364,12 @@ It contains all supported keys for all elements.
 
 #[
   #set text(size: 8pt)
-  #columns(raw(
-    repr(styles.default),
-    lang: "typc",
-  ))
+  #columns(
+    raw(
+      repr(styles.default),
+      lang: "typc",
+    ),
+  )
 ]
 
 = Creating Custom Elements <custom-elements>

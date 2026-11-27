@@ -1,0 +1,104 @@
+---
+source: tests/runner/whole_file.rs
+input_file: tests/fixtures/unit/code/args/compact-func-call.typ
+---
+#let f(..args) = none
+#let swap(a, b) = (a, b)
+#let draw = (line: (..args) => none)
+#let grid = (centers: ((1, 2), (3, 4)))
+#let axis = 0
+#let i = 0
+#let (min, max) = (0, 1)
+#let utils = (
+  call-or-display: (..args) => none,
+)
+#let self = (page: (header: none))
+#let doc-style = (show-type: x => x)
+#let it = (text: "<type>")
+#let quantum-circuit(..args) = none
+#let rstick(x) = x
+#let headcolor = blue
+#let (
+  new-width,
+  available-height,
+  ratio,
+  boxed-content,
+) = (10pt, 10pt, 100%, [box])
+#let wrapped-body-size = (height: 10pt)
+#let (body, fill, named, cover-args) = (
+  [body],
+  red,
+  (:),
+  arguments(),
+)
+
+#draw.line(
+  swap(
+    grid.centers.at(axis).at(i),
+    min,
+  ),
+  swap(
+    grid.centers.at(axis).at(i),
+    max,
+  ),
+)
+
+#f(
+  text(red)[colored],
+  text(blue)[colored],
+  text(green)[colored],
+  text(purple)[colored],
+)
+
+#f(
+  1,
+  "two",
+  three: 4,
+  (x: 5),
+  text(stroke: 1pt)[],
+)
+
+#{
+  let header = utils.call-or-display(
+    self,
+    self.page.at(
+      "header",
+      default: none,
+    ),
+  )
+}
+
+#doc-style.show-type(
+  it.text.slice(1, -1),
+)
+
+#quantum-circuit(2, rstick($|psi〉$))
+
+#block(
+  inset: 4pt,
+  stroke: (top: headcolor),
+  text(
+    headcolor,
+  )[johanvx (https://github.com/johanvx) #h(1fr) #datetime.today().display()],
+)
+
+#box(
+  width: new-width,
+  height: available-height,
+  scale(
+    x: ratio,
+    y: ratio,
+    origin: top + left,
+    boxed-content,
+  ),
+)
+
+#stack(
+  spacing: -wrapped-body-size.height,
+  body,
+  rect(
+    fill: fill,
+    ..named,
+    ..cover-args.pos(),
+  ),
+)

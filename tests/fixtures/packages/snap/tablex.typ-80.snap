@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/packages/tablex.typ
 ---
 // Welcome to tablex!
@@ -2136,11 +2136,14 @@ input_file: tests/fixtures/packages/tablex.typ
 )
 
 #let _largest-stroke-among-lines(lines, stroke-auto: 1pt, styles: none) = (
-  calc.max(0pt, ..lines.map(l => stroke-len(
-    l.stroke,
-    stroke-auto: stroke-auto,
-    styles: styles,
-  )))
+  calc.max(
+    0pt,
+    ..lines.map(l => stroke-len(
+      l.stroke,
+      stroke-auto: stroke-auto,
+      styles: styles,
+    )),
+  )
 )
 
 #let _largest-stroke-among-hlines-at-y(
@@ -2598,10 +2601,10 @@ input_file: tests/fixtures/packages/tablex.typ
             let y = cell_box.cell.y
             first_x = default-if-none(first_x, x)
             first_y = default-if-none(first_y, y)
-            rightmost_x = default-if-none(rightmost_x, width-between(
-              start: first_x,
-              end: none,
-            ))
+            rightmost_x = default-if-none(
+              rightmost_x,
+              width-between(start: first_x, end: none),
+            )
 
             // where to place the cell (horizontally)
             let dx = width-between(start: first_x, end: x)

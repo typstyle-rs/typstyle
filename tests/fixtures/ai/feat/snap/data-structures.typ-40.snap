@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/ai/feat/data-structures.typ
 ---
 // DUMMY
@@ -372,9 +372,11 @@ input_file: tests/fixtures/ai/feat/data-structures.typ
 
 === Project Overview
 Active projects across all departments:
-#list(..statistical-analysis
-  .active-projects
-  .map(project => [#project]))
+#list(
+  ..statistical-analysis
+    .active-projects
+    .map(project => [#project]),
+)
 
 === Top Performers
 #table(

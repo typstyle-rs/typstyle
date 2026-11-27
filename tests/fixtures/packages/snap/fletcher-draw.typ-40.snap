@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/packages/fletcher-draw.typ
 ---
 /*
@@ -136,10 +136,12 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     edge.label-pos + 1e-3,
   )
 
-  let θ = wrap-angle-180(angle-between(
-    curve-point,
-    curve-point-ε,
-  ))
+  let θ = wrap-angle-180(
+    angle-between(
+      curve-point,
+      curve-point-ε,
+    ),
+  )
   let θ-normal = (
     θ
       + if edge.label-side == right {
@@ -403,11 +405,10 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
   // Draw marks
   let curve(t) = vector.add(
     center,
-    vector-polar(radius, lerp(
-      start,
-      stop,
-      t,
-    )),
+    vector-polar(
+      radius,
+      lerp(start, stop, t),
+    ),
   )
   for mark in edge.marks {
     place-mark-on-curve(
@@ -597,10 +598,9 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
         ))
       }
 
-      Δphase += vector-len(vector.sub(
-        from,
-        to,
-      ))
+      Δphase += vector-len(
+        vector.sub(from, to),
+      )
     } else {
       // rounded corners
 
@@ -634,10 +634,9 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
           ),
         )
 
-        Δphase += vector-len(vector.sub(
-          from,
-          to,
-        ))
+        Δphase += vector-len(
+          vector.sub(from, to),
+        )
 
         for d in edge.extrude {
           if delta != 0deg {
@@ -764,10 +763,9 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
       .map(point => {
         // funky disagreement between coordinate systems??
         point.at(1) *= -1
-        vector-2d(vector.scale(
-          point,
-          1cm,
-        ))
+        vector-2d(
+          vector.scale(point, 1cm),
+        )
       })
       .sorted(key: point => vector-len(
         vector.sub(point, target),
@@ -941,10 +939,10 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
     .zip(θs)
     .map(((point, φ)) => cetz.draw.line(
       point,
-      vector.add(point, vector-polar(
-        10cm,
-        φ,
-      )), // ray emanating from node
+      vector.add(
+        point,
+        vector-polar(10cm, φ),
+      ), // ray emanating from node
     ))
 
   let intersection-objects = nodes
@@ -1261,11 +1259,14 @@ input_file: tests/fixtures/packages/fletcher-draw.typ
 
       draw.content(
         (x-lims.at(0), y-lims.at(0)),
-        pad(0.2em, text(
-          0.5em,
-          DEBUG_COLOR,
-          $(#grid.axes.map(dir-to-arrow).join($,$))$,
-        )),
+        pad(
+          0.2em,
+          text(
+            0.5em,
+            DEBUG_COLOR,
+            $(#grid.axes.map(dir-to-arrow).join($,$))$,
+          ),
+        ),
         anchor: "north-east",
       )
     }

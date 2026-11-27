@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/unit/math/aligned/empty.typ
 ---
 1
@@ -64,6 +64,8 @@ $
   Im
 $
 
-#repr(math.equation(
-  $ 1 & 2 \ $.body + $ & 4 \ $.body,
-))
+#repr(
+  math.equation(
+    $ 1 & 2 \ $.body + $ & 4 \ $.body,
+  ),
+)

@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/ai/feat/comments-code.typ
 ---
 // DUMMY
@@ -252,12 +252,12 @@ input_file: tests/fixtures/ai/feat/comments-code.typ
       // Even number of elements - average middle two
       (
         (
-          sorted.at(int(
-            sorted.len() / 2 - 1,
-          ))
-            + sorted.at(int(
-              sorted.len() / 2,
-            ))
+          sorted.at(
+            int(sorted.len() / 2 - 1),
+          )
+            + sorted.at(
+              int(sorted.len() / 2),
+            )
         )
           / 2
       )
@@ -496,10 +496,12 @@ input_file: tests/fixtures/ai/feat/comments-code.typ
       str(s.average) + "%",
       s.grade,
       s.status,
-      str(calc.round(
-        s.attendance * 100,
-        digits: 1,
-      ))
+      str(
+        calc.round(
+          s.attendance * 100,
+          digits: 1,
+        ),
+      )
         + "%",
     ))
     .flatten(),

@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/packages/simple-paper.typ
 ---
 #let project(
@@ -69,12 +69,14 @@ input_file: tests/fixtures/packages/simple-paper.typ
 
   // Title
   align(center)[
-    #block(text(
-      font: title-font,
-      weight: 700,
-      1.75em,
-      title,
-    ))
+    #block(
+      text(
+        font: title-font,
+        weight: 700,
+        1.75em,
+        title,
+      ),
+    )
     #v(0.5em)
   ]
 

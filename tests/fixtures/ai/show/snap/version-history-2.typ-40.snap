@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/ai/show/version-history-2.typ
 ---
 #let version-data = (
@@ -117,18 +117,22 @@ input_file: tests/fixtures/ai/show/version-history-2.typ
     str(calc.round(days / 7)) + " weeks"
   } else if days < 365 {
     (
-      str(calc.round(
-        days / 30.4,
-        digits: 1,
-      ))
+      str(
+        calc.round(
+          days / 30.4,
+          digits: 1,
+        ),
+      )
         + " months"
     )
   } else {
     (
-      str(calc.round(
-        days / 365,
-        digits: 1,
-      ))
+      str(
+        calc.round(
+          days / 365,
+          digits: 1,
+        ),
+      )
         + " years"
     )
   }

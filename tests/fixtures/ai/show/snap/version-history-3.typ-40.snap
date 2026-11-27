@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/ai/show/version-history-3.typ
 ---
 #let version-data = (
@@ -493,17 +493,21 @@ input_file: tests/fixtures/ai/show/version-history-3.typ
                     timespan < 30
                   ) {
                     (
-                      str(int(
-                        timespan / 7,
-                      ))
+                      str(
+                        int(
+                          timespan / 7,
+                        ),
+                      )
                         + " weeks"
                     )
                   } else {
                     (
-                      str(calc.round(
-                        timespan / 30,
-                        digits: 1,
-                      ))
+                      str(
+                        calc.round(
+                          timespan / 30,
+                          digits: 1,
+                        ),
+                      )
                         + " months"
                     )
                   }

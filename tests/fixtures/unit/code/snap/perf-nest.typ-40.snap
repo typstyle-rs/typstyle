@@ -1,9 +1,53 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/unit/code/perf-nest.typ
 ---
 #let f(..arg) = arg
 
-#f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(f(
-  f(f(f(1, 2, 3))),
-)))))))))))))))))))
+#f(
+  f(
+    f(
+      f(
+        f(
+          f(
+            f(
+              f(
+                f(
+                  f(
+                    f(
+                      f(
+                        f(
+                          f(
+                            f(
+                              f(
+                                f(
+                                  f(
+                                    f(
+                                      f(
+                                        f(
+                                          f(
+                                            1,
+                                            2,
+                                            3,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  ),
+)

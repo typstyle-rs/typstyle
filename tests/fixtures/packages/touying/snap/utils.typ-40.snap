@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/packages/touying/utils.typ
 ---
 /*
@@ -28,10 +28,13 @@ input_file: tests/fixtures/packages/touying/utils.typ
         and type(dict-b.at(key))
           == dictionary
     ) {
-      res.insert(key, add-dicts(
-        res.at(key),
-        dict-b.at(key),
-      ))
+      res.insert(
+        key,
+        add-dicts(
+          res.at(key),
+          dict-b.at(key),
+        ),
+      )
     } else {
       res.insert(key, dict-b.at(key))
     }
@@ -683,10 +686,12 @@ input_file: tests/fixtures/packages/touying/utils.typ
     message: "self must have an info field",
   )
   if type(self.info.date) == datetime {
-    self.info.date.display(self.at(
-      "datetime-format",
-      default: auto,
-    ))
+    self.info.date.display(
+      self.at(
+        "datetime-format",
+        default: auto,
+      ),
+    )
   } else {
     self.info.date
   }
@@ -1399,9 +1404,11 @@ input_file: tests/fixtures/packages/touying/utils.typ
   } else if (
     type(visible-subslides) == array
   ) {
-    calc.max(..visible-subslides.map(
-      s => last-required-subslide(s),
-    ))
+    calc.max(
+      ..visible-subslides.map(
+        s => last-required-subslide(s),
+      ),
+    )
   } else if (
     type(visible-subslides) == str
   ) {

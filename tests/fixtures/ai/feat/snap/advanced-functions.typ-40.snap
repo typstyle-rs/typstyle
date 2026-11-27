@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/ai/feat/advanced-functions.typ
 ---
 // DUMMY
@@ -62,10 +62,12 @@ input_file: tests/fixtures/ai/feat/advanced-functions.typ
       options: (:),
     ) = {
       raw-data
-        .filter(filters.fold(true, (
-          acc,
-          f,
-        ) => acc and f))
+        .filter(
+          filters.fold(true, (
+            acc,
+            f,
+          ) => acc and f),
+        )
         .map(transform)
     }
 
@@ -225,10 +227,12 @@ input_file: tests/fixtures/ai/feat/advanced-functions.typ
     ..sample-data
       .map(item => (
         str(item.id),
-        str(calc.round(
-          item.value,
-          digits: 3,
-        )),
+        str(
+          calc.round(
+            item.value,
+            digits: 3,
+          ),
+        ),
         item.category,
       ))
       .flatten(),

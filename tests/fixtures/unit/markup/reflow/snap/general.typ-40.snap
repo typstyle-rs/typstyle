@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/unit/markup/reflow/general.typ
 ---
 /// typstyle: wrap_text
@@ -165,11 +165,9 @@ Multi-paragraph list item:
 
 Multi-paragraph markup with complex
 elements:
-- List item with #text(fill: rgb(
-    10%,
-    20%,
-    30%,
-  ))[
+- List item with #text(
+    fill: rgb(10%, 20%, 30%),
+  )[
     Multi-line content inside a function
     with nested #strong[formatting] and
     equations $sum_(i=1)^n x_i^2$

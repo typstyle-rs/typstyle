@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/articles/undergraduate-math.typ
 ---
 // Meta data
@@ -106,17 +106,21 @@ input_file: tests/fixtures/articles/undergraduate-math.typ
 })
 
 // Unavailable (last check version)
-#show "??": box(text(
-  red,
-  [v#sys.version #emoji.crossmark],
-))
+#show "??": box(
+  text(
+    red,
+    [v#sys.version #emoji.crossmark],
+  ),
+)
 // Tricky
 #show "!!": box(text(blue, emoji.drops))
 // No idea
-#show "?!": box(text(
-  orange,
-  [No idea #emoji.face.unhappy],
-))
+#show "?!": box(
+  text(
+    orange,
+    [No idea #emoji.face.unhappy],
+  ),
+)
 // Tricky figure numbering
 #set figure(numbering: n => {
   ([??], [!!], [?!]).at(n)

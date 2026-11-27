@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fix: Avoid using compact argument layout when the last argument is a simple single-line function call (including calls with single-line trailing content blocks), while keeping compact layout for multiline, table/grid, and multiline trailing-content calls.
+  ([#324](https://github.com/typstyle-rs/typstyle/issues/324))
+
 ## v0.15.3 - [2026-11-15]
 
 - Feature(CLI): Add `--lines FIRST:LAST` to format only the selected 1-based, inclusive line ranges. The complete document is printed with only the selected ranges reformatted, so the option can be used as `jj fix`'s `line-range-args`.

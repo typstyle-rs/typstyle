@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/packages/fletcher-diagram.typ
 ---
 /*
@@ -575,12 +575,14 @@ input_file: tests/fixtures/packages/fletcher-diagram.typ
     edges,
     options,
   ) => {
-    cetz.canvas(draw-diagram(
-      grid,
-      nodes,
-      edges,
-      debug: options.debug,
-    ))
+    cetz.canvas(
+      draw-diagram(
+        grid,
+        nodes,
+        edges,
+        debug: options.debug,
+      ),
+    )
   },
 ) = {
   let spacing = as-pair(spacing).map(

@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/packages/quill-gallery.typ
 ---
 /// typstyle: wrap_text
@@ -124,9 +124,10 @@ input_file: tests/fixtures/packages/quill-gallery.typ
     ),
     raw("lstick($|psi〉$)"),
     [rstick],
-    quantum-circuit(2, rstick(
-      $|psi〉$,
-    )),
+    quantum-circuit(
+      2,
+      rstick($|psi〉$),
+    ),
     raw("rstick($|psi〉$)"),
 
     [Multi-qubit \ lstick],

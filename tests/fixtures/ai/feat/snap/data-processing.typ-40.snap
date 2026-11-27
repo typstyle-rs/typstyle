@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/ai/feat/data-processing.typ
 ---
 // DUMMY
@@ -156,10 +156,12 @@ input_file: tests/fixtures/ai/feat/data-processing.typ
     ..data
       .map(item => (
         str(item.id),
-        str(calc.round(
-          item.value,
-          digits: 1,
-        )),
+        str(
+          calc.round(
+            item.value,
+            digits: 1,
+          ),
+        ),
         item.category,
         item.timestamp.display(
           "[month]/[day]",

@@ -1,5 +1,5 @@
 ---
-source: tests/src/unit.rs
+source: tests/runner/whole_file.rs
 input_file: tests/fixtures/packages/tablex.typ
 ---
 // Welcome to tablex!
@@ -1724,10 +1724,9 @@ input_file: tests/fixtures/packages/tablex.typ
       // use mod to make the fill value pattern
       // repeat if there are more columns than
       // fill values.
-      cell_fill = cell_fill.at(calc-mod(
-        cell.x,
-        fill_len,
-      ))
+      cell_fill = cell_fill.at(
+        calc-mod(cell.x, fill_len),
+      )
     }
   }
 
@@ -2617,10 +2616,10 @@ input_file: tests/fixtures/packages/tablex.typ
     columns.len(),
   )
 
-  let col_range = range(start, calc.min(
-    columns.len() + 1,
-    end,
-  ))
+  let col_range = range(
+    start,
+    calc.min(columns.len() + 1, end),
+  )
 
   let sum = 0pt
   for i in col_range {
@@ -2656,10 +2655,10 @@ input_file: tests/fixtures/packages/tablex.typ
   )
   end = default-if-none(end, rows.len())
 
-  let row_range = range(start, calc.min(
-    rows.len() + 1,
-    end,
-  ))
+  let row_range = range(
+    start,
+    calc.min(rows.len() + 1, end),
+  )
 
   let sum = 0pt
   for i in row_range {
@@ -2891,13 +2890,14 @@ input_file: tests/fixtures/packages/tablex.typ
   stroke-auto: 1pt,
   styles: none,
 ) = (
-  calc.max(0pt, ..lines.map(
-    l => stroke-len(
+  calc.max(
+    0pt,
+    ..lines.map(l => stroke-len(
       l.stroke,
       stroke-auto: stroke-auto,
       styles: styles,
-    ),
-  ))
+    )),
+  )
 )
 
 #let _largest-stroke-among-hlines-at-y(
@@ -3639,10 +3639,12 @@ input_file: tests/fixtures/packages/tablex.typ
           // one less gutter at the end
         }
 
-        hide(rect(
-          width: total-width,
-          height: row_group_height,
-        ))
+        hide(
+          rect(
+            width: total-width,
+            height: row_group_height,
+          ),
+        )
 
         let draw-hline = draw-hline.with(
           initial_x: first_x,
@@ -4439,11 +4441,13 @@ input_file: tests/fixtures/packages/tablex.typ
         }
 
         cell.content = [#cell.content]
-        grid.items.at(grid-index-at(
-          cell.x,
-          cell.y,
-          grid: grid,
-        )) = cell
+        grid.items.at(
+          grid-index-at(
+            cell.x,
+            cell.y,
+            grid: grid,
+          ),
+        ) = cell
       }
     }
   }
@@ -4536,11 +4540,13 @@ input_file: tests/fixtures/packages/tablex.typ
         }
 
         cell.content = [#cell.content]
-        grid.items.at(grid-index-at(
-          cell.x,
-          cell.y,
-          grid: grid,
-        )) = cell
+        grid.items.at(
+          grid-index-at(
+            cell.x,
+            cell.y,
+            grid: grid,
+          ),
+        ) = cell
       }
     }
   }
