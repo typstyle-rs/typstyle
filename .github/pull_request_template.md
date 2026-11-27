@@ -1,26 +1,20 @@
+## Motivation
+
+<!-- Why is this needed? Link an issue (e.g. `Closes #123`), or include a minimal reproduction for unreported bugs. -->
+
 ## Summary
 
-<!-- Brief description of what this PR does -->
-
-## Changes
-
-<!-- List the key changes made -->
-- 
-- 
-- 
-
-## Checklist
-
-Before submitting, please ensure you've done the following:
-
-- [ ] **Updated CHANGELOG.md**: Added your changes with examples to the changelog
-- [ ] **Updated documentation**: Updated relevant docs, examples, or README
-- [ ] **Added tests**: Added tests for new features or bug fixes
+<!-- What changed? Include before/after examples for formatting or behavior changes. -->
 
 ## Testing
 
-<!-- How did you test these changes? -->
+<!-- How did you verify this? -->
 
-## Additional Notes
+## Checklist
 
-<!-- Any additional context or notes -->
+I confirm this PR follows the [contribution policy](https://github.com/typstyle-rs/typstyle/blob/master/CONTRIBUTING.md#contribution-policy):
+
+- [ ] I wrote or reviewed this change and can explain what it does and why
+- [ ] Any design or formatting-rule change has prior maintainer agreement on an issue
+- [ ] I added tests, docs, and `CHANGELOG.md` entries where needed (bug fixes include a regression test)
+- [ ] I'm a maintainer, or I will respond to review feedback
