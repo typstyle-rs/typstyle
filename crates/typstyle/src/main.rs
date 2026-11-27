@@ -4,6 +4,7 @@
 //! stdin or the given files in place, in check mode, or as a unified diff.
 
 mod cli;
+mod config;
 mod diff;
 mod fmt;
 mod fs;
@@ -83,9 +84,10 @@ fn execute(args: CliArguments) -> Result<ExitStatus> {
         }
     }
 
+    let config = config::resolve(&args)?;
     if args.input.is_empty() {
-        format_stdin(&args)
+        format_stdin(&args, &config)
     } else {
-        format(&args)
+        format(&args, &config)
     }
 }

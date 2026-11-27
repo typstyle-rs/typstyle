@@ -1,0 +1,15 @@
+[package]
+name = "xtask"
+description = "Repository automation for Typstyle."
+version.workspace = true
+license.workspace = true
+edition.workspace = true
+publish = false
+
+[dependencies]
+anyhow.workspace = true
+serde_json.workspace = true
+typstyle-core = { workspace = true, features = ["serde"] }
+
+[lints]
+workspace = true

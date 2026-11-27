@@ -1,0 +1,79 @@
+{
+  "groups": [
+    {
+      "name": "Layout",
+      "options": [
+        "tab_spaces",
+        "max_width",
+        "blank_lines_upper_bound",
+        "collapse_markup_spaces",
+        "line_ending",
+        "wrap_mode"
+      ]
+    },
+    {
+      "name": "Imports",
+      "options": [
+        "reorder_import_items"
+      ]
+    }
+  ],
+  "options": {
+    "blank_lines_upper_bound": {
+      "default": 1,
+      "description": "Maximum number of consecutive blank lines allowed.",
+      "group": "Layout",
+      "label": "Blank lines upper bound",
+      "order": 2,
+      "widget": "number"
+    },
+    "collapse_markup_spaces": {
+      "default": false,
+      "description": "When `true`, consecutive whitespace in markup is collapsed into a single space.",
+      "group": "Layout",
+      "label": "Collapse markup spaces",
+      "order": 3,
+      "widget": "checkbox"
+    },
+    "line_ending": {
+      "default": "preserve",
+      "description": "Policy for generated line breaks. Literal source text is preserved.",
+      "group": "Layout",
+      "label": "Line ending",
+      "order": 5,
+      "widget": "select"
+    },
+    "max_width": {
+      "default": 80,
+      "description": "Maximum width of each line.",
+      "group": "Layout",
+      "label": "Line width",
+      "order": 1,
+      "widget": "number"
+    },
+    "reorder_import_items": {
+      "default": true,
+      "description": "When `true`, import items are sorted alphabetically.",
+      "group": "Imports",
+      "label": "Reorder import items",
+      "order": 4,
+      "widget": "checkbox"
+    },
+    "tab_spaces": {
+      "default": 2,
+      "description": "Number of spaces to use for each indentation level.",
+      "group": "Layout",
+      "label": "Indent width",
+      "order": 0,
+      "widget": "number"
+    },
+    "wrap_mode": {
+      "default": "none",
+      "description": "Text wrapping mode for markup.",
+      "group": "Layout",
+      "label": "Wrap mode",
+      "order": 6,
+      "widget": "select"
+    }
+  }
+}

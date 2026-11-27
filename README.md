@@ -60,12 +60,26 @@ Options:
 Range Selection:
       --lines <FIRST:LAST>  Format only the given line ranges, using 1-based inclusive line numbers. Repeat the option to select multiple ranges
 
+Configuration:
+      --config <PATH>  Path to a TOML configuration file
+
 Format Configuration:
-  -l, --line-width <LINE_WIDTH>      Maximum width of each line [default: 80] [aliases: -c, --column]
-  -t, --indent-width <INDENT_WIDTH>  Number of spaces per indentation level [default: 2] [alias: --tab-width]
-      --line-ending <LINE_ENDING>    Line-ending policy for formatted source output [default: preserve] [possible values: lf, crlf, preserve]
-      --no-reorder-import-items      Disable alphabetical reordering of import items
-      --wrap-text[=<WRAP_TEXT>]      Text wrapping mode: none (default), fill (wrap to line width), sentence (one per line), or fill-sentence (both) [default: none] [possible values: none, fill, sentence, fill-sentence]
+  -t, --indent-width <INDENT_WIDTH>
+          Number of spaces to use for each indentation level. [default: 2] [alias: --tab-width]
+  -l, --line-width <LINE_WIDTH>
+          Maximum width of each line. [default: 80] [aliases: -c, --column]
+      --blank-lines-upper-bound <BLANK_LINES_UPPER_BOUND>
+          Maximum number of consecutive blank lines allowed. [default: 1]
+      --collapse-markup-spaces <BOOL>
+          When `true`, consecutive whitespace in markup is collapsed into a single space. [default: false] [possible values: true, false]
+      --reorder-import-items <BOOL>
+          When `true`, import items are sorted alphabetically. [default: true] [possible values: true, false]
+      --line-ending <LINE_ENDING>
+          Policy for generated line breaks. Literal source text is preserved. [default: preserve] [possible values: lf, crlf, preserve]
+      --wrap-text[=<WRAP_TEXT>]
+          Text wrapping mode for markup. [default: none] [possible values: none, fill, sentence, fill-sentence]
+      --no-reorder-import-items
+          Disable alphabetical reordering of import items
 
 Debug Options:
   -a, --ast         Print the AST of the input file

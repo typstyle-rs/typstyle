@@ -43,13 +43,33 @@ jobs:
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
-          cargo publish -p typstyle-core --dry-run
-          cargo publish -p typstyle --dry-run
+          cargo publish -p typstyle-macros --dry-run
+          echo "Skipping core and CLI dry-runs: they require the new macros release on crates.io."
 
       - name: Publish crates
         if: ${{ !inputs.dry-run }}
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
+          set -euo pipefail
+          VERSION=$(cargo metadata --no-deps --format-version 1 \
+            | python3 -c 'import json, sys; print(next(p["version"] for p in json.load(sys.stdin)["packages"] if p["name"] == "typstyle-macros"))')
+
+          wait_for_crate() {
+            local name=$1
+            for _ in $(seq 1 60); do
+              if curl -fsS -A typstyle-release \
+                "https://crates.io/api/v1/crates/${name}/${VERSION}" >/dev/null; then
+                return 0
+              fi
+              sleep 10
+            done
+            echo "timed out waiting for ${name}@${VERSION} on crates.io" >&2
+            return 1
+          }
+
+          cargo publish -p typstyle-macros
+          wait_for_crate typstyle-macros
           cargo publish -p typstyle-core
+          wait_for_crate typstyle-core
           cargo publish -p typstyle

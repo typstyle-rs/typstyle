@@ -1,32 +1,19 @@
+import { DEFAULT_OPTIONS, resolveOptions } from "@typstyle/options";
 import * as typstyle from "typstyle-wasm";
 import { beforeAll, describe, expect, it } from "vitest";
-import {
-  DEFAULT_FORMAT_OPTIONS,
-  formatOptionsToConfig,
-} from "@/utils/formatter";
 
 describe("WASM Binding Tests", () => {
-  // Helper function to create proper config
+  // Helper function to create a resolved config
   const createConfig = (indentWidth = 2, lineWidth = 80) =>
-    formatOptionsToConfig({
-      ...DEFAULT_FORMAT_OPTIONS,
-      indentWidth,
-      lineWidth,
-    });
+    resolveOptions({ tab_spaces: indentWidth, max_width: lineWidth });
 
   it("maps wrapping modes to the WASM config", () => {
-    expect(
-      formatOptionsToConfig({
-        ...DEFAULT_FORMAT_OPTIONS,
-        wrapMode: "sentence",
-      }).wrap_mode,
-    ).toBe("sentence");
-    expect(
-      formatOptionsToConfig({
-        ...DEFAULT_FORMAT_OPTIONS,
-        wrapMode: "fill-sentence",
-      }).wrap_mode,
-    ).toBe("fill-sentence");
+    expect(resolveOptions({ wrap_mode: "sentence" }).wrap_mode).toBe(
+      "sentence",
+    );
+    expect(resolveOptions({ wrap_mode: "fill-sentence" }).wrap_mode).toBe(
+      "fill-sentence",
+    );
   });
 
   // Test data
@@ -159,7 +146,7 @@ The first #count numbers of the sequence are:
     it("should handle malformed config objects", () => {
       // Test with various config variations that should work
       const validConfigs = [
-        formatOptionsToConfig(DEFAULT_FORMAT_OPTIONS),
+        DEFAULT_OPTIONS,
         createConfig(2, 80),
         createConfig(4, 120),
       ];

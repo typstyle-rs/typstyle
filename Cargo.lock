@@ -4471,6 +4471,7 @@ dependencies = [
  "path-absolutize",
  "similar 3.2.0",
  "tempfile",
+ "toml",
  "typst-syntax",
  "typstyle-core",
  "vergen",
@@ -4501,6 +4502,7 @@ dependencies = [
 name = "typstyle-core"
 version = "0.15.3"
 dependencies = [
+ "clap",
  "criterion",
  "icu_segmenter",
  "insta",
@@ -4512,8 +4514,18 @@ dependencies = [
  "smallvec",
  "thiserror",
  "typst-syntax",
+ "typstyle-macros",
  "typstyle-tests",
  "unicode-width 0.2.2",
+]
+
+[[package]]
+name = "typstyle-macros"
+version = "0.15.3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 3.0.7",
 ]
 
 [[package]]
@@ -4551,7 +4563,6 @@ dependencies = [
  "js-sys",
  "serde",
  "serde-wasm-bindgen",
- "syn 3.0.7",
  "typst-syntax",
  "typstyle-core",
  "wasm-bindgen",
@@ -5281,6 +5292,15 @@ name = "xmp-writer"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9440ea3e5aeabb0ac63af70daf835274065238cdd0cec83418f417eae38bacee"
+
+[[package]]
+name = "xtask"
+version = "0.15.3"
+dependencies = [
+ "anyhow",
+ "serde_json",
+ "typstyle-core",
+]
 
 [[package]]
 name = "yaml-rust"

@@ -6,7 +6,7 @@ import {
   convertSelectionToOffsets,
   type DetailedEditorSelection,
 } from "@/utils/editor-selection";
-import { type FormatOptions, formatOptionsToConfig } from "@/utils/formatter";
+import type { FormatOptions } from "@/utils/formatter";
 import { CodeEditor, type CodeEditorRef } from "./CodeEditor";
 
 export interface SourceEditorProps {
@@ -130,7 +130,7 @@ export function SourceEditor({
     if (!model) return;
     const fullText = model.getValue();
     // Use ref to ensure we always have the latest format options
-    const config = formatOptionsToConfig(formatOptionsRef.current);
+    const config = formatOptionsRef.current;
     callback(editorRef.current, model, fullText, config);
   };
 

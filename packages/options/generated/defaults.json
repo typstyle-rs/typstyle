@@ -1,0 +1,9 @@
+{
+  "blank_lines_upper_bound": 1,
+  "collapse_markup_spaces": false,
+  "line_ending": "preserve",
+  "max_width": 80,
+  "reorder_import_items": true,
+  "tab_spaces": 2,
+  "wrap_mode": "none"
+}

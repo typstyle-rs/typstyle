@@ -1,10 +1,10 @@
-import { useDeferredValue, useEffect, useRef, useState } from "react";
-import type { OutputType } from "@/types";
 import {
-  DEFAULT_FORMAT_OPTIONS,
-  type FormatOptions,
-  filterNonDefaultOptions,
-} from "@/utils/formatter";
+  type Options,
+  type PartialOptions,
+  resolveOptions,
+} from "@typstyle/options";
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import type { OutputType } from "@/types";
 import { getStateFromUrl, updateUrlWithState } from "@/utils/url";
 import { useAsyncError } from "./useErrorHandler";
 
@@ -12,14 +12,19 @@ const STORAGE_KEY = "playground-code";
 
 export interface PlaygroundState {
   sourceCode: string;
-  formatOptions: FormatOptions;
+  formatOptions: Options;
+  optionOverrides: PartialOptions;
   activeOutput: OutputType;
 }
 
 export function usePlaygroundState() {
   const [sourceCode, setSourceCode] = useState("");
-  const [formatOptions, setFormatOptions] = useState(DEFAULT_FORMAT_OPTIONS);
+  const [optionOverrides, setOptionOverrides] = useState<PartialOptions>({});
   const [activeOutput, setActiveOutput] = useState<OutputType>("formatted");
+  const formatOptions = useMemo(
+    () => resolveOptions(optionOverrides),
+    [optionOverrides],
+  );
   const [cursorSyncEnabled, setCursorSyncEnabled] = useState(true);
   const [isInitializing, setIsInitializing] = useState(true);
   const captureAsyncError = useAsyncError();
@@ -38,10 +43,7 @@ export function usePlaygroundState() {
 
         // If source code is not provided in URL, use that in LocalStorage. Otherwise empty.
         setSourceCode(urlState.sourceCode ?? loadSourceCode() ?? "");
-        setFormatOptions({
-          ...DEFAULT_FORMAT_OPTIONS,
-          ...urlState.formatOptions,
-        });
+        setOptionOverrides(urlState.formatOptions);
         setActiveOutput(urlState.tab ?? "formatted");
       } catch (error) {
         console.error("Error loading state:", error);
@@ -68,11 +70,9 @@ export function usePlaygroundState() {
       // To avoid url state being overridden
       return;
     }
-    const nondefaultOptions = filterNonDefaultOptions(formatOptions);
-
     // Update URL with current state
-    updateUrlWithState(deferredSourceCode, nondefaultOptions, activeOutput);
-  }, [deferredSourceCode, formatOptions, activeOutput]);
+    updateUrlWithState(deferredSourceCode, optionOverrides, activeOutput);
+  }, [deferredSourceCode, optionOverrides, activeOutput]);
 
   // Save code to local storage
   useEffect(() => {
@@ -88,12 +88,13 @@ export function usePlaygroundState() {
       sourceCode,
       deferredSourceCode,
       formatOptions,
+      optionOverrides,
       isInitializing,
       activeOutput,
       cursorSyncEnabled,
     },
     setSourceCode,
-    setFormatOptions,
+    setOptionOverrides,
     setActiveOutput,
     setCursorSyncEnabled,
   };

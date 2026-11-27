@@ -15,6 +15,7 @@ homepage = "https://typstyle-rs.github.io/typstyle/"
 [workspace.dependencies]
 typstyle-core = { path = "crates/typstyle-core", version = "=0.15.3" }
 typstyle-consistency = { path = "crates/typstyle-consistency" }
+typstyle-macros = { path = "crates/typstyle-macros", version = "=0.15.3" }
 typstyle-tests = { path = "tests", default-features = false }
 
 # typst and tinymist
@@ -38,12 +39,16 @@ smallvec = "1"
 thiserror = "2"
 unicode-width = "0.2.2" # use the same version as in pretty
 
+# Used by procedural macros
+proc-macro2 = "1.0"
+quote = "1.0"
+
 # Used in WASM
 console_error_panic_hook = "0.1.7"
 js-sys = "0.3.77"
 serde_json = "1.0"
 serde-wasm-bindgen = "0.6.5"
-syn = { version = "3.0", default-features = false }
+syn = { version = "3.0", default-features = false, features = ["full", "extra-traits"] }
 wasm-bindgen = "0.2.100"
 
 # Used in CLI

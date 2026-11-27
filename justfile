@@ -29,6 +29,12 @@ sync-readme-cli-help:
 check-cli-help:
     ./scripts/sync-readme-cli-help.nu --check
 
+generate-options:
+    cargo xtask generate-options
+
+check-options:
+    cargo xtask generate-options --check
+
 prepare-release version='':
     ./scripts/prepare-release '{{version}}'
 

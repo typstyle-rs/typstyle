@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import re
 import subprocess
 import sys
@@ -15,10 +16,12 @@ ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = ROOT / "Cargo.toml"
 LOCKFILE = ROOT / "Cargo.lock"
 CHANGELOG = ROOT / "CHANGELOG.md"
+OPTIONS_PACKAGE = ROOT / "packages" / "options" / "package.json"
 RELEASE_NOTES = ROOT / "scripts" / "release-notes.nu"
 USE_JJ = (ROOT / ".jj").exists()
 WORKSPACE_VERSION = r'^\[workspace\.package\]\s*?^version\s*=\s*"([^"]+)"\s*$'
 CORE_DEPENDENCY = r'^typstyle-core\s*=\s*\{[^}\n]*\bversion\s*=\s*"([^"]+)"[^}\n]*\}\s*$'
+MACROS_DEPENDENCY = r'^typstyle-macros\s*=\s*\{[^}\n]*\bversion\s*=\s*"([^"]+)"[^}\n]*\}\s*$'
 VERSION_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
 
@@ -39,7 +42,12 @@ def run(*args: str, capture: bool = False) -> subprocess.CompletedProcess[str]:
 
 def commit_release(message: str) -> subprocess.CompletedProcess[str]:
     """Commit the prepared files, preferring Jujutsu in a colocated checkout."""
-    paths = ("Cargo.toml", "Cargo.lock", "CHANGELOG.md")
+    paths = (
+        "Cargo.toml",
+        "Cargo.lock",
+        "CHANGELOG.md",
+        "packages/options/package.json",
+    )
     if USE_JJ:
         return run("jj", "commit", "-m", message, *paths, capture=True)
     return run("git", "commit", "-m", message, "--", *paths, capture=True)
@@ -173,11 +181,18 @@ def main() -> int:
     dependency_match = find_once(
         manifest_text, CORE_DEPENDENCY, "typstyle-core dependency version"
     )
+    macros_match = find_once(
+        manifest_text, MACROS_DEPENDENCY, "typstyle-macros dependency version"
+    )
     current = workspace_match.group(1)
-    if dependency_match.group(1) != f"={current}":
-        raise ReleaseError(
-            "workspace typstyle-core dependency must exactly match the workspace version"
-        )
+    for name, match in (
+        ("typstyle-core", dependency_match),
+        ("typstyle-macros", macros_match),
+    ):
+        if match.group(1) != f"={current}":
+            raise ReleaseError(
+                f"workspace {name} dependency must exactly match the workspace version"
+            )
 
     version = resolve_version(current, args.version)
     if args.version is None:
@@ -197,17 +212,28 @@ def main() -> int:
     updated_changelog, todo_added = release_changelog(changelog_text, tag)
     updated_manifest = replace_groups(
         manifest_text,
-        [(workspace_match, version), (dependency_match, f"={version}")],
+        [
+            (workspace_match, version),
+            (dependency_match, f"={version}"),
+            (macros_match, f"={version}"),
+        ],
     )
+
+    package = json.loads(OPTIONS_PACKAGE.read_text(encoding="utf-8"))
+    package["version"] = version
 
     originals = {
         MANIFEST: MANIFEST.read_bytes(),
         LOCKFILE: LOCKFILE.read_bytes(),
         CHANGELOG: CHANGELOG.read_bytes(),
+        OPTIONS_PACKAGE: OPTIONS_PACKAGE.read_bytes(),
     }
     try:
         MANIFEST.write_text(updated_manifest, encoding="utf-8", newline="\n")
         CHANGELOG.write_text(updated_changelog, encoding="utf-8", newline="\n")
+        OPTIONS_PACKAGE.write_text(
+            json.dumps(package, indent=2) + "\n", encoding="utf-8", newline="\n"
+        )
 
         notes = run("nu", str(RELEASE_NOTES), tag, capture=True)
         if notes.returncode != 0:
@@ -237,7 +263,10 @@ def main() -> int:
         raise ReleaseError(
             f"could not commit the release preparation: {commit.stderr.strip()}"
         )
-    print(f"Committed Cargo.toml, Cargo.lock, and {CHANGELOG.name} as {message!r}.")
+    print(
+        f"Committed Cargo.toml, Cargo.lock, {CHANGELOG.name}, and "
+        f"{OPTIONS_PACKAGE.relative_to(ROOT)} as {message!r}."
+    )
     if USE_JJ:
         create_release_bookmark(ref)
         print(f"Created bookmark {ref!r}.")

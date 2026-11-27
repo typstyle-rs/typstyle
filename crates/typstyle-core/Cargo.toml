@@ -22,7 +22,9 @@ harness = false
 
 [dependencies]
 typst-syntax.workspace = true
+typstyle-macros.workspace = true
 
+clap = { workspace = true, optional = true }
 icu_segmenter.workspace = true
 itertools.workspace = true
 prettyless.workspace = true
@@ -41,6 +43,7 @@ serde_json.workspace = true
 
 [features]
 serde = ["dep:serde"]
+clap = ["dep:clap"]
 mapping = []
 
 [lints]

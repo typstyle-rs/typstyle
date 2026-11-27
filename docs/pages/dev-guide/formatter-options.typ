@@ -3,69 +3,124 @@
 
 #show: book-page.with(title: "Adding Formatter Options")
 
-Formatter options cross crate and application boundaries. Changing only core `Config` can leave the CLI, WASM bindings, embedded package, playground, or docs with stale values.
+Formatter options have one declaration source: `Options` in
+`crates/typstyle-core/src/config.rs`. The `#[options]` attribute generates the partial
+configuration type, defaults, merging, validation, CLI arguments, and binding metadata.
 
 = Change Checklist
 
-== Core Configuration
+== Declare The Option
 
-+ Add the field to `crates/typstyle-core/src/config.rs`, set its `Config::default()` value, and add a builder method when useful to library callers.
-+ Update every formatter path that reads it; search for the field and related builder methods.
+Add a field to `Options` with its default and UI metadata:
 
-#important[
-  Adding, removing, or changing a public `Config` field changes the Rust API. Decide whether the release may be breaking and migrate every in-workspace consumer together.
-]
+```rust
+/// Number of spaces per indentation level.
+#[option(default = 2)]
+#[cli(short = 't', long = "indent-width", visible_alias = "tab-width")]
+#[ui(group = "Layout")]
+pub tab_spaces: usize,
+```
+
+The macro infers the configuration key, label, CLI name, widget, and documentation:
+
+| Property | Default |
+| --- | --- |
+| Configuration key | Field name |
+| CLI long name | Kebab-case field name |
+| Description | Rust doc comment |
+| Label | Humanized field name |
+| UI widget | Boolean → checkbox, integer → number, enum → select, string → text |
+| Group | `General` |
+
+Use `#[cli(...)]` to preserve existing flag names or add aliases. Use `#[ui(...)]` to set a
+group, widget, or label. Enum-valued fields implement
+`typstyle_core::option::OptionEnum`, which supplies the allowed wire values and makes the type
+usable by both `serde` and the generated `clap` parser.
+
+Then implement the formatter behavior that reads the field.
+
+== Regenerate Bindings
+
+```bash
+cargo xtask generate-options
+```
+
+This deterministically writes:
+
+- `packages/options/generated/types.ts` — resolved and partial TypeScript types.
+- `packages/options/generated/defaults.json` — canonical defaults.
+- `packages/options/generated/schema.json` — JSON Schema with defaults and descriptions.
+- `packages/options/generated/ui-schema.json` — groups, labels, widgets, and order.
+- `packages/options/generated/options.md` — the configuration reference.
+
+Commit the generated files. CI fails when they are stale:
+
+```bash
+cargo xtask generate-options --check
+```
+
+Do not generate these files from `build.rs`.
+
+== Configuration Files
+
+TOML files deserialize into `PartialOptions`; unknown keys are rejected. The CLI merges layers
+from lowest to highest priority:
+
++ built-in defaults,
++ the user configuration (`$TYPSTYLE_CONFIG`, then `$XDG_CONFIG_HOME/typstyle/config.toml`),
++ the project configuration (`--config`, then `typstyle.toml` or `.typstyle.toml`),
++ explicit CLI flags.
+
+Defaults are applied only after merging. Unknown keys are rejected, and no field-level
+ranges are currently declared. Explicit values — including `false` and values equal to a
+default — always override lower layers.
 
 == CLI
 
-+ Add the argument/value enum in `crates/typstyle/src/cli.rs` and map it to core `Config` in `crates/typstyle/src/fmt.rs`.
-+ Preserve existing invocations when extending a boolean flag into an optional value. Require `=` for values so paths are not consumed: `--wrap-text=sentence`, while `--wrap-text file.typ` remains valid.
-+ Test positional paths and invalid values in `crates/typstyle/tests/test_style_args.rs`.
-+ Run `just generate-cli-help` for the docs help text and `just sync-readme-cli-help` for the `README.md` block; `just check-cli-help` verifies that the block is current.
+Generated arguments come from `PartialOptions`; do not duplicate field declarations in
+`crates/typstyle/src/cli.rs`. Preserve an existing flag by setting it in `#[cli(...)]`.
 
-== Tests and Rust Consumers
+Handwritten compatibility flags are allowed when a historical spelling cannot be expressed as
+a generated option, such as the inverse `--no-reorder-import-items` switch. Map it into
+`PartialOptions` in `StyleArgs::to_partial`.
 
-+ Update direct `Config` literals in `crates/` and `tests/`; update `tests/src/fixtures/directive.rs` if fixtures need to select the option.
-+ Add focused semantic tests and representative fixture snapshots. Keep convergence and consistency checks enabled unless disabling them is understood and documented.
+Booleans accept explicit values (`--reorder-import-items=false`) so they can override a
+configuration file. Do not add generated bare boolean switches.
 
-Before considering migration complete, search the repository and check the workspace:
+Run `just generate-cli-help` to refresh the long help used by the documentation.
+`just sync-readme-cli-help` refreshes the short usage block in `README.md`, and
+`just check-cli-help` verifies that the block is current.
 
-```bash
-rg 'old_field|OldVariant' --glob '!target/**'
-cargo check --workspace
+== Playground And UI
+
+The playground edits explicit overrides, not resolved values. `OptionsEditor` reads
+`ui-schema.json` and renders ordinary controls by type and widget. Resetting a field removes
+its override; resetting all clears the override object.
+
+Use the `renderers` prop for an exceptional control:
+
+```tsx
+<OptionsEditor
+  value={overrides}
+  onChange={setOverrides}
+  renderers={{ wrap_mode: CustomWrapModeControl }}
+/>
 ```
 
-== Serialized, Embedded, and Documentation Consumers
+== Tests
 
-`Config` is deserialized by `typstyle-wasm` and `typstyle-typlugin`. For serialized options:
+Add focused semantic tests for formatter behavior and configuration layering:
 
-+ Test serde serialization and deserialization in `typstyle-core`.
-+ Ensure `crates/typstyle-wasm/build.rs` translates the field type into the generated TypeScript `Config` interface and honors serde names instead of Rust variant names.
-+ Update defaults in `contrib/typstyle-embedded/src/lib.typ` and its README.
-+ Update `docs/pages/` render directives: examples use embedded-plugin configuration, not CLI argument names. Run `just build-plugin` before building docs.
++ core: defaults, merging, explicit false overrides, serde round trips;
++ CLI: project/user/CLI precedence, unknown keys, preserved and new flags;
++ playground: WASM binding shape with generated keys, URL override validation.
 
-== Playground
-
-+ Update `FormatOptions`, defaults, and `formatOptionsToConfig` in `playground/src/utils/formatter.ts`, plus the control in `playground/src/components/forms/SettingsPanel.tsx`.
-+ Update URL-state expectations if the option name or type changed, and add a WASM binding test for its serialized value.
-+ Rebuild generated bindings before TypeScript validation:
-  ```bash
-  cd playground
-  pnpm build:wasm
-  pnpm build
-  pnpm test:run
-  ```
-
-= Final Validation
-
-Run checks appropriate to every touched boundary:
+Before considering the change complete:
 
 ```bash
 cargo fmt --check
-cargo check --workspace
 cargo clippy --workspace --all-targets --all-features
-cargo nextest run --workspace --no-fail-fast
-just build-docs
+cargo test --workspace
+cargo xtask generate-options --check
+cd playground && pnpm test:run && pnpm build
 ```
-
-For behavior changes, review snapshots and test narrow widths, inline markup, comments, line-sensitive markup markers, and repeated formatting for convergence.

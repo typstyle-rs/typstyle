@@ -14,16 +14,11 @@ use anyhow::{Context, Result, bail};
 use itertools::Itertools;
 use log::{debug, error, info, warn};
 use typst_syntax::Source;
-use typstyle_core::{Config, LineEnding, Typstyle, WrapMode, format_ast};
+use typstyle_core::{Config, Typstyle, format_ast};
 use walkdir::{DirEntry, WalkDir};
 
 pub use self::range::LineRange;
-use crate::{
-    ExitStatus,
-    cli::{CliArguments, LineEndingMode, StyleArgs, WrapTextMode},
-    diff::SourceDiff,
-    fs,
-};
+use crate::{ExitStatus, cli::CliArguments, diff::SourceDiff, fs};
 
 /// The mode in which the formatter reports and writes results.
 #[derive(Debug, Clone, Copy)]
@@ -49,35 +44,12 @@ impl FormatMode {
     }
 }
 
-impl StyleArgs {
-    /// Converts the style options into the formatter's [`Config`].
-    pub fn to_config(&self) -> Config {
-        Config {
-            max_width: self.line_width,
-            tab_spaces: self.indent_width,
-            line_ending: match self.line_ending {
-                LineEndingMode::Lf => LineEnding::Lf,
-                LineEndingMode::Crlf => LineEnding::Crlf,
-                LineEndingMode::Preserve => LineEnding::Preserve,
-            },
-            reorder_import_items: !self.no_reorder_import_items,
-            wrap_mode: match self.wrap_text {
-                WrapTextMode::None => WrapMode::None,
-                WrapTextMode::Fill => WrapMode::Fill,
-                WrapTextMode::Sentence => WrapMode::Sentence,
-                WrapTextMode::FillSentence => WrapMode::FillSentence,
-            },
-            ..Default::default()
-        }
-    }
-}
-
 /// Formats the input from stdin, returning the resulting exit status.
 ///
 /// In check or diff mode, returns [`ExitStatus::Failure`] if the input would
 /// be reformatted.
-pub fn format_stdin(args: &CliArguments) -> Result<ExitStatus> {
-    let typstyle = Typstyle::new(args.style.to_config());
+pub fn format_stdin(args: &CliArguments, config: &Config) -> Result<ExitStatus> {
+    let typstyle = Typstyle::new(config.clone());
 
     format_one(None, &typstyle, args).map(|res| match res {
         FormatResult::Formatted(_) if args.check || args.diff => ExitStatus::Failure,
@@ -89,7 +61,7 @@ pub fn format_stdin(args: &CliArguments) -> Result<ExitStatus> {
 ///
 /// Logs a summary of the run and returns [`ExitStatus::Failure`] in check or
 /// diff mode if any file would be reformatted.
-pub fn format(args: &CliArguments) -> Result<ExitStatus> {
+pub fn format(args: &CliArguments, config: &Config) -> Result<ExitStatus> {
     #[derive(Default)]
     struct Summary {
         format_count: usize,
@@ -105,7 +77,7 @@ pub fn format(args: &CliArguments) -> Result<ExitStatus> {
         return Ok(ExitStatus::Success);
     }
 
-    let typstyle = Typstyle::new(args.style.to_config());
+    let typstyle = Typstyle::new(config.clone());
 
     let start_time = Instant::now();
     for file in paths {
