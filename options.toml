@@ -1,0 +1,84 @@
+# Canonical formatter option definitions.
+#
+# Run `cargo xtask generate-options` after editing. Generated Rust, TypeScript,
+# JSON, and documentation files are committed and checked in CI.
+
+[[enum]]
+name = "LineEnding"
+description = """
+Line-ending policy for generated layout, including partial formatting.
+
+Literal text stays verbatim; raw-block boundary breaks follow the layout policy.
+"""
+default = "preserve"
+variants = [
+  { name = "Lf", value = "lf", description = "A single line feed." },
+  { name = "Crlf", value = "crlf", description = "A carriage return followed by a line feed." },
+  { name = "Preserve", value = "preserve", description = "Generate CRLF only if the entire source contains CRLF and no bare LF or CR. Sources without ASCII newlines or with mixed endings generate LF." },
+]
+
+[[enum]]
+name = "WrapMode"
+description = "Text wrapping mode for markup."
+default = "none"
+variants = [
+  { name = "None", value = "none", description = "Do not wrap text." },
+  { name = "Fill", value = "fill", description = "Wrap text to fit within the line width." },
+  { name = "Sentence", value = "sentence", description = "Place each sentence on its own line." },
+  { name = "FillSentence", value = "fill-sentence", description = "Place each sentence on its own line, and wrap long sentences to the line width." },
+]
+
+[[option]]
+name = "tab_spaces"
+type = "usize"
+default = 2
+description = "Number of spaces to use for each indentation level."
+group = "Layout"
+label = "Indent width"
+cli = { short = "t", long = "indent-width", visible_alias = "tab-width", value_name = "INDENT_WIDTH" }
+
+[[option]]
+name = "max_width"
+type = "usize"
+default = 80
+description = "Maximum width of each line."
+group = "Layout"
+label = "Line width"
+cli = { short = "l", long = "line-width", visible_short_alias = "c", visible_alias = "column", value_name = "LINE_WIDTH" }
+
+[[option]]
+name = "blank_lines_upper_bound"
+type = "usize"
+default = 1
+description = "Maximum number of consecutive blank lines allowed."
+group = "Layout"
+
+[[option]]
+name = "collapse_markup_spaces"
+type = "bool"
+default = false
+description = "When `true`, consecutive whitespace in markup is collapsed into a single space."
+group = "Layout"
+
+[[option]]
+name = "reorder_import_items"
+type = "bool"
+default = true
+description = "When `true`, import items are sorted alphabetically."
+group = "Imports"
+cli = { inverse = { long = "no-reorder-import-items", description = "Disable alphabetical reordering of import items" } }
+
+[[option]]
+name = "line_ending"
+type = "LineEnding"
+default = "preserve"
+description = "Policy for generated line breaks. Literal source text is preserved."
+group = "Layout"
+
+[[option]]
+name = "wrap_mode"
+type = "WrapMode"
+default = "none"
+description = "Text wrapping mode for markup."
+group = "Layout"
+cli = { long = "wrap-text", value_name = "WRAP_TEXT", implicit_value = "fill" }

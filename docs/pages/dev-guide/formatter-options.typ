@@ -3,41 +3,58 @@
 
 #show: book-page.with(title: "Adding Formatter Options")
 
-Formatter options have one declaration source: `Options` in
-`crates/typstyle-core/src/config.rs`. The `#[options]` attribute generates the partial
-configuration type, defaults, merging, validation, CLI arguments, and binding metadata.
+Formatter options have one declaration source: `options.toml` at the repository root.
+`cargo xtask generate-options` writes ordinary Rust, TypeScript, JSON, and Markdown from
+that file. Generated files are committed; no procedural macro or extra published crate is
+involved.
 
 = Change Checklist
 
 == Declare The Option
 
-Add a field to `Options` with its default and UI metadata:
+Add an entry to `options.toml` with its type, default, documentation, and UI metadata:
 
-```rust
-/// Number of spaces per indentation level.
-#[option(default = 2)]
-#[cli(short = 't', long = "indent-width", visible_alias = "tab-width")]
-#[ui(group = "Layout")]
-pub tab_spaces: usize,
+```toml
+[[option]]
+name = "tab_spaces"
+type = "usize"
+default = 2
+description = "Number of spaces to use for each indentation level."
+group = "Layout"
+label = "Indent width"
+cli = { short = "t", long = "indent-width", visible_alias = "tab-width", value_name = "INDENT_WIDTH" }
 ```
 
-The macro infers the configuration key, label, CLI name, widget, and documentation:
+The generator infers everything that does not require explicit specification:
 
 | Property | Default |
 | --- | --- |
-| Configuration key | Field name |
-| CLI long name | Kebab-case field name |
-| Description | Rust doc comment |
-| Label | Humanized field name |
+| Rust field | `name` |
+| Configuration key | `name` |
+| CLI long name | Kebab-case `name` |
+| CLI help | `description` plus the default |
+| Label | Humanized `name` |
 | UI widget | Boolean → checkbox, integer → number, enum → select, string → text |
 | Group | `General` |
 
-Use `#[cli(...)]` to preserve existing flag names or add aliases. Use `#[ui(...)]` to set a
-group, widget, or label. Enum-valued fields implement
-`typstyle_core::option::OptionEnum`, which supplies the allowed wire values and makes the type
-usable by both `serde` and the generated `clap` parser.
+Use `cli` to preserve an existing flag name, add aliases, or declare an inverse switch.
+Enum-valued options reference an `[[enum]]` table, which supplies the allowed wire values,
+variant documentation, and the serde representation:
 
-Then implement the formatter behavior that reads the field.
+```toml
+[[enum]]
+name = "WrapMode"
+description = "Text wrapping mode for markup."
+default = "none"
+variants = [
+  { name = "None", value = "none", description = "Do not wrap text." },
+  { name = "Fill", value = "fill", description = "Wrap text to fit within the line width." },
+]
+```
+
+Then implement the formatter behavior that reads the field. Semantic validation that spans
+fields belongs in `Options::validate` in `crates/typstyle-core/src/config.rs`; keep
+`options.toml` declarative.
 
 == Regenerate Bindings
 
@@ -47,6 +64,10 @@ cargo xtask generate-options
 
 This deterministically writes:
 
+- `crates/typstyle-core/src/config/generated.rs` — `Options`, `PartialOptions`, option
+  enums, defaults, merging, and `OptionSpec` metadata.
+- `crates/typstyle/src/generated_args.rs` — the `clap` argument struct and conversion into
+  `PartialOptions`.
 - `packages/options/generated/types.ts` — resolved and partial TypeScript types.
 - `packages/options/generated/defaults.json` — canonical defaults.
 - `packages/options/generated/schema.json` — JSON Schema with defaults and descriptions.
@@ -60,6 +81,13 @@ cargo xtask generate-options --check
 ```
 
 Do not generate these files from `build.rs`.
+
+== Generated Rust
+
+The generated core module contains ordinary source code, so IDE navigation and documentation
+work normally. The core crate does not depend on `clap`; CLI-specific arguments are generated
+in the CLI crate. Both generated files are checked in and regenerated explicitly, never
+during a downstream build.
 
 == Configuration Files
 
@@ -77,12 +105,10 @@ default — always override lower layers.
 
 == CLI
 
-Generated arguments come from `PartialOptions`; do not duplicate field declarations in
-`crates/typstyle/src/cli.rs`. Preserve an existing flag by setting it in `#[cli(...)]`.
-
-Handwritten compatibility flags are allowed when a historical spelling cannot be expressed as
-a generated option, such as the inverse `--no-reorder-import-items` switch. Map it into
-`PartialOptions` in `StyleArgs::to_partial`.
+Generated arguments come from `OptionArgs`, which converts into `PartialOptions`. Do not
+duplicate option declarations in `crates/typstyle/src/cli.rs`. Preserve a historical spelling
+with `cli.long`, `cli.short`, or the alias fields; express an inverse switch with
+`cli.inverse` rather than a handwritten option.
 
 Booleans accept explicit values (`--reorder-import-items=false`) so they can override a
 configuration file. Do not add generated bare boolean switches.

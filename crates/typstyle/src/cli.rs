@@ -1,15 +1,15 @@
 //! Definition of the `typstyle` command-line interface, parsed with clap.
 //!
-//! Style options are generated from [`typstyle_core::PartialOptions`] by the
-//! [`typstyle_macros::options`] attribute. Only compatibility flags that predate the partial
-//! configuration type remain handwritten.
+//! Style arguments are generated from `options.toml` by
+//! `cargo xtask generate-options`. Only CLI concerns that do not describe an option remain
+//! handwritten.
 
 use std::{path::PathBuf, sync::LazyLock};
 
 use clap::{Args, CommandFactory, Parser, Subcommand, error::ErrorKind};
-use typstyle_core::PartialOptions;
 
 use crate::fmt::LineRange;
+use crate::generated_args::OptionArgs;
 
 /// Arguments of the `typstyle` CLI.
 #[derive(Parser)]
@@ -67,7 +67,7 @@ pub struct CliArguments {
 
     /// Options configuring the formatting style.
     #[command(flatten, next_help_heading = "Format Configuration")]
-    pub style: StyleArgs,
+    pub style: OptionArgs,
 
     /// Options for printing debug output of the formatter.
     #[command(flatten, next_help_heading = "Debug Options")]
@@ -124,34 +124,6 @@ pub enum Command {
         #[arg(value_enum)]
         shell: clap_complete::Shell,
     },
-}
-
-/// Style options that map to the formatter's [`typstyle_core::Config`].
-#[derive(Args)]
-pub struct StyleArgs {
-    /// Options configuring the formatting style.
-    #[command(flatten)]
-    pub options: PartialOptions,
-
-    /// Disable alphabetical reordering of import items.
-    #[arg(
-        long,
-        default_value_t = false,
-        global = true,
-        conflicts_with = "reorder_import_items"
-    )]
-    pub no_reorder_import_items: bool,
-}
-
-impl StyleArgs {
-    /// Converts the CLI representation into explicit option overrides.
-    pub fn to_partial(&self) -> PartialOptions {
-        let mut partial = self.options.clone();
-        if self.no_reorder_import_items {
-            partial.reorder_import_items = Some(false);
-        }
-        partial
-    }
 }
 
 /// Debug options for printing intermediate artifacts of the formatter.

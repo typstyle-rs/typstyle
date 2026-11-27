@@ -8,6 +8,8 @@ mod config;
 mod diff;
 mod fmt;
 mod fs;
+#[rustfmt::skip]
+pub mod generated_args;
 mod logging;
 
 use std::{io::Write, process::ExitCode};

@@ -3,8 +3,9 @@
 ## Unreleased
 
 - Feature: Add canonical `Options` and `PartialOptions` configuration types. `Config` and
-  `PartialConfig` remain aliases. The `#[options]` attribute derives defaults, merging,
-  validation, serde support, CLI arguments, and binding metadata from one declaration.
+  `PartialConfig` remain aliases. `options.toml` is the single declaration source;
+  `cargo xtask generate-options` writes ordinary Rust, CLI arguments, TypeScript, JSON
+  Schema, UI metadata, and an option reference without adding a published macro crate.
 - Feature(CLI): Read TOML configuration from `--config`, `typstyle.toml`/`.typstyle.toml`
   discovered upwards, and a user configuration. Layers merge in the order user, project, CLI;
   unknown keys are rejected and explicit CLI values override files.

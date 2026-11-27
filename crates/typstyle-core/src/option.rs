@@ -1,8 +1,8 @@
 //! Metadata for canonical formatter options.
 //!
-//! The `#[options]` macro in `typstyle-macros` emits one [`OptionSpec`] per field. Downstream
-//! generators consume that table together with the resolved defaults to produce TypeScript
-//! definitions, JSON Schema, and UI metadata without re-parsing Rust source.
+//! `cargo xtask generate-options` emits one [`OptionSpec`] per declaration in `options.toml`.
+//! Downstream generators consume that table together with the resolved defaults to produce
+//! TypeScript definitions, JSON Schema, and UI metadata without re-parsing Rust source.
 
 /// The value shape of an option.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -44,8 +44,8 @@ pub struct OptionSpec {
 
 /// String conversion for enum-valued options.
 ///
-/// The macro uses this trait to build `clap` value parsers and metadata choices without
-/// requiring `ValueEnum` derives on library enums.
+/// The generated CLI uses this trait to build `clap` value parsers without requiring
+/// `ValueEnum` derives on library enums.
 pub trait OptionEnum: Sized + 'static {
     /// Allowed wire values, in display order.
     const CHOICES: &'static [&'static str];

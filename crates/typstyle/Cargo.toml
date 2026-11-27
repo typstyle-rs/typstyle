@@ -17,7 +17,7 @@ bench = false
 doc = false
 
 [dependencies]
-typstyle-core = { workspace = true, features = ["clap", "serde"] }
+typstyle-core = { workspace = true, features = ["serde"] }
 
 typst-syntax.workspace = true
 

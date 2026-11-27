@@ -1,133 +1,21 @@
 //! Style configuration for the Typstyle formatter.
 //!
-//! [`Options`] is the canonical option declaration. The [`options`] attribute generates
-//! [`PartialOptions`], defaults, merging, validation, CLI arguments, and binding metadata.
+//! [`Options`], [`PartialOptions`], and the option enums are generated from
+//! `options.toml` by `cargo xtask generate-options`. Add declarations to that file and
+//! regenerate the bindings rather than editing the generated module.
 
-use typstyle_macros::options;
+#[rustfmt::skip]
+mod generated;
 
-use crate::option::OptionEnum;
+pub use generated::{LineEnding, Options, PartialOptions, WrapMode};
 
-/// Configuration options for the Typstyle printer.
-#[options(partial = "PartialOptions")]
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "serde", serde(default))]
-pub struct Options {
-    /// Number of spaces to use for each indentation level.
-    #[option(default = 2)]
-    #[cli(
-        short = 't',
-        long = "indent-width",
-        visible_alias = "tab-width",
-        value_name = "INDENT_WIDTH"
-    )]
-    #[ui(group = "Layout", label = "Indent width")]
-    pub tab_spaces: usize,
-    /// Maximum width of each line.
-    #[option(default = 80)]
-    #[cli(
-        short = 'l',
-        long = "line-width",
-        visible_short_alias = 'c',
-        visible_alias = "column",
-        value_name = "LINE_WIDTH"
-    )]
-    #[ui(group = "Layout", widget = "number", label = "Line width")]
-    pub max_width: usize,
-    /// Maximum number of consecutive blank lines allowed.
-    #[option(default = 1)]
-    #[ui(group = "Layout")]
-    pub blank_lines_upper_bound: usize,
-    /// When `true`, consecutive whitespace in markup is collapsed into a single space.
-    #[option(default = false)]
-    #[ui(group = "Layout")]
-    pub collapse_markup_spaces: bool,
-    /// When `true`, import items are sorted alphabetically.
-    #[option(default = true)]
-    #[ui(group = "Imports")]
-    pub reorder_import_items: bool,
-    /// Policy for generated line breaks. Literal source text is preserved.
-    #[option(default = LineEnding::Preserve, default_display = "preserve")]
-    #[ui(group = "Layout")]
-    pub line_ending: LineEnding,
-    /// Text wrapping mode for markup.
-    #[option(default = WrapMode::None, default_display = "none")]
-    #[cli(
-        long = "wrap-text",
-        value_name = "WRAP_TEXT",
-        num_args = 0..=1,
-        default_missing_value = "fill",
-        require_equals = true
-    )]
-    #[ui(group = "Layout")]
-    pub wrap_mode: WrapMode,
-}
+use crate::option::OptionsError;
 
 /// Backwards-compatible alias for [`Options`].
 pub type Config = Options;
 
 /// Backwards-compatible alias for [`PartialOptions`].
 pub type PartialConfig = PartialOptions;
-
-/// Line-ending policy for generated layout, including partial formatting.
-///
-/// Literal text stays verbatim; raw-block boundary breaks follow the layout policy.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "serde", serde(rename_all = "lowercase"))]
-pub enum LineEnding {
-    /// A single line feed.
-    Lf,
-    /// A carriage return followed by a line feed.
-    Crlf,
-    /// Generate CRLF only if the entire source contains CRLF and no bare LF or CR.
-    /// Sources without ASCII newlines or with mixed endings generate LF.
-    #[default]
-    Preserve,
-}
-
-/// Text wrapping mode for markup.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[cfg_attr(feature = "serde", serde(rename_all = "kebab-case"))]
-pub enum WrapMode {
-    /// Do not wrap text.
-    #[default]
-    None,
-    /// Wrap text to fit within the line width.
-    Fill,
-    /// Place each sentence on its own line.
-    Sentence,
-    /// Place each sentence on its own line, and wrap long sentences to the line width.
-    FillSentence,
-}
-
-impl OptionEnum for LineEnding {
-    const CHOICES: &'static [&'static str] = &["lf", "crlf", "preserve"];
-
-    fn from_choice(value: &str) -> Option<Self> {
-        match value {
-            "lf" => Some(Self::Lf),
-            "crlf" => Some(Self::Crlf),
-            "preserve" => Some(Self::Preserve),
-            _ => None,
-        }
-    }
-}
-
-impl OptionEnum for WrapMode {
-    const CHOICES: &'static [&'static str] = &["none", "fill", "sentence", "fill-sentence"];
-
-    fn from_choice(value: &str) -> Option<Self> {
-        match value {
-            "none" => Some(Self::None),
-            "fill" => Some(Self::Fill),
-            "sentence" => Some(Self::Sentence),
-            "fill-sentence" => Some(Self::FillSentence),
-            _ => None,
-        }
-    }
-}
 
 impl LineEnding {
     /// Resolve source-dependent policy against the whole original document.
@@ -211,6 +99,14 @@ impl Options {
         self.wrap_mode = wrap_mode;
         self
     }
+
+    /// Validates cross-field constraints.
+    ///
+    /// Field types and enum values are enforced by deserialization. Constraints that span
+    /// multiple fields belong here; the generated `apply` method calls this after merging.
+    pub fn validate(&self) -> Result<(), OptionsError> {
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -218,7 +114,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn defaults_are_exposed_by_the_macro() {
+    fn defaults_are_exposed_by_generated_code() {
         let config = Options::default();
         assert_eq!(config.tab_spaces, 2);
         assert_eq!(config.max_width, 80);

@@ -21,7 +21,6 @@ RELEASE_NOTES = ROOT / "scripts" / "release-notes.nu"
 USE_JJ = (ROOT / ".jj").exists()
 WORKSPACE_VERSION = r'^\[workspace\.package\]\s*?^version\s*=\s*"([^"]+)"\s*$'
 CORE_DEPENDENCY = r'^typstyle-core\s*=\s*\{[^}\n]*\bversion\s*=\s*"([^"]+)"[^}\n]*\}\s*$'
-MACROS_DEPENDENCY = r'^typstyle-macros\s*=\s*\{[^}\n]*\bversion\s*=\s*"([^"]+)"[^}\n]*\}\s*$'
 VERSION_RE = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 
 
@@ -181,18 +180,11 @@ def main() -> int:
     dependency_match = find_once(
         manifest_text, CORE_DEPENDENCY, "typstyle-core dependency version"
     )
-    macros_match = find_once(
-        manifest_text, MACROS_DEPENDENCY, "typstyle-macros dependency version"
-    )
     current = workspace_match.group(1)
-    for name, match in (
-        ("typstyle-core", dependency_match),
-        ("typstyle-macros", macros_match),
-    ):
-        if match.group(1) != f"={current}":
-            raise ReleaseError(
-                f"workspace {name} dependency must exactly match the workspace version"
-            )
+    if dependency_match.group(1) != f"={current}":
+        raise ReleaseError(
+            "workspace typstyle-core dependency must exactly match the workspace version"
+        )
 
     version = resolve_version(current, args.version)
     if args.version is None:
@@ -215,7 +207,6 @@ def main() -> int:
         [
             (workspace_match, version),
             (dependency_match, f"={version}"),
-            (macros_match, f"={version}"),
         ],
     )
 
