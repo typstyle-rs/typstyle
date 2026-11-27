@@ -56,7 +56,7 @@ pub struct Options {
     pub wrap_mode: WrapMode,
 }
 /// Explicit overrides for [`Options`].
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(default, deny_unknown_fields))]
 pub struct PartialOptions {
@@ -92,19 +92,6 @@ impl Default for Options {
             reorder_import_items: true,
             line_ending: LineEnding::Preserve,
             wrap_mode: WrapMode::None,
-        }
-    }
-}
-impl Default for PartialOptions {
-    fn default() -> Self {
-        Self {
-            tab_spaces: None,
-            max_width: None,
-            blank_lines_upper_bound: None,
-            collapse_markup_spaces: None,
-            reorder_import_items: None,
-            line_ending: None,
-            wrap_mode: None,
         }
     }
 }

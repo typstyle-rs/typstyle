@@ -18,10 +18,6 @@ pub(crate) fn render_core(model: &Model) -> Result<String> {
         let default = &option.default_expr;
         quote!(#field: #default)
     });
-    let none_fields = model.options.iter().map(|option| {
-        let field = rust_ident(&option.name);
-        quote!(#field: None)
-    });
     let merge_fields = model.options.iter().map(|option| {
         let field = rust_ident(&option.name);
         quote!(#field: newer.#field.or(self.#field))
@@ -52,7 +48,7 @@ pub(crate) fn render_core(model: &Model) -> Result<String> {
         }
 
         /// Explicit overrides for [`Options`].
-        #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+        #[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
         #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
         #[cfg_attr(feature = "serde", serde(default, deny_unknown_fields))]
         pub struct PartialOptions {
@@ -63,14 +59,6 @@ pub(crate) fn render_core(model: &Model) -> Result<String> {
             fn default() -> Self {
                 Self {
                     #(#default_fields),*
-                }
-            }
-        }
-
-        impl Default for PartialOptions {
-            fn default() -> Self {
-                Self {
-                    #(#none_fields),*
                 }
             }
         }

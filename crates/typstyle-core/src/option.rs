@@ -1,8 +1,9 @@
 //! Metadata for canonical formatter options.
 //!
 //! `cargo xtask generate-options` emits one [`OptionSpec`] per declaration in `options.toml`.
-//! Downstream generators consume that table together with the resolved defaults to produce
-//! TypeScript definitions, JSON Schema, and UI metadata without re-parsing Rust source.
+//! The generated [`crate::Options::OPTION_SPECS`] table exposes that metadata to Rust
+//! consumers; the TypeScript, JSON Schema, and UI artifacts are also generated from the same
+//! declarations.
 
 /// The value shape of an option.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

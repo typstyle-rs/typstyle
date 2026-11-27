@@ -21,7 +21,7 @@ export interface PlaygroundUrlState {
   tab?: OutputType;
 }
 
-/** URL keys used before options were generated from the Rust declaration. */
+/** URL keys used before options were generated from `options.toml`. */
 const LEGACY_OPTION_KEYS: Record<string, keyof PartialOptions> = {
   lineWidth: "max_width",
   indentWidth: "tab_spaces",
