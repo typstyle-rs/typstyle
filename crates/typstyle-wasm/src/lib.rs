@@ -62,13 +62,14 @@ pub fn format_ir(
 }
 
 /// The result of formatting a range within content.
-#[wasm_bindgen(getter_with_clone)]
+#[wasm_bindgen]
 pub struct FormatRangeResult {
     /// Start UTF-16 code unit index of the actual formatted range
     pub start: usize,
     /// End UTF-16 code unit index of the actual formatted range
     pub end: usize,
     /// The formatted text for the range
+    #[wasm_bindgen(getter_with_clone)]
     pub text: String,
 }
 
