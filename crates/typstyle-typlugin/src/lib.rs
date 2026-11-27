@@ -15,7 +15,7 @@ type WasmResult = Result<Vec<u8>, String>;
 
 /// Parses the content and returns its AST.
 #[wasm_func]
-pub fn parse(text: &[u8]) -> WasmResult {
+fn parse(text: &[u8]) -> WasmResult {
     let text = parse_text(text)?;
 
     let root = typst_syntax::parse(text);
@@ -26,7 +26,7 @@ pub fn parse(text: &[u8]) -> WasmResult {
 
 /// Formats the content using the provided configuration.
 #[wasm_func]
-pub fn format(text: &[u8], config: &[u8]) -> WasmResult {
+fn format(text: &[u8], config: &[u8]) -> WasmResult {
     let text = parse_text(text)?;
     let config = parse_config(config)?;
 
@@ -41,25 +41,25 @@ pub fn format(text: &[u8], config: &[u8]) -> WasmResult {
 
 /// Returns empty bytes in case of failure.
 #[wasm_func]
-pub fn try_format(text: &[u8], config: &[u8]) -> Vec<u8> {
-    format(text, config).unwrap_or_else(|_| vec![])
+fn try_format(text: &[u8], config: &[u8]) -> WasmResult {
+    Ok(format(text, config).unwrap_or_default())
 }
 
 /// Formats the content, returns original text with error comment on error.
 #[wasm_func]
-pub fn format_with_error(text: &[u8], config: &[u8]) -> Vec<u8> {
+fn format_with_error(text: &[u8], config: &[u8]) -> WasmResult {
     match format(text, config) {
-        Ok(formatted) => formatted,
+        Ok(formatted) => Ok(formatted),
         Err(e) => {
             let original = String::from_utf8_lossy(text);
-            format!("// Typstyle error: {e}\n{original}").into_bytes()
+            Ok(format!("// Typstyle error: {e}\n{original}").into_bytes())
         }
     }
 }
 
 /// Get the pretty IR for the content.
 #[wasm_func]
-pub fn format_ir(text: &[u8], config: &[u8]) -> WasmResult {
+fn format_ir(text: &[u8], config: &[u8]) -> WasmResult {
     let text = parse_text(text)?;
     let config = parse_config(config)?;
 

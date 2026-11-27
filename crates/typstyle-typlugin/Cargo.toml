@@ -20,3 +20,6 @@ typst-syntax.workspace = true
 
 serde_json.workspace = true
 wasm-minimal-protocol = "0.2.1"
+
+[lints]
+workspace = true
